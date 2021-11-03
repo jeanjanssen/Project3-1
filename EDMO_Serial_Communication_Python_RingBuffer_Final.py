@@ -36,7 +36,7 @@ def sendData():
 # Function checking if data has been received and if yes reading it
 def recData():
     print("Checking for serial input")
-    #if data on the serial interface, then read it
+    # if data on the serial interface, then read it
     if ser.in_waiting > 0:
         print("Reading serial input")
         ser_input = ser.readline()[:-2]         # the last bit gets rid of the new-line chars
