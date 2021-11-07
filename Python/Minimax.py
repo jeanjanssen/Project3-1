@@ -185,7 +185,7 @@ def render(state, c_choice, h_choice):
         print('\n' + str_line)
 
 
-def ai_turn(c_choice, h_choice):
+def ai_turn(c_choice, h_choice, level):
     """
     It calls the minimax function if the depth < 9,
     else it choices a random coordinate.
@@ -207,9 +207,21 @@ def ai_turn(c_choice, h_choice):
     else:
         move = minimax(board, depth, COMP)
         x, y = move[0], move[1]
-        # sketch an X (or O) at coordinate x,y
+        # TODO make robot sketch an X (or O) at coordinate x,y
 
-    set_move(x, y, COMP)
+    random_or_not = random.randint(0,100)
+    if random_or_not <= level:
+        print('move set by computer ', x, y)
+        set_move(x, y, COMP)
+    else:
+        # play random move, that is valid and not the best move
+        possible_coords = empty_cells(board)
+        x_rand, y_rand = x, y
+        while x_rand == x and y_rand == y and len(possible_coords) > 1:
+            x_rand, y_rand = random.choice(possible_coords)[0], random.choice(possible_coords)[1]
+        print('random move set by computer ', x_rand, y_rand)
+        set_move(x_rand, y_rand, COMP)
+
     time.sleep(1)
 
 
@@ -232,13 +244,13 @@ def human_turn(c_choice, h_choice):
         7: [2, 0], 8: [2, 1], 9: [2, 2],
     }
 
-    clean()
+    #clean()
     print(f'Human turn [{h_choice}]')
     render(board, c_choice, h_choice)
 
     while move < 1 or move > 9:
         try:
-            # Instead of numpad input, retrieve board's state with camera and return current board
+            # TODO Instead of numpad input, retrieve board's state with camera and return current board
 
             #move = int(input('Use numpad (1..9): '))
             move = random.randint(1,9)
@@ -263,6 +275,7 @@ def main():
     h_choice = ''  # X or O
     c_choice = ''  # X or O
     first = ''  # if human is the first
+    level = -1
 
     # Human chooses X or O to play
     while h_choice != 'O' and h_choice != 'X':
@@ -281,6 +294,16 @@ def main():
     else:
         c_choice = 'X'
 
+    # Choose level of difficulty
+    while level > 100 or level < 0 :
+        try:
+            level = int(input('Choose the level of difficulty [0..100]: '))
+        except (EOFError, KeyboardInterrupt):
+            print('Bye')
+            exit()
+        except (KeyError, ValueError):
+            print('Bad choice')
+
     # Human may starts first
     clean()
     while first != 'Y' and first != 'N':
@@ -295,25 +318,25 @@ def main():
     # Main loop of this game
     while len(empty_cells(board)) > 0 and not game_over(board):
         if first == 'N':
-            ai_turn(c_choice, h_choice)
+            ai_turn(c_choice, h_choice, level)
             first = ''
 
         human_turn(c_choice, h_choice)
-        ai_turn(c_choice, h_choice)
+        ai_turn(c_choice, h_choice, level)
 
     # Game over message
     if wins(board, HUMAN):
-        clean()
+        #clean()
         print(f'Human turn [{h_choice}]')
         render(board, c_choice, h_choice)
         print('YOU WIN!')
     elif wins(board, COMP):
-        clean()
+        #clean()
         print(f'Computer turn [{c_choice}]')
         render(board, c_choice, h_choice)
         print('YOU LOSE!')
     else:
-        clean()
+        #clean()
         render(board, c_choice, h_choice)
         print('DRAW!')
 
