@@ -11,13 +11,18 @@ note: already trained a ccn, weights under data/model.h5
 import os
 import cv2
 import numpy as np
+import scipy
 
-from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Activation, Flatten, Dense, Dropout
-from keras.callbacks import EarlyStopping
-from keras.preprocessing.image import ImageDataGenerator
+
+
+
+
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Activation, Flatten, Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
 # Replicate results
@@ -26,9 +31,9 @@ np.random.seed(42)
  # directory paths so training set (data)
 
  # depends on paths in your system
-ROOT_DIRECTORY = '...' # root directory path
-TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, '..') # path train directory
-TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, '..') # path test directory
+ROOT_DIRECTORY = '../data/images' # root directory path
+TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
+TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test directory
 input_shape = (32, 32, 1)
 batch_size = 32
 epochs = 30
@@ -97,8 +102,8 @@ def loading_data(root_directory, shuffle=True):
 print('Loading data...')
 X_set_train, y_set_train = loading_data(TRAIN_DIRECTORY)
 X_set_test, y_set_test = loading_data(TEST_DIRECTORY)
-print('instances for training ='+ len(X_set_train))
-print('instances for evaluation ='+len(X_set_test))
+print('instances for training =', len(X_set_train))
+print('instances for evaluation =',len(X_set_test))
 
 
 ## super small data set to lets create more :)
@@ -112,6 +117,7 @@ train_datagenarator = ImageDataGenerator(
     vertical_flip=True,
     rescale=1 / 255,
     validation_split=0.2)
+train_datagenarator.fit(X_set_train)
 
 train_set_generator = train_datagenarator.flow(
     X_set_train, y_set_train, batch_size=batch_size, subset='training')
@@ -120,18 +126,18 @@ val_set_generator = train_datagenarator.flow(
     X_set_train, y_set_train, batch_size=batch_size, subset='validation')
 
 # Train and evaluate
-callafter = [
+callbacks = [
     EarlyStopping(patience=5, verbose=1, restore_best_weights=True)]
 
 print('Training model...')
 # history
-hist = training_model.fit_generator(
+hist = training_model.fit(
     train_set_generator,
-    steps_per_epoch=128,
+    steps_per_epoch = 128,
     epochs=epochs,
     validation_data=val_set_generator,
-    validation_steps=32,
-    callbacks=callafter)
+    validation_steps = len(X_set_test)//batch_size,
+    callbacks=callbacks)
 
 print('Evaluating model...')
 # Load data
@@ -139,9 +145,9 @@ test_datagen = ImageDataGenerator(rescale=1 / 255)
 X_set_test, y_set_test = next(test_datagen.flow(X_set_test, y_set_test, batch_size=len(X_set_test)))
 
 loss, accuracy = training_model.evaluate(X_set_test, y_set_test, batch_size=batch_size)
-print('Crossentropy loss:'+loss)
-print('Accuracy:' + accuracy)
+print('Crossentropy loss:',loss)
+print('Accuracy:' , accuracy)
 
 # Save model
-# training.model.save('../data/model.h5')
+#training_model.save('../data/model.h5')
 # print('Saved model to disk')
