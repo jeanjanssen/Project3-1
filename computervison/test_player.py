@@ -1,0 +1,237 @@
+
+
+import os
+import sys
+import cv2
+import argparse
+import numpy as np
+
+from tensorflow.keras.models import load_model
+from tensorflow import keras
+
+from pre_processes import matrix_transformations
+from pre_processes import PreProccesing
+from alphabeta import Tic, get_enemy, determine
+from Minimax import *
+
+"""
+Detect the coords of the sheet, first point is center so hit ignore since we only want the corners. 
+
+also computes birds eye view (if use)
+"""
+def detect_Corners_paper(frame, thresh, add_margin=True):
+
+    pre_Corners = PreProccesing.Detect_Corners(thresh)
+
+    corners = pre_Corners[1:, :2]
+    corners = matrix_transformations.FPT_HELPER_(corners)
+    print(corners)
+    paper = matrix_transformations.FPT_BIRDVIEW(frame, corners)
+    if add_margin:
+        paper = paper[10:-10, 10:-10]
+    return paper, corners
+
+
+"""decects the symbol in one box of the grid """
+def detect_SYMBOL(box):
+
+    mapper = {0: None, 1: 'X', 2: 'O'}
+    box = PreProccesing.Frame_PRE_proccsing(box)
+    idx = np.argmax(model.predict(box))
+    return mapper[idx]
+
+    """Returns 3 x 3 grid, 
+     Find grid's center cell, and based on it fetch
+     the other eight cells
+    """
+def get_3X3_GRID(threshhold_img):
+
+    middle_center = PreProccesing.return_contourdbox(threshhold_img)
+    center_x, center_y, width, height = middle_center
+
+
+    # Useful coords
+    left = center_x - width
+    right = center_x + width
+    top = center_y - height
+    bottom = center_y + height
+
+    # Middle row
+
+    middle_left = (left, center_y, width, height)
+    middle_right = (right, center_y, width, height)
+
+    # Top row
+
+    top_left = (left, top, width, height)
+    top_center = (center_x, top, width, height)
+    top_right = (right, top, width, height)
+
+    # Bottom row
+    bottom_left = (left, bottom, width, height)
+    bottom_center = (center_x, bottom, width, height)
+    bottom_right = (right, bottom, width, height)
+
+    # Grid's coordinates
+    return [top_left, top_center, top_right,
+            middle_left, middle_center, middle_right,
+            bottom_left, bottom_center, bottom_right]
+
+
+def draw_SYMBOL(baseimage, symbol, placement):
+
+    x, y, w, h = placement
+    if symbol == 'O':
+        centroid = (x + int(w / 2), y + int(h / 2))
+        cv2.circle(baseimage, centroid, 10, (0, 0, 0), 2)
+    elif symbol == 'X':
+        # Draws the 'X' shape
+        cv2.line(baseimage, (x + 10, y + 7), (x + w - 10, y + h - 7),
+                 (0, 0, 0), 2)
+        cv2.line(baseimage, (x + 10, y + h - 7), (x + w - 10, y + 7),
+                 (0, 0, 0), 2)
+    return baseimage
+
+
+def play(vcap):
+    """Play tic tac toe game with computer that uses the alphabeta algorithm"""
+    # Initialize opponent (computer)
+    gameboard = Tic()
+    gamehistory = {}
+    message = True
+    # Start playing
+    while True:
+        ret, frame = vcap.read()
+        key = cv2.waitKey(1) & 0xFF
+        if not ret:
+            print('[INFO] finished video processing')
+            break
+
+        # kill switch is q
+        if key == ord('q'):
+            print('[INFO] stopped video processing')
+            break
+
+        # Preprocess input
+         #frame = PreProccesing.Frame_PRE_proccsing(frame,500)
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        _, blurry_thresh_gray_frame = cv2.threshold(gray_frame, 170, 255, cv2.THRESH_BINARY)
+        blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
+        paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
+
+
+        """
+       four red dots  need to appear other whiche empty array will make the code bug
+       
+        """#TODO need to find a way to only anisihate when corners is not empty (ithink)
+        try :
+         for c in corners:
+            cv2.circle(frame, centre_coordinates=tuple(c), radius=2, color=(0, 0, 255),thickness= 2)
+        except :
+            print("sum tyn wun ")
+            pass
+
+
+        # use paper to find grid
+
+        paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
+        _, paper_thresh = cv2.threshold(
+            paper_gray, 170, 255, cv2.THRESH_BINARY_INV)
+        grid = get_3X3_GRID(paper_thresh)
+
+        # Draw grid wait on user
+        for i, (x, y, w, h) in enumerate(grid):
+           try :
+            cv2.rectangle(paper, (x, y), (x + w, y + h), (0, 0, 0), 2)
+            if gamehistory.get(i) is not None:
+                shape = gamehistory[i]['shape']
+                paper = draw_SYMBOL(paper, shape, (x, y, w, h))
+
+           except :
+               print("something wrong in corners list")
+               pass
+
+        # Make move
+        if message:
+            print('Make move, then press spacebar')
+            message = False
+        if not key == 32:
+            cv2.imshow('original', frame)
+            cv2.imshow('bird view', paper)
+            continue
+        player = 'X'
+
+        # itterate through cells to find player move
+
+        available_moves = np.delete(np.arange(9), list(gamehistory.keys()))
+        for i, (x, y, w, h) in enumerate(grid):
+            if i not in available_moves:
+                continue
+            # Find what is inside each free cell
+            cell = paper_thresh[int(y): int(y + h), int(x): int(x + w)]
+            shape = detect_SYMBOL(cell)
+            if shape is not None:
+                gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
+                gameboard.make_move(i, player)
+            paper = draw_SYMBOL(paper, shape, (x, y, w, h))
+
+        # Check whether game has finished
+        if gameboard.complete():
+            break
+
+        # Computer's time to play
+
+        # TODO for now alphabeta implentation. switch to minimax
+        player = get_enemy(player)
+        computer_move = determine(gameboard, player)
+        gameboard.make_move(computer_move, player)
+        gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
+        paper = draw_SYMBOL(paper, 'O', grid[computer_move])
+
+        # Check whether game has finished
+        if gameboard.complete():
+            break
+
+        # Show images
+        cv2.imshow('original', frame)
+        # cv2.imshow('blurry_thresh_gray_frame', paper_thresh)
+        cv2.imshow('bird view', paper)
+        message = True
+
+    # Show winner
+    winner = gameboard.winner()
+    height = paper.shape[0]
+    text = 'Winner is {}'.format(str(winner))
+    cv2.putText(paper, text, (10, height - 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.imshow('bird view', paper)
+    cv2.waitKey(0) & 0xFF
+
+    # Close windows
+    vcap.release()
+    cv2.destroyAllWindows()
+    return gameboard.winner()
+
+
+def main():
+    """Check if everything's okay and start game"""
+    # Load model
+    global model
+    os.path
+    #assert os.path.exists(args.model), '{} does not exist'
+    model = load_model('data/model.h5')
+    #model = keras.models.load_model('data/model.h5')
+
+    # Initialize webcam feed
+    vcap = cv2.VideoCapture(0)
+    if not vcap.isOpened():
+        raise IOError('could not get feed from cam #{}'.format())
+
+    # Announce winner!
+    winner = play(vcap)
+    print('Winner is:', winner)
+    sys.exit()
+
+
+if __name__ == '__main__':
+    main()
