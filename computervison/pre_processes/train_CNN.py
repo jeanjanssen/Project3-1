@@ -36,7 +36,7 @@ TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test directory
 input_shape = (32, 32, 1)
 batch_size = 32
-epochs = 30
+epochs = 250
 
 # Build and compile model
 training_model = Sequential()
@@ -53,9 +53,9 @@ training_model.add(Dense(64))
 training_model.add(Activation('relu'))
 training_model.add(Dropout(0.4))
 
-# training.model.add(Dense(32))
-# training.model.add(Activation('relu'))
-# training.model.add(Dropout(0.3))
+#training_model.add(Dense(32))
+#training_model.add(Activation('relu'))
+#training_model.add(Dropout(0.3))
 
 training_model.add(Dense(3, activation='softmax'))
 training_model.summary()
@@ -104,7 +104,7 @@ X_set_train, y_set_train = loading_data(TRAIN_DIRECTORY)
 X_set_test, y_set_test = loading_data(TEST_DIRECTORY)
 print('instances for training =', len(X_set_train))
 print('instances for evaluation =',len(X_set_test))
-
+#X_set_train = np.repeat(X_set_train,3)
 
 ## super small data set to lets create more :)
 
@@ -127,13 +127,14 @@ val_set_generator = train_datagenarator.flow(
 
 # Train and evaluate
 callbacks = [
-    EarlyStopping(patience=5, verbose=1, restore_best_weights=True)]
+    EarlyStopping(patience=25, verbose=1, restore_best_weights=True)]
 
 print('Training model...')
 # history
 hist = training_model.fit(
     train_set_generator,
-    steps_per_epoch = 128,
+    #steps_per_epoch = len(X_set_train)//batch_size,
+    steps_per_epoch=12,
     epochs=epochs,
     validation_data=val_set_generator,
     validation_steps = len(X_set_test)//batch_size,
@@ -149,5 +150,5 @@ print('Crossentropy loss:',loss)
 print('Accuracy:' , accuracy)
 
 # Save model
-#training_model.save('../data/model.h5')
+#training_model.save('../data/model3.h5')
 # print('Saved model to disk')
