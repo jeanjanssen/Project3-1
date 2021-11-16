@@ -118,6 +118,8 @@ def determine(board, player):
             choices = [move]
         elif val == a:
             choices.append(move)
+            #print(choices,"printchoices ")
+
     return random.choice(choices)
 
 
