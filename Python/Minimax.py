@@ -209,7 +209,7 @@ def ai_turn(c_choice, h_choice, level):
         x, y = move[0], move[1]
         # TODO make robot sketch an X (or O) at coordinate x,y
 
-    random_or_not = random.randint(0,100)
+    random_or_not = random.randint(0, 100)
     if random_or_not <= level:
         print('move set by computer ', x, y)
         set_move(x, y, COMP)
@@ -244,7 +244,7 @@ def human_turn(c_choice, h_choice):
         7: [2, 0], 8: [2, 1], 9: [2, 2],
     }
 
-    #clean()
+    # clean()
     print(f'Human turn [{h_choice}]')
     render(board, c_choice, h_choice)
 
@@ -252,8 +252,8 @@ def human_turn(c_choice, h_choice):
         try:
             # TODO Instead of numpad input, retrieve board's state with camera and return current board
 
-            #move = int(input('Use numpad (1..9): '))
-            move = random.randint(1,9)
+            # move = int(input('Use numpad (1..9): '))
+            move = random.randint(1, 9)
             coord = moves[move]
             can_move = set_move(coord[0], coord[1], HUMAN)
 
@@ -295,7 +295,7 @@ def main():
         c_choice = 'X'
 
     # Choose level of difficulty
-    while level > 100 or level < 0 :
+    while level > 100 or level < 0:
         try:
             level = int(input('Choose the level of difficulty [0..100]: '))
         except (EOFError, KeyboardInterrupt):
@@ -326,21 +326,103 @@ def main():
 
     # Game over message
     if wins(board, HUMAN):
-        #clean()
+        # clean()
         print(f'Human turn [{h_choice}]')
         render(board, c_choice, h_choice)
         print('YOU WIN!')
     elif wins(board, COMP):
-        #clean()
+        # clean()
         print(f'Computer turn [{c_choice}]')
         render(board, c_choice, h_choice)
         print('YOU LOSE!')
     else:
-        #clean()
+        # clean()
         render(board, c_choice, h_choice)
         print('DRAW!')
 
     exit()
+
+
+def convertBoard(currentBoard):
+    boardConverted = []
+    intBoard = []
+
+    for i in range(len(currentBoard)):
+        if currentBoard[i] == 'X':
+            intBoard.append(HUMAN)
+        elif currentBoard[i] == 'O':
+            intBoard.append(COMP)
+        else:
+            intBoard.append(0)
+
+    row1 = [intBoard[0], intBoard[1], intBoard[2]]
+    row2 = [intBoard[3], intBoard[4], intBoard[5]]
+    row3 = [intBoard[6], intBoard[7], intBoard[8]]
+    boardConverted.append(row1)
+    boardConverted.append(row2)
+    boardConverted.append(row3)
+
+    return boardConverted
+
+
+def convertPosition(x, y):
+    if x == 0 and y == 0:
+        computer_move = 0
+    elif x == 0 and y == 1:
+        computer_move = 1
+    elif x == 0 and y == 2:
+        computer_move = 2
+    elif x == 1 and y == 0:
+        computer_move = 3
+    elif x == 1 and y == 1:
+        computer_move = 4
+    elif x == 1 and y == 2:
+        computer_move = 5
+    elif x == 2 and y == 0:
+        computer_move = 6
+    elif x == 2 and y == 1:
+        computer_move = 7
+    elif x == 2 and y == 2:
+        computer_move = 8
+
+    return computer_move
+
+
+def determine(currentBoard, currentPlayer, level):
+    """
+    currentBoard is an array of strings, for example ['O', None, None, None, 'X', 'X', 'O', None, None]
+    currentPlayer is 'O' or 'X'
+    level is the level fo difficulty (from 0 to 100)
+    """
+    #print(currentBoard)
+    board = convertBoard(currentBoard)
+    #print(board)
+
+    depth = len(empty_cells(board))
+    if depth == 0 or game_over(board):
+        return
+
+    if depth == 9:
+        x = choice([0, 1, 2])
+        y = choice([0, 1, 2])
+    else:
+        move = minimax(board, depth, COMP)
+        x, y = move[0], move[1]
+
+    random_or_not = random.randint(0, 100)
+    if random_or_not <= level:
+        computer_move = convertPosition(x, y)
+        #print('current computer move is ', computer_move)
+        return computer_move
+    else:
+        # play random move, that is valid and not the best move
+        possible_coords = empty_cells(board)
+        x_rand, y_rand = x, y
+        while x_rand == x and y_rand == y and len(possible_coords) > 1:
+            x_rand, y_rand = random.choice(possible_coords)[0], random.choice(possible_coords)[1]
+        computer_move = convertPosition(x_rand, y_rand)
+        #print('current computer move is ', computer_move)
+        return computer_move
 
 
 if __name__ == '__main__':

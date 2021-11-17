@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 import cv2
@@ -9,10 +7,10 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow import keras
 
+from Python import Minimax
 from pre_processes import matrix_transformations
 from pre_processes import PreProccesing
 from alphabeta import Tic, get_enemy, determine
-from Minimax import *
 
 """
 Detect the coords of the sheet, first point is center so hit ignore since we only want the corners.  
@@ -185,8 +183,7 @@ def play(vcap):
             continue
         player = 'X'
 
-        # itterate through cells to find player move
-
+        # iterate through cells to find player move
 
         available_moves = np.delete(np.arange(9), list(gamehistory.keys()))
         try:
@@ -223,9 +220,10 @@ def play(vcap):
         # Computer's time to play
 
         #it = it +1
-        # TODO for now alphabeta implentation. switch to minimax
+
         player = get_enemy(player)
-        computer_move = determine(gameboard, player)
+        computer_move = Minimax.determine(gameboard.squares, player, 100) # computer move is a number between 1 and 9
+        print('computer_move', computer_move)
         #computer_move = CompTurn(gameboard.squares)
         #print(gameboard.squares)
         #print(computer_move, "CompTurn")
