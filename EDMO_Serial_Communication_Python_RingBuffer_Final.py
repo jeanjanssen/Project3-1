@@ -3,12 +3,15 @@ import numpy as np
 from timeit import default_timer as timer
 
 ######## INIT serial communication variables ################################
+import IK
+
 ser = serial.Serial('COM18', 57600)     # select com-port and the serial com baud rate
 ser.flushInput()    # empty the serial buffer
 ser_input = []      # emtpy the serial input array
 current_time = 0 
 prev_time = 0
 interval = 0.5      # serial read update time
+
 
 # Example commands to drive the motors
 commandString = '0,0,25,0,0,45,1000,0,0,5000\n'     # data string to send to arduino
@@ -24,12 +27,14 @@ commandString5 = 'S,1,0,0,2,0,2000\n'               # S,motor,angle,delay,motor,
 def sendData():
     print("Sending command to arduino:")
     #print(commandString)
-    ser.write(commandString.encode())
-    ser.write(commandString1.encode())
+    #ser.write(commandString.encode())
+    #ser.write(commandString1.encode())
     #ser.write(commandString2.encode())
     #ser.write(commandString3.encode())
     #ser.write(commandString4.encode())
-    ser.write(commandString5.encode())
+    #ser.write(commandString5.encode())
+    for x in IK.output_list:
+        ser.write(x.encode())
 
 
 ############################# RECEIVE DATA ##################################
