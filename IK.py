@@ -1,38 +1,42 @@
 import math as math
+from numpy import *
 
-a1 = 20.1
-a2 = 13.4
-a3 = 12.1
-a4 = 12.5
-z = 21.1
+l1 = 20.1
+l2 = 13.4
+l3 = 12.1
+l4 = 12.5
 
 
-def getcoords(x, y):
-    theta1 = math.atan(y / x)
-    theta1 = min(max(theta1, -45), 45)
-    # We think we need to limit the angle immediately to the ranges of the edmo modules, such that the calculations will
-    # not go out of bounds.
+def getcoords(px, py):
+    # px and py are the desired points of the end-effector
 
-    cq = math.sqrt((x - a1) ** 2 + y ** 2 + (z - theta1) ** 2)
-    cp = math.sqrt((x - a1) ** 2 + y ** 2 + theta1 ** 2)
+    theta_1 = arctan2(px, py)
+    theta_1 = rad2deg(theta_1)
+    theta_1 = min(max(-45, theta_1), 45)
 
-    alfa = math.acos((cq ** 2 + a2 ** 2 - a3 ** 2) / ((2 * cq) * a2))
-    beta = math.acos((cq ** 2 + cp ** 2 - a4 ** 2) / ((2 * cq) * cp))
-    gamma = (z - theta1) / math.sqrt((x - a1 ** 2) + y ** 2)
+    phi = 90
+    phi = deg2rad(phi)
 
-    theta2 = alfa + beta + gamma
-    theta2 = min(max(theta2, -45), 45)
-    theta3 = math.pi - math.acos((a2 ** 2 + a3 ** 2 - cq ** 2) / (2 * a2 * a3))
-    theta3 = min(max(theta3, -45), 45)
+    wx = px - l4 * cos(phi)
+    wy = py - l4 * sin(phi)
 
-    sigma = theta1 + theta2 + theta3
+    delta = wx ** 2 + wy ** 2
+    c2 = (delta - l2 ** 2 - l3 ** 2) / (2 * l2 * l3)
+    s2 = sqrt(1 - c2 ** 2)
+    theta_3 = arctan2(s2, c2)
 
-    theta4 = sigma - theta2 - theta3
-    theta4 = min(max(theta4, -90), 90)
+    s1 = ((l2 + l3 * c2) * wy - l3 * s2 * wx) / delta
+    c1 = ((l2 + l3 * c2) * wx + l3 * s2 * wy) / delta
+    theta_2 = arctan2(s1, c1)
+    theta_4 = phi - theta_2 - theta_3
 
-    output = 'S, 0, {}, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0'.format(theta1, theta2, theta3, theta4)
+    theta_2 = rad2deg(theta_2)
+    theta_2 = min(max(-45, theta_2), 45)
+    theta_3 = rad2deg(theta_3)
+    theta_3 = min(max(-45, theta_3), 45)
+    theta_4 = rad2deg(theta_4)
+    theta_4 = min(max(-90, theta_4), 90)
+
+    output = 'S, 0, {}, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0'.format(theta_1, theta_2, theta_3, theta_4)
 
     return print(output)
-
-
-getcoords(25.0, 25.0)
