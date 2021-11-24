@@ -62,44 +62,44 @@ def getcoords(px, py):
     t2 = 0
     for x in range(0, abs(math.floor(theta_2/5))):
         if theta_2 > 0:
-            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, 0, 0\n'.format(5*(t2+1)))
+            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, {}, 0\n'.format(5*(t2+1), theta_1))
             t2 += 1
         elif theta_2 < 0:
-            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, 0, 0\n'.format(-5*(t2+1)))
+            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, {}, 0\n'.format(-5*(t2+1). theta_1))
             t2 += 1
     if theta_2-5*t2 != 0:
         if theta_2 > 0:
-            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, 0, 0\n'.format(theta_2-5*t2))
+            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, {}, 0\n'.format(theta_2-5*t2, theta_1))
         elif theta_2 < 0:
-            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, 0, 0\n'.format(theta_2 + 5 * t2))
+            output_list.append('0, 0, 0, 0, 1, 0, 0, 2, {}, 0, 3, {}, 0\n'.format(theta_2 + 5 * t2, theta_1))
 
     t3 = 0
     for x in range(0, abs(math.floor(theta_3/5))):
         if theta_3 > 0:
-            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, 0, 0, 3, 0, 0\n'.format(5*(t3+1)))
+            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(5*(t3+1), theta_2, theta_1))
             t3 += 1
         elif theta_3 < 0:
-            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, 0, 0, 3, 0, 0\n'.format(-5*(t3+1)))
+            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(-5*(t3+1), theta_2, theta_1))
             t3 += 1
     if theta_3-5*t3 != 0:
         if theta_3 > 0:
-            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, 0, 0, 3, 0, 0\n'.format(theta_3-5*t3))
+            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(theta_3-5*t3, theta_2, theta_1))
         elif theta_3 < 0:
-            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, 0, 0, 3, 0, 0\n'.format(theta_3 + 5 * t3))
+            output_list.append('0, 0, 0, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(theta_3 + 5 * t3, theta_2, theta_1))
 
     t4 = 0
     for x in range(0, abs(math.floor(theta_4 / 5))):
         if theta_4 > 0:
-            output_list.append('0, 0, {}, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0\n'.format(5*(t4+1)))
+            output_list.append('0, 0, {}, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(5*(t4+1), theta_3, theta_2, theta_1))
             t4 += 1
         elif theta_4 < 0:
-            output_list.append('0, 0, {}, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0\n'.format(-5*(t4+1)))
+            output_list.append('0, 0, {}, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(-5*(t4+1), theta_3, theta_2, theta_1))
             t4 += 1
     if theta_4 - 5 * t4 != 0:
         if theta_4 > 0:
-            output_list.append('0, 0, {}, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0\n'.format(theta_4 - 5 * t4))
+            output_list.append('0, 0, {}, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(theta_4 - 5 * t4), theta_3, theta_2, theta_1)
         elif theta_4 < 0:
-            output_list.append('0, 0, {}, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0\n'.format(theta_4 + 5 * t4))
+            output_list.append('0, 0, {}, 0, 1, {}, 0, 2, {}, 0, 3, {}, 0\n'.format(theta_4 + 5 * t4), theta_3, theta_2, theta_1)
 
     output = 'A,0,{},0,1,{},0,2,{},0,3,{},0\n'.format(theta_4, theta_3, theta_2, theta_1)
 
