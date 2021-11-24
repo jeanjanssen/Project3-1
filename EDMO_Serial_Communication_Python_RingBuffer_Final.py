@@ -34,11 +34,10 @@ def sendData():
     #ser.write(commandString3.encode())
     #ser.write(commandString4.encode())
     #ser.write(commandString5.encode())
-    #output = IK.getcoords(3, -5)
-    #ser.write(output.encode())
-    #for x in output:
-    #    ser.write(x.encode())
-    ser.write(commandString6.encode())
+    output = IK.getcoords(0, 0, 22.1)
+    ser.write(output.encode())
+    # for x in output:
+    #     ser.write(x.encode())
 
 
 ############################# RECEIVE DATA ##################################
