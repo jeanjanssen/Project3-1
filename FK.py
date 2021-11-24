@@ -1,84 +1,81 @@
 import math
 
-l1 = 20.1
+l1 = 20.1   # length from the base till the first joint
 l2 = 13.4
 l3 = 12.1
-l4 = 12.5       # or 12.8?
-l_pen = 6.0
+l4 = 12.5   # or 12.8?
+l_pen = 6.0 # check whether length from end effector to the tip of the pen is correct every time before using FK
 
 TABLE_Z = 21.1
 
 
-def calc_current_position(cur_angle1, cur_angle2, cur_angle3, cur_angle4):
+# Calculate position (other two methods can be removed if goal_z doesn't need the +1)
+def calc_position(theta1, theta2, theta3, theta4):
     # Converting degrees to radians
-    rad1 = cur_angle1 * math.pi / 180
-    rad2 = cur_angle2 * math.pi / 180
-    rad23 = (cur_angle2 + cur_angle3) * math.pi / 180
-    rad234 = (cur_angle2 + cur_angle3 + cur_angle4) * math.pi / 180
-    rad234pen = (cur_angle2 + cur_angle3 + cur_angle4 + 90) * math.pi / 180
+    rad1, rad2, rad23, rad234, rad234pen = get_angles_in_radians(theta1, theta2, theta3, theta4)
 
     # Calculating the coordinates
-    cur_y = l2 * math.sin(rad2) + l3 * math.sin(rad23) + l4 * math.sin(rad234)
-    cur_z = l2 * math.cos(rad2) + l3 * math.cos(rad23) + l4 * math.cos(rad234)
+    y = l2 * math.sin(rad2) + l3 * math.sin(rad23) + l4 * math.sin(rad234)
+    z = l2 * math.cos(rad2) + l3 * math.cos(rad23) + l4 * math.cos(rad234)
 
     # Add pen to y & z
-    cur_y += l_pen * math.sin(rad234pen)
-    cur_z += l_pen * math.cos(rad234pen)
+    y += l_pen * math.sin(rad234pen)
+    z += l_pen * math.cos(rad234pen)
 
-    cur_z += l1
-
-    # Calculate x & y given the angle of the bottom motor
-    cur_x = cur_y * math.sin(rad1)
-    cur_y = cur_y * math.cos(rad1)
-
-    return cur_x, cur_y, cur_z
-
-
-def calc_goal_position(goal_angle1, goal_angle2, goal_angle3, goal_angle4):
-    # Converting degrees to radians
-    rad1 = goal_angle1 * math.pi / 180
-    rad2 = goal_angle2 * math.pi / 180
-    rad23 = (goal_angle2 + goal_angle3) * math.pi / 180
-    rad234 = (goal_angle2 + goal_angle3 + goal_angle4) * math.pi / 180
-    rad234pen = (goal_angle2 + goal_angle3 + goal_angle4 + 90) * math.pi / 180
-
-    # Calculating the coordinates
-    goal_y = l2 * math.sin(rad2) + l3 * math.sin(rad23) + l4 * math.sin(rad234)
-    goal_z = l2 * math.cos(rad2) + l3 * math.cos(rad23) + l4 * math.cos(rad234)
-
-    # Add pen to y & z
-    goal_y += l_pen * math.sin(rad234pen)
-    goal_z += l_pen * math.cos(rad234pen)
-
-    goal_z += l1
+    z += l1
 
     # Calculate x & y given the angle of the bottom motor
-    goal_x = goal_y * math.sin(rad1)
-    goal_y = goal_y * math.cos(rad1)
+    x = y * math.sin(rad1)
+    y = y * math.cos(rad1)
 
-    return goal_x, goal_y, goal_z
+    return x, y, z
+
+
+# Convert the angles to the angles needed in radians
+def get_angles_in_radians(theta1, theta2, theta3, theta4):
+    rad1 = theta1 * math.pi / 180
+    rad2 = theta2 * math.pi / 180
+    rad23 = (theta2 + theta3) * math.pi / 180
+    rad234 = (theta2 + theta3 + theta4) * math.pi / 180
+    rad234pen = (theta2 + theta3 + theta4 + 90) * math.pi / 180
+    return rad1, rad2, rad23, rad234, rad234pen
 
 
 def collision_check(cur_x, cur_y, cur_z, goal_x, goal_y, goal_z):
 
-    # Trajectory is cur_z + var * dz
-    # Calculate where cur_z + var * dz = TABLE_Z
+    # if (cur_z - TABLE_Z) >= 0, then the pen is on or above the table
+    # if (goal_z - TABLE_Z) >= 0, then the goal is on or above the table
     if cur_z - TABLE_Z >= 0 and goal_z - TABLE_Z >= 0:
         print("no collision")
     else:
         print("collision possible")
+
+        if goal_z < TABLE_Z:
+            print("goal is below table\nfinish movement on table height?")
+        if cur_z < TABLE_Z:
+            print("current position is below the table\nmove up arm first")
+
+        # Trajectory is     cur_z + scalar * dz
+        # Calculate where   cur_z + scalar * dz = TABLE_Z
+
+        # Calculate slope in every direction
         dx = goal_x - cur_x
         dy = goal_y - cur_y
         dz = goal_z - cur_z
 
-        var = (TABLE_Z - cur_z) / dz
+        scalar = (TABLE_Z - cur_z) / dz
 
-        x_on_table_height = cur_x + var * dx
-        y_on_table_height = cur_y + var * dy
+        x_on_table_height = cur_x + scalar * dx
+        y_on_table_height = cur_y + scalar * dy
 
-        # TODO:
-        #  check whether these x and y values are within the range of the table
-        #  if so, first move up arm until above table
+        # table coordinates:
+        # -21.2 <= x <= 21.2 (difference between left and right +- 42.5)
+        #  10.0 <= y <= 40.5 (difference between top and bottom +- 30.5)
+
+        if -21.2 <= x_on_table_height <= 21.2:
+            print("arm should be moved upwards before movement to the goal position")
+        if 10.0 <= y_on_table_height <= 40.5:
+            print("arm should be moved upwards before movement to goal position")
 
 
 if __name__ == '__main__':
@@ -87,14 +84,17 @@ if __name__ == '__main__':
     theta_3 = 45.0
     theta_4 = 0.0
 
-    cur_x, cur_y, cur_z = calc_current_position(theta_1, theta_2, theta_3, theta_4)
+    cur_x, cur_y, cur_z = calc_position(theta_1, theta_2, theta_3, theta_4)
     print(cur_x, cur_y, cur_z)
 
+    # with the degrees below, the pen should be able to touch the table
     theta_1g = 0.0
     theta_2g = 45.0
     theta_3g = 45.0
-    theta_4g = 0.0
+    theta_4g = 12.0     # if this is 12.0 collision should not be possible
+    #theta_4g = 13.0     # if 13.0 then collision should be possible
 
-    goal_x, goal_y, goal_z = calc_goal_position(theta_1g, theta_2g, theta_3g, theta_4g)
+    goal_x, goal_y, goal_z = calc_position(theta_1g, theta_2g, theta_3g, theta_4g)
+    print(goal_x, goal_y, goal_z)
 
     collision_check(cur_x, cur_y, cur_z, goal_x, goal_y, goal_z)
