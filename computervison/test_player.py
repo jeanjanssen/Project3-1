@@ -50,8 +50,8 @@ def detect_SYMBOL(box):
     """
 
 
-def get_3X3_GRID(threshhold_img):
-    middle_center = PreProccesing.return_contourdbox(threshhold_img)
+def get_3X3_GRID(threshold_img):
+    middle_center = PreProccesing.return_contourdbox(threshold_img)
     center_x, center_y, width, height = middle_center
 
     # Useful coords
@@ -81,14 +81,86 @@ def get_3X3_GRID(threshhold_img):
     # print(width,"widht")
     # print(top_left,"TL")
     # print((bottom_left,'BL'))
-    # width_retangle = (top_right-top_left)
-    # height_retangel =  (bottom_left-top_left)
+    # width_rectangle = (top_right-top_left)
+    # height_rectangle =  (bottom_left-top_left)
     if (width * height > MIN_GRID_SIZE):
         Grids = [top_left, top_center, top_right,
                  middle_left, middle_center, middle_right,
                  bottom_left, bottom_center, bottom_right]
         return Grids
 
+def getMiddleCoord(grid, cellNr):
+   #Grids = [top_left, top_center, top_right,
+            #middle_left, middle_center, middle_right,
+            #bottom_left, bottom_center, bottom_right]
+    print(grid)
+
+    x = 0;
+    y = 0;
+    z = 22.1; #default value
+    power = 69;
+
+    if cellNr == 1:
+        x = abs(grid[0][0] - grid[2][0]) / 6
+        y = abs(grid[0][1] - grid[6][1]) / 6
+    elif cellNr == 2:
+        x = 3 * (abs(grid[0][0] - grid[2][0])/6)
+        y = abs(grid[0][1] - grid[6][1]) / 6
+    elif cellNr == 3:
+        x = 5 * (abs(grid[0][0] - grid[2][0])/6)
+        y = abs(grid[0][1] - grid[6][1]) / 6
+    elif cellNr == 4:
+        x = abs(grid[3][0] - grid[5][0]) / 6
+        y = 3 * (abs(grid[0][1] - grid[6][1])/6)
+    elif cellNr == 5:
+        x = 3 * (abs(grid[3][0] - grid[5][0])/6)
+        y = 3 * (abs(grid[0][1] - grid[6][1]) / 6)
+    elif cellNr == 6:
+        x = 5 * (abs(grid[3][0] - grid[5][0])/6)
+        y = 3 * (abs(grid[0][1] - grid[6][1]) / 6)
+    elif cellNr == 7:
+        x = abs((grid[6][0] - grid[8][0]) / 6)
+        y = 5 * (abs(grid[0][1] - grid[6][1])/6)
+    elif cellNr == 8:
+        x = 3 * (abs(grid[6][0] - grid[8][0])/6)
+        y = 5 * (abs(grid[0][1] - grid[6][1]) / 6)
+    elif cellNr == 9:
+        x = 5 * (abs(grid[6][0] - grid[8][0])/6)
+        y = 5 * (abs(grid[0][1] - grid[6][1]) / 6)
+
+    middleCoord = (grid[0][0] + x, grid[0][1] + y, z, power)
+    return middleCoord
+
+def getCoordsToSketchCross(middleCoord):
+    print(middleCoord)
+    height_dist = 2 #TODO test with value is best
+    width_dist = 2 #TODO test with value is best
+
+    x = middleCoord[0]
+    y = middleCoord[1]
+    z = middleCoord[2]
+    power = middleCoord[3]
+
+    coords = []
+    coord0 = (x - width_dist, y + height_dist, z, power) # top left coord of cross
+    coord1 = middleCoord
+    coord2 = (x + width_dist, y - height_dist, z, power) # bottom right coord of cross
+    coord3 = (x + width_dist, y - height_dist, z + 3, power) # position in the air before sketching second line
+    coord4 = (x + width_dist, y + height_dist, z, power) # top right coord of cross
+    coord5 = middleCoord
+    coord6 = (x - width_dist, y - height_dist, z, power) # bottom left coord of cross
+
+    coords.append(coord0);
+    coords.append(coord1);
+    coords.append(coord2);
+    coords.append(coord3);
+    coords.append(coord4);
+    coords.append(coord5);
+    coords.append(coord6);
+
+    print(coords)
+
+    return coords;
 
 def draw_SYMBOL(baseimage, symbol, placement):
     x, y, w, h = placement
@@ -263,6 +335,14 @@ def play(vcap):
 
 
 def main():
+    # TEST:
+    #g = [(-350, 323, 350, 27), (0, 323, 350, 27), (350, 323, 350, 27), (-350, 350, 350, 27), (0, 350, 350, 27),
+         #(350, 350, 350, 27), (-350, 377, 350, 27), (0, 377, 350, 27), (350, 377, 350, 27)]
+    #middleCoord = getMiddleCoord(g, 2);
+    #crossCoords = getCoordsToSketchCross(middleCoord)
+    # sketch cross using the robotic arm
+
+
     """Check if everything's okay and start game"""
     # Load model
     global model
