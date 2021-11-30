@@ -8,16 +8,15 @@ l4 = 12.5
 output_list = []
 
 
-def getcoords(px, py, pz):
+def getcoords(px, py, pz, phi):
     # px and py are the desired points of the end-effector
 
-    phi = 90
+    px = px / 30.5
+    py = py / 42.5
+
     phi = deg2rad(phi)
 
-    if(px == 0):
-        theta_1 = math.atan(0)
-    else:
-        theta_1 = math.atan(py / px)
+    theta_1 = math.atan2(py, px)
 
     A = px - l4 * math.cos(theta_1) * math.cos(phi)
     B = py - l4 * math.sin(theta_1) * math.cos(phi)
@@ -41,19 +40,16 @@ def getcoords(px, py, pz):
 
     phi = rad2deg(phi)
     theta_1 = rad2deg(theta_1)
+    print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
-    theta_1 = int(theta_1)
     theta_2 = rad2deg(theta_2)
     theta_2 = min(max(-45, theta_2), 45)
-    theta_2 = int(theta_2)
     theta_2 = theta_2 * -1
     theta_3 = rad2deg(theta_3)
     theta_3 = min(max(-45, theta_3), 45)
-    theta_3 = int(theta_3)
     theta_4 = phi - theta_2 - theta_3
-    theta_4 = theta_4 - (21)
+    theta_4 = theta_4
     theta_4 = min(max(-90, theta_4), 90)
-
 
     # For every theta, getting the moves in a list with at most 5 degrees at a time,
     # so that the first motor moves at most 5 degrees until it is at its desired position,

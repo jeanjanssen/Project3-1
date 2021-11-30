@@ -34,7 +34,7 @@ def sendData():
     #ser.write(commandString3.encode())
     #ser.write(commandString4.encode())
     #ser.write(commandString5.encode())
-    output = IK.getcoords(0, 0, 22.1)
+    output = IK.getcoords(30, 10, 22.1, 69)
     ser.write(output.encode())
     # for x in output:
     #     ser.write(x.encode())
