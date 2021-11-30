@@ -1,53 +1,79 @@
 import tkinter as tk
-from tkinter import HORIZONTAL
+from tkinter import HORIZONTAL, NW
 
 from PIL import Image, ImageTk
 
-r = tk.Tk()
-r.title('Tic Tac Toe vs. robot arm')
-r.configure(background='#85c1e9')
-r.geometry("750x500")
+turn = "Your turn"
 
-Title = tk.Text(r, height=1, width=450, font=("Arial", 40), bg='#85c1e9', pady=30, highlightbackground="#85c1e9")
+
+def start_game():
+    start_screen.destroy()
+    game_screen = tk.Tk()
+    game_screen.title('Tic Tac Toe vs. robot arm')
+    game_screen.configure(background='#a6c3e5')
+    game_screen.geometry("500x600")
+
+    title2 = tk.Text(game_screen, height=1, width=300, font=("Arial", 40), bg='#a6c3e5', pady=20,
+                     highlightbackground="#a6c3e5")
+    title2.tag_configure("center", justify="center")
+    title2.insert(1.0, turn)
+    title2.configure(state='disabled')
+    title2.tag_add("center", "1.0", "end")
+    title2.pack()
+
+    canvas = tk.Canvas(width=400, height=400, bg='#a6c3e5', highlightbackground='#a6c3e5')
+    canvas.place(x=50, y=175)
+    org_tb_image = Image.open("Tic Tac Toe Board.gif")
+    rtb_image = org_tb_image.resize((400, 400), Image.ANTIALIAS)
+    tb_image = ImageTk.PhotoImage(rtb_image)
+    canvas.create_image(0, 0, image=tb_image, anchor=NW)
+    tk.mainloop()
+
+
+start_screen = tk.Tk()
+start_screen.title('Tic Tac Toe vs. robot arm')
+start_screen.configure(background='#a6c3e5')
+start_screen.geometry("750x500")
+
+Title = tk.Text(start_screen, height=1, width=450, font=("Arial", 40), bg='#a6c3e5', pady=30,
+                highlightbackground="#a6c3e5")
 Title.tag_configure("center", justify="center")
 Title.insert(1.0, "Tic Tac Toe vs a robot arm")
 Title.configure(state='disabled')
 Title.tag_add("center", "1.0", "end")
 Title.pack()
 
-Text1 = tk.Text(r, height=1, width=100, font=("Arial", 24), bg='#85c1e9', pady=10, highlightbackground='#85c1e9')
+Text1 = tk.Text(start_screen, height=1, width=100, font=("Arial", 24), bg='#a6c3e5', pady=10,
+                highlightbackground='#a6c3e5')
 Text1.tag_configure("center", justify="center")
 Text1.insert(1.0, "First move for:")
 Text1.configure(state='disabled')
 Text1.tag_add("center", "1.0", "end")
 Text1.pack()
 
-tk.Radiobutton(r, text="Robot", justify="center", variable="v", value=1, pady=5, bg='#85c1e9', font=("Arial", 24,),
-               foreground='#85c1e9').pack()
+tk.Radiobutton(start_screen, text="Robot", justify="center", variable="v", value=1, pady=5, bg='#a6c3e5',
+               font=("Arial", 24,), foreground='#a6c3e5').pack()
 
-tk.Radiobutton(r, text="Player", justify="center", variable="v", value=2, pady=5, bg='#85c1e9', font=("Arial", 24),
-               fg="#000000").pack()
-
+tk.Radiobutton(start_screen, text="Player", justify="center", variable="v", value=2, pady=5, bg='#a6c3e5',
+               font=("Arial", 24), fg="#000000").pack()
 
 ORG_PG_Image = Image.open("Play_game_button.gif")
 RPG_Image = ORG_PG_Image.resize((200, 100), Image.ANTIALIAS)
 PG_Image = ImageTk.PhotoImage(RPG_Image)
-PG_button = tk.Button(r, image=PG_Image, width=200, height=100, bd=0, highlightbackground='#85c1e9')
+
+PG_button = tk.Button(start_screen, command=start_game, image=PG_Image, width=200, height=100, bd=0,
+                      highlightbackground='#a6c3e5')
 PG_button.pack(pady=10)
 
-Text2 = tk.Text(r, height=1, width=100, font=("Arial", 24), bg='#85c1e9', pady=15, highlightbackground='#85c1e9')
+Text2 = tk.Text(start_screen, height=1, width=100, font=("Arial", 24), bg='#a6c3e5',
+                pady=15, highlightbackground='#a6c3e5')
 Text2.tag_configure("center", justify="center")
 Text2.insert(1.0, "Difficulty level:")
 Text2.configure(state='disabled')
 Text2.tag_add("center", "1.0", "end")
 Text2.pack()
-Slider = tk.Scale(r, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#85c1e9').place(x=175, y=425)
-r.mainloop()
-
-
-
-
-
+Slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5').place(x=175, y=425)
+tk.mainloop()
 
 """
 The framework of the application using a state machine
@@ -107,17 +133,3 @@ def State_start(state):
 
 """
 
-
-"""
-    for x in range(0, theta1, 5):
-        output_list.append('S, 0, 5, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0')
-
-    for x in range(0, theta2, 5):
-        output_list.append('S, 0, 0, 0, 1, 5, 0, 2, 0, 0, 3, 0, 0')
-
-    for x in range(0, theta3, 5):
-        output_list.append('S, 0, 0, 0, 1, 0, 0, 2, 5, 0, 3, 0, 0')
-
-    for x in range(0, theta4, 5):
-        output_list.append('S, 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 5, 0')
-"""
