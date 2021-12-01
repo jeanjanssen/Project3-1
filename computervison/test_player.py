@@ -175,6 +175,26 @@ def draw_SYMBOL(baseimage, symbol, placement):
                  (0, 0, 0), 2)
     return baseimage
 
+def preprocesses(frame):
+    output = []
+    # Preprocesses for finding board
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                     cv2.THRESH_BINARY_INV, 11, 7)
+    cv2.imshow("preprosses input", blurry_thresh_gray_frame)
+    blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
+    paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
+    paper_cut = matrix_transformations.smart_cut(paper)
+    output.append(paper_cut)
+
+    # Thresholding to find grid
+    paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
+    paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 6)
+    paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
+    cv2.imshow("threshold", paper_thresh_cut)
+    grid = get_3X3_GRID(paper_thresh_cut)
+    output.append(grid)
+    return output
 
 def play(vcap):
     """Play tic tac toe game with computer that uses the alphabeta algorithm"""
@@ -197,7 +217,7 @@ def play(vcap):
             break
 
         # Preprocess input
-
+        # Preprocesses for finding board
         # frame = PreProccesing.Frame_PRE_proccsing(frame,500)
         # frame = matrix_transformations.smart_cut(frame)
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -221,7 +241,7 @@ def play(vcap):
             pass
 
         # use paper to find grid
-
+        # Thresholding to find grid
         paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
         # paper_thresh = cv2.threshold(  paper_gray, 170, 255, cv2.THRESH_BINARY_INV)
         paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11,
