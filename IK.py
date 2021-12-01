@@ -7,11 +7,8 @@ l3 = 12.1
 l4 = 12.5
 
 
-
 def getcoords(px, py, pz, phi):
     # px and py are the desired points of the end-effector
-    output_list = []
-
     px = px / 30.5
     py = py / 42.5
 
@@ -54,56 +51,72 @@ def getcoords(px, py, pz, phi):
     # For every theta, getting the moves in a list with at most 5 degrees at a time,
     # so that the first motor moves at most 5 degrees until it is at its desired position,
     # then the second motor does the same, etc...
-    t1 = 0
-    for x in range(0, abs(math.floor(theta_1 / 5))):
-        if theta_1 > 0:
-            output_list.append('A,0,0,0,1,0,0,2,0,0,3,{},0\n'.format(5 * (t1 + 1)))
-            t1 += 1
-        elif theta_1 < 0:
-            output_list.append('A,0,0,0,1,0,0,2,0,0,3,{},0\n'.format(-5 * t1))
-            t1 += 1
-    if theta_1 - 5 * t1 != 0:
-        output_list.append('A,0,0,0,1,0,0,2,0,0,3,{},0\n'.format(theta_1))
+    output_list = []
 
-    t2 = 0
-    for x in range(0, abs(math.floor(theta_2 / 5))):
-        if theta_2 > 0:
-            output_list.append('A,0,0,0,1,0,0,2,{},0,3,{},0\n'.format(5 * (t2 + 1), theta_1))
-            t2 += 1
-        elif theta_2 < 0:
-            output_list.append('A,0,0,0,1,0,0,2,{},0,3,{},0\n'.format(-5 * t2, theta_1))
-            t2 += 1
-    if theta_2 - 5 * t2 != 0:
-        output_list.append('A,0,0,0,1,0,0,2,{},0,3,{},0\n'.format(theta_2, theta_1))
-
-    t3 = 0
-    for x in range(0, abs(math.floor(theta_3 / 5))):
-        if theta_3 > 0:
-            output_list.append('A,0,0,0,1,{},0,2,{},0,3,{},0\n'.format(5 * (t3 + 1), theta_2, theta_1))
-            t3 += 1
-        elif theta_3 < 0:
-            output_list.append('A,0,0,0,1,{},0,2,{},0,3,{},0\n'.format(-5 * t3, theta_2, theta_1))
-            t3 += 1
-    if theta_3 - 5 * t3 != 0:
-        output_list.append('A,0,0,0,1,{},0,2,{},0,3,{},0\n'.format(theta_3, theta_2, theta_1))
-
+    # First, make the commandString for PEN1 (theta_4), i.e., the top motor
+    commandString = "A"
     t4 = 0
     for x in range(0, abs(math.floor(theta_4 / 5))):
         if theta_4 > 0:
-            output_list.append(
-                'A,0,{},0,1,{},0,2,{},0,3,{},0\n'.format(5 * (t4 + 1), theta_3, theta_2, theta_1))
+            commandString += ",0,{},1000".format(5 * (t4 + 1))
             t4 += 1
         elif theta_4 < 0:
-            output_list.append(
-                'A,0,{},0,1,{},0,2,{},0,3,{},0\n'.format(-5 * t4, theta_3, theta_2, theta_1))
+            commandString += ",0,{},1000".format(-5 * t4)
             t4 += 1
     if theta_4 - 5 * t4 != 0:
-        output_list.append(
-            'A,0,{},0,1,{},0,2,{},0,3,{},0\n'.format(theta_4, theta_3, theta_2, theta_1))
+        commandString += ",0,{:.2f},1000".format(theta_4)
+    commandString += "\n"
+    output_list.append(commandString)
 
-    output = 'A,0,{},0,1,{},0,2,{},0,3,{},0\n'.format(theta_4, theta_3, theta_2, theta_1)
+    # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top
+    commandString = "A"
+    t3 = 0
+    for x in range(0, abs(math.floor(theta_3 / 5))):
+        if theta_3 > 0:
+            commandString += ",1,{},1000".format(5 * (t3 + 1))
+            t3 += 1
+        elif theta_3 < 0:
+            commandString += ",1,{},1000".format(-5 * t3)
+            t3 += 1
+    if theta_3 - 5 * t3 != 0:
+        commandString += ",1,{:.2f},1000".format(theta_3)
+    commandString += "\n"
+    output_list.append(commandString)
 
+    # Make the commandString for PEN4 (theta_1), i.e., the bottom motor
+    commandString = "A"
+    t1 = 0
+    for x in range(0, abs(math.floor(theta_1 / 5))):
+        if theta_1 > 0:
+            commandString += ",3,{},1000".format(5 * (t1 + 1))
+            t1 += 1
+        elif theta_1 < 0:
+            commandString += ",3,{},1000".format(-5 * (t1 + 1))
+            t1 += 1
+    if theta_1 - 5 * t1 != 0:
+        commandString += ",3,{:.2f},1000".format(theta_1)
+    commandString += "\n"
+    output_list.append(commandString)
+
+    # Lastly, make the commandString for PEN3 (theta_2)
+    commandString = "A"
+    t2 = 0
+    for x in range(0, abs(math.floor(theta_2 / 5))):
+        if theta_2 > 0:
+            commandString += ",2,{},1000".format(5 * (t2 + 1))
+            t2 += 1
+        elif theta_2 < 0:
+            commandString += ",2,{},1000".format(-5 * t2)
+            t2 += 1
+    if theta_2 - 5 * t2 != 0:
+        commandString += ",2,{:.2f},1000".format(theta_2)
+    commandString += "\n"
+    output_list.append(commandString)
+
+    for commandString in output_list:
+        print(commandString, end="")
+
+    # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
-    for x in output_list:
-        print(x)
+
     return output_list
