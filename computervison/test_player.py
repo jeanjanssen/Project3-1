@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 import cv2
@@ -89,52 +90,56 @@ def get_3X3_GRID(threshold_img):
                  bottom_left, bottom_center, bottom_right]
         return Grids
 
-def getMiddleCoord(grid, cellNr):
-   #Grids = [top_left, top_center, top_right,
-            #middle_left, middle_center, middle_right,
-            #bottom_left, bottom_center, bottom_right]
-    print(grid)
 
-    x = 0;
-    y = 0;
-    z = 22.1; #default value
-    power = 69;
+def getMiddleCoord(grid, cellNr):
+    # Grids = [top_left, top_center, top_right,
+    # middle_left, middle_center, middle_right,
+    # bottom_left, bottom_center, bottom_right]
+
+    print(grid)
+    scaleGrid(grid)
+
+    x = 0
+    y = 0
+    z = 22.1  # default value
+    power = 69  # default value
 
     if cellNr == 1:
         x = abs(grid[0][0] - grid[2][0]) / 6
         y = abs(grid[0][1] - grid[6][1]) / 6
     elif cellNr == 2:
-        x = 3 * (abs(grid[0][0] - grid[2][0])/6)
+        x = 3 * (abs(grid[0][0] - grid[2][0]) / 6)
         y = abs(grid[0][1] - grid[6][1]) / 6
     elif cellNr == 3:
-        x = 5 * (abs(grid[0][0] - grid[2][0])/6)
+        x = 5 * (abs(grid[0][0] - grid[2][0]) / 6)
         y = abs(grid[0][1] - grid[6][1]) / 6
     elif cellNr == 4:
         x = abs(grid[3][0] - grid[5][0]) / 6
-        y = 3 * (abs(grid[0][1] - grid[6][1])/6)
+        y = 3 * (abs(grid[0][1] - grid[6][1]) / 6)
     elif cellNr == 5:
-        x = 3 * (abs(grid[3][0] - grid[5][0])/6)
+        x = 3 * (abs(grid[3][0] - grid[5][0]) / 6)
         y = 3 * (abs(grid[0][1] - grid[6][1]) / 6)
     elif cellNr == 6:
-        x = 5 * (abs(grid[3][0] - grid[5][0])/6)
+        x = 5 * (abs(grid[3][0] - grid[5][0]) / 6)
         y = 3 * (abs(grid[0][1] - grid[6][1]) / 6)
     elif cellNr == 7:
         x = abs((grid[6][0] - grid[8][0]) / 6)
-        y = 5 * (abs(grid[0][1] - grid[6][1])/6)
+        y = 5 * (abs(grid[0][1] - grid[6][1]) / 6)
     elif cellNr == 8:
-        x = 3 * (abs(grid[6][0] - grid[8][0])/6)
+        x = 3 * (abs(grid[6][0] - grid[8][0]) / 6)
         y = 5 * (abs(grid[0][1] - grid[6][1]) / 6)
     elif cellNr == 9:
-        x = 5 * (abs(grid[6][0] - grid[8][0])/6)
+        x = 5 * (abs(grid[6][0] - grid[8][0]) / 6)
         y = 5 * (abs(grid[0][1] - grid[6][1]) / 6)
 
     middleCoord = (grid[0][0] + x, grid[0][1] + y, z, power)
     return middleCoord
 
+
 def getCoordsToSketchCross(middleCoord):
     print(middleCoord)
-    height_dist = 2 #TODO test with value is best
-    width_dist = 2 #TODO test with value is best
+    height_dist = 2  # TODO test which value is best
+    width_dist = 2  # TODO test which value is best
 
     x = middleCoord[0]
     y = middleCoord[1]
@@ -142,25 +147,58 @@ def getCoordsToSketchCross(middleCoord):
     power = middleCoord[3]
 
     coords = []
-    coord0 = (x - width_dist, y + height_dist, z, power) # top left coord of cross
+    coord0 = (x - width_dist, y + height_dist, z, power)  # top left coord of cross
     coord1 = middleCoord
-    coord2 = (x + width_dist, y - height_dist, z, power) # bottom right coord of cross
-    coord3 = (x + width_dist, y - height_dist, z + 3, power) # position in the air before sketching second line
-    coord4 = (x + width_dist, y + height_dist, z, power) # top right coord of cross
+    coord2 = (x + width_dist, y - height_dist, z, power)  # bottom right coord of cross
+    coord3 = (x + width_dist, y - height_dist, z + 3, power)  # position in the air before sketching second line
+    coord4 = (x + width_dist, y + height_dist, z, power)  # top right coord of cross
     coord5 = middleCoord
-    coord6 = (x - width_dist, y - height_dist, z, power) # bottom left coord of cross
+    coord6 = (x - width_dist, y - height_dist, z, power)  # bottom left coord of cross
 
-    coords.append(coord0);
-    coords.append(coord1);
-    coords.append(coord2);
-    coords.append(coord3);
-    coords.append(coord4);
-    coords.append(coord5);
-    coords.append(coord6);
+    coords.append(coord0)
+    coords.append(coord1)
+    coords.append(coord2)
+    coords.append(coord3)
+    coords.append(coord4)
+    coords.append(coord5)
+    coords.append(coord6)
 
     print(coords)
 
-    return coords;
+    return coords
+
+
+def getCoordsToSketchCircle(middleCoord):
+    ray = 2
+    nrOfDots = 20
+    angle = 360 / nrOfDots
+
+    coords = []
+
+    x = middleCoord[0]
+    y = middleCoord[1]
+    z = middleCoord[2]
+    power = middleCoord[3]
+
+    for i in range(nrOfDots):
+        currentAngle = 0 + (i * angle)
+        cos = round(math.cos(currentAngle), 2)
+        sin = round(math.cos(currentAngle), 2)
+        c = (x + cos * ray, y + sin * ray, z, power)
+        coords.append(c)
+
+    return coords
+
+
+def scaleGrid(grid):
+    boardX = (-20, 20)
+    boardY = (20, 30)
+
+    scaledGrid = grid
+    # TODO
+
+    return scaledGrid
+
 
 def draw_SYMBOL(baseimage, symbol, placement):
     x, y, w, h = placement
@@ -174,6 +212,7 @@ def draw_SYMBOL(baseimage, symbol, placement):
         cv2.line(baseimage, (x + 10, y + h - 7), (x + w - 10, y + 7),
                  (0, 0, 0), 2)
     return baseimage
+
 
 def preprocesses(frame):
     output = []
@@ -195,6 +234,7 @@ def preprocesses(frame):
     grid = get_3X3_GRID(paper_thresh_cut)
     output.append(grid)
     return output
+
 
 def play(vcap):
     """Play tic tac toe game with computer that uses the alphabeta algorithm"""
@@ -356,12 +396,14 @@ def play(vcap):
 
 def main():
     # TEST:
-    #g = [(-350, 323, 350, 27), (0, 323, 350, 27), (350, 323, 350, 27), (-350, 350, 350, 27), (0, 350, 350, 27),
-         #(350, 350, 350, 27), (-350, 377, 350, 27), (0, 377, 350, 27), (350, 377, 350, 27)]
-    #middleCoord = getMiddleCoord(g, 2);
-    #crossCoords = getCoordsToSketchCross(middleCoord)
+    g = [(-350, 323, 350, 27), (0, 323, 350, 27), (350, 323, 350, 27), (-350, 350, 350, 27), (0, 350, 350, 27),
+         (350, 350, 350, 27), (-350, 377, 350, 27), (0, 377, 350, 27), (350, 377, 350, 27)]
+    middleCoord = getMiddleCoord(g, 2)
+    crossCoords = getCoordsToSketchCross(middleCoord)
+    circleCoords = getCoordsToSketchCircle(middleCoord)
+    print('cross coordinates:', crossCoords)
+    print('circle coordinates:', circleCoords)
     # sketch cross using the robotic arm
-
 
     """Check if everything's okay and start game"""
     # Load model
