@@ -7,6 +7,7 @@ import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
 from computervision.alphabeta import Tic
+from computervision.pre_processes import motion_detection
 
 # turn = "Your turn"
 gamehistory = {}
@@ -67,7 +68,8 @@ def state_start(state, frame):
 
 
 def collisionprevention():
-    pass
+    while motion_detection.motiondection():
+        pass
 
 
 """
@@ -130,14 +132,14 @@ def start_game():
             print('[INFO] stopped video processing')
             break
 
-    # Run collision detection every instance of the loop
-    # collisiondetection()
-    # If collision is detected, run the collision prevention
-    # if motiondetection():
-    collisionprevention()
+    # Run motion detection every instance of the loop
+    # If any other object is detected, run the collision prevention
+    if motion_detection.motiondection():
+        collisionprevention()
 
     # Run the methods according to a state machine
     state_start("begin", frame)
+
     tk.mainloop()
 
 
