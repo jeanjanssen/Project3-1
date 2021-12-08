@@ -397,13 +397,13 @@ def play(vcap, difficulty):
 
 def main():
     # TEST:
-    g = [(-350, 323, 350, 27), (0, 323, 350, 27), (350, 323, 350, 27), (-350, 350, 350, 27), (0, 350, 350, 27),
-         (350, 350, 350, 27), (-350, 377, 350, 27), (0, 377, 350, 27), (350, 377, 350, 27)]
-    middleCoord = getMiddleCoord(g, 2)
-    crossCoords = getCoordsToSketchCross(middleCoord)
-    circleCoords = getCoordsToSketchCircle(middleCoord)
-    print('cross coordinates:', crossCoords)
-    print('circle coordinates:', circleCoords)
+    #g = [(-350, 323, 350, 27), (0, 323, 350, 27), (350, 323, 350, 27), (-350, 350, 350, 27), (0, 350, 350, 27),
+         #(350, 350, 350, 27), (-350, 377, 350, 27), (0, 377, 350, 27), (350, 377, 350, 27)]
+    #middleCoord = getMiddleCoord(g, 2)
+    #crossCoords = getCoordsToSketchCross(middleCoord)
+    #circleCoords = getCoordsToSketchCircle(middleCoord)
+    #print('cross coordinates:', crossCoords)
+    #print('circle coordinates:', circleCoords)
     # sketch cross using the robotic arm
 
     """Check if everything's okay and start game"""

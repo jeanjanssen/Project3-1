@@ -203,7 +203,7 @@ v = tkinter.StringVar()
 tk.Radiobutton(start_screen, text="Robot", fg="black", justify="center", variable=v, value=1, pady=5, bg='#a6c3e5',
                font=("Arial", 24,), foreground='#a6c3e5').pack()
 
-tk.Radiobutton(start_screen, text="Player", justify="center", variable=v, value=2, pady=5, bg='#a6c3e5',
+tk.Radiobutton(start_screen, text="Human", justify="center", variable=v, value=2, pady=5, bg='#a6c3e5',
                font=("Arial", 24), fg="#000000").pack()
 v.set(1)
 
