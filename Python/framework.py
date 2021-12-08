@@ -2,6 +2,8 @@ import os
 import tkinter
 import tkinter as tk
 from tkinter import HORIZONTAL, NW
+
+# import EDMO_Serial_Communication_Python_RingBuffer_Final
 import computervision.test_player
 import cv2
 from tensorflow.keras.models import load_model
@@ -9,6 +11,8 @@ from PIL import Image, ImageTk
 from computervision.alphabeta import Tic
 from computervision.pre_processes import motion_detection
 
+list_index = 0
+output_list = []
 # turn = "Your turn"
 gamehistory = {}
 
@@ -36,17 +40,22 @@ def state_start(state, frame):
             update_ui_turn("robot")
             return "make_move"
         if v == 2:
-            update_ui_turn()
+            update_ui_turn("player")
             return "wait_move"
     elif state == "make_move":
         # Calculate move
         # Get move positions
         # Compute Inverse Kinematics and output list
+        # Output list consist of: moving to drawing position, drawing X or O and moving back to start position
         return "moving"
     elif state == "moving":
-        # If iterated over output list, then state == "wait_move"
-        # Give the new coordinate to the Arduino
-        # Increment index variable
+        global list_index
+        if list_index > len(output_list):
+            list_index = 0;
+            return "wait_move"
+        command_string = output_list[list_index]
+        # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+        list_index += 1
         return "moving"
     elif state == "wait_move":
         # if game_finished():
@@ -65,11 +74,6 @@ def state_start(state, frame):
             # print("something wrong in corners list")
             pass
         return "wait_move"
-
-
-def collisionprevention():
-    while motion_detection.motiondection():
-        pass
 
 
 """
@@ -106,6 +110,7 @@ def start_game():
     tb_image = ImageTk.PhotoImage(rtb_image)
     canvas.create_image(0, 0, image=tb_image, anchor=NW)
 
+    tk.mainloop()
     # Initialize opponent (computer)
     gameboard = Tic()
     gamehistory = {}
@@ -113,12 +118,12 @@ def start_game():
 
     global model
     os.path
-    model = load_model('data/model2.h5')
+    # model = load_model('computervision/data/model2.h5')
 
     # initialize camera streaming
     vcap = cv2.VideoCapture(0)
     if not vcap.isOpened():
-        raise IOError('could not get feed from cam #{}'.format())
+        raise IOError('could not get feed from cam'.format())
     # Stream the camera while playing the game
     while state != "end":
         ret, frame = vcap.read()
@@ -132,13 +137,16 @@ def start_game():
             print('[INFO] stopped video processing')
             break
 
-    # Run motion detection every instance of the loop
-    # If any other object is detected, run the collision prevention
-    if motion_detection.motiondection():
-        collisionprevention()
+        # Run motion detection every instance of the loop
+        # If any other object is detected, run the collision prevention
+        """
+        if motion_detection.motiondection(frame):
+            while motion_detection.motiondection(frame):
+                pass
+        """
 
-    # Run the methods according to a state machine
-    state_start("begin", frame)
+        # Run the methods according to a state machine
+        # state = state_start("begin", frame)
 
     tk.mainloop()
 
@@ -168,7 +176,7 @@ Text1.tag_add("center", "1.0", "end")
 Text1.pack()
 # Actual Radio buttons
 v = tkinter.StringVar()
-tk.Radiobutton(start_screen, text="Robot", justify="center", variable=v, value=1, pady=5, bg='#a6c3e5',
+tk.Radiobutton(start_screen, text="Robot", fg="black", justify="center", variable=v, value=1, pady=5, bg='#a6c3e5',
                font=("Arial", 24,), foreground='#a6c3e5').pack()
 
 tk.Radiobutton(start_screen, text="Player", justify="center", variable=v, value=2, pady=5, bg='#a6c3e5',
