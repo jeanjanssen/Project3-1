@@ -1,6 +1,5 @@
 """Useful functions for matrix transformations"""
 
-
 import cv2
 import numpy as np
 
@@ -19,18 +18,18 @@ def FPT_HELPER_(points):
 
     rectangle = np.zeros((4, 2), dtype=np.float32)
     points_sum = points.sum(axis=1)
-    try :
+    try:
         rectangle[0] = points[np.argmin(points_sum)]
         rectangle[2] = points[np.argmax(points_sum)]
     except Exception:
         pass
 
     points_differance = np.diff(points, axis=1)
-    try :
-     rectangle[1] = points[np.argmin(points_differance)]
-     rectangle[3] = points[np.argmax(points_differance)]
+    try:
+        rectangle[1] = points[np.argmin(points_differance)]
+        rectangle[3] = points[np.argmax(points_differance)]
     except Exception:
-     pass
+        pass
     return rectangle
 
 
@@ -68,7 +67,7 @@ def smart_resize(frame, new_size):
     ratio = height / width
     return cv2.resize(frame, (new_size, int(ratio * new_size)))
 
+
 def smart_cut(frame):
     cropped_image = frame[100:600, 200:900]
     return cropped_image
-

@@ -1,11 +1,9 @@
-
-
-
 import cv2
 import numpy as np
 
+MIN_CONTOUR_AREA = 20
 
-MIN_CONTOUR_AREA=20
+
 def Detect_Corners(frame):
     """ uses  harris corners to find corners of sheet of paper
 
@@ -23,10 +21,10 @@ def Detect_Corners(frame):
     return statistics
 
 
-
 def computeContourArea(cont):
-     Area = cv2.contourArea(cont)
-     return cont
+    Area = cv2.contourArea(cont)
+    return cont
+
 
 def return_contourdbox(frame):
     """
@@ -34,16 +32,16 @@ def return_contourdbox(frame):
     find contours, biggest object is the whole image, second biggest is the ROI
     """
 
-    try :
-     c,h = cv2.findContours(frame, 1, 2)
-     #area = cv2.contourArea(c) # find contours, biggest object is the whole image, second biggest is the ROI
+    try:
+        c, h = cv2.findContours(frame, 1, 2)
+        # area = cv2.contourArea(c) # find contours, biggest object is the whole image, second biggest is the ROI
 
-
-     contours_Sorted = sorted(c, key=lambda cntr: cv2.contourArea(cntr))
-     rect = cv2.boundingRect(contours_Sorted[-2])
-     #print(rect)
-     return rect
-    except : print("bbox failed ")
+        contours_Sorted = sorted(c, key=lambda cntr: cv2.contourArea(cntr))
+        rect = cv2.boundingRect(contours_Sorted[-2])
+        # print(rect)
+        return rect
+    except:
+        print("bbox failed ")
     pass
 
 
@@ -54,6 +52,3 @@ def Frame_PRE_proccsing(frame):
     frame = np.expand_dims(frame, axis=-1)
     frame = np.expand_dims(frame, axis=0)
     return frame.astype(np.float32) / 255
-
-
-

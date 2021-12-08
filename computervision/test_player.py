@@ -9,12 +9,12 @@ from tensorflow.keras.models import load_model
 from tensorflow import keras
 
 from Python import Minimax
-from pre_processes import matrix_transformations
-from pre_processes import PreProccesing
-from alphabeta import Tic, get_enemy, determine
+from computervision.pre_processes import matrix_transformations
+from computervision.pre_processes import PreProccesing
+from computervision.alphabeta import Tic, get_enemy
 
 """
-Detect the coords of the sheet, first point is center so hit ignore since we only want the corners.  
+Detect the coordinates of the sheet, first point is center so hit ignore since we only want the corners.  
 
 also computes birds eye view (if use)
 """

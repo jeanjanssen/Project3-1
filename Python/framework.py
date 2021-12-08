@@ -2,16 +2,15 @@ import os
 import tkinter
 import tkinter as tk
 from tkinter import HORIZONTAL, NW
-import computervison.test_player
+import computervision.test_player
 import cv2
 from tensorflow.keras.models import load_model
-
 from PIL import Image, ImageTk
-
-from computervison.alphabeta import Tic
+from computervision.alphabeta import Tic
 
 # turn = "Your turn"
 gamehistory = {}
+
 
 # def gameFinished():
 
@@ -27,6 +26,8 @@ moving: Making the calculated move and getting back to the original position
 wait_move: Wait for the player to make a move, checking the board the entire time
 end: End the state machine, making clear that the game has finished
 """
+
+
 def state_start(state, frame):
     if state == "begin":
         # Check who starts the game
@@ -49,7 +50,7 @@ def state_start(state, frame):
     elif state == "wait_move":
         # if game_finished():
         #   return "end"
-        paper_cut, grid = computervison.test_player.preprocesses(frame)[0]
+        paper_cut, grid = computervision.test_player.preprocesses(frame)[0]
 
         try:
             # Draw grid wait on user
@@ -58,7 +59,7 @@ def state_start(state, frame):
                 cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
-                    paper_cut = computervison.test_player.draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+                    paper_cut = computervision.test_player.draw_SYMBOL(paper_cut, shape, (x, y, w, h))
         except:
             # print("something wrong in corners list")
             pass
@@ -73,6 +74,8 @@ def collisionprevention():
 Initialize the second UI screen, showing the board.
 Then start up and maintain the camera, call the collision detection and the state machine
 """
+
+
 def start_game():
     # Create Second screen with grid
     start_screen.destroy()
