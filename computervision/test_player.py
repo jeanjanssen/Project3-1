@@ -397,32 +397,37 @@ def play(vcap, difficulty):
 
 def main():
     # TEST:
-    #g = [(-350, 323, 350, 27), (0, 323, 350, 27), (350, 323, 350, 27), (-350, 350, 350, 27), (0, 350, 350, 27),
-         #(350, 350, 350, 27), (-350, 377, 350, 27), (0, 377, 350, 27), (350, 377, 350, 27)]
-    #middleCoord = getMiddleCoord(g, 2)
-    #crossCoords = getCoordsToSketchCross(middleCoord)
-    #circleCoords = getCoordsToSketchCircle(middleCoord)
-    #print('cross coordinates:', crossCoords)
-    #print('circle coordinates:', circleCoords)
+    # TODO z should be 21.1, below is for testing purposes
+    phi = 69
+    g = [(-21.2, 40.50, 35, phi), (0, 40.50, 35, phi), (21.2, 40.50, 35, phi),
+         (-21.2, 25.25, 35, phi), (0, 25.25, 35, phi), (21.2, 25.25, 35, phi),
+         (-21.2, 10.00, 35, phi), (0, 10.00, 35, phi), (21.2, 10.00, 35, phi)]
+    middleCoord = getMiddleCoord(g, 2)
+    crossCoords = getCoordsToSketchCross(middleCoord)
+    # circleCoords = getCoordsToSketchCircle(middleCoord)
+    print('Cross coordinates:', crossCoords)
+    # print('circle coordinates:', circleCoords)
     # sketch cross using the robotic arm
 
     """Check if everything's okay and start game"""
-    # Load model
-    global model
-    os.path
-    # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('../data/model2.h5')
-    # model = keras.models.load_model('data/model.h5')
+    # # Load model
+    # global model
+    # os.path
+    # # assert os.path.exists(args.model), '{} does not exist'
+    # model = load_model('../data/model2.h5')
+    # # model = keras.models.load_model('data/model.h5')
+    #
+    # # Initialize webcam feed
+    # vcap = cv2.VideoCapture(0)
+    # if not vcap.isOpened():
+    #     raise IOError('could not get feed from cam #{}'.format())
+    #
+    # # Announce winner!
+    # winner = play(vcap)
+    # print('Winner is:', winner)
+    # sys.exit()
 
-    # Initialize webcam feed
-    vcap = cv2.VideoCapture(0)
-    if not vcap.isOpened():
-        raise IOError('could not get feed from cam #{}'.format())
-
-    # Announce winner!
-    winner = play(vcap)
-    print('Winner is:', winner)
-    sys.exit()
+    return crossCoords
 
 
 if __name__ == '__main__':

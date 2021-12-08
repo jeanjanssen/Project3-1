@@ -6,6 +6,11 @@ l2 = 13.4
 l3 = 12.1
 l4 = 12.5
 
+prevTheta1 = 0
+prevTheta2 = 0
+prevTheta3 = 0
+prevTheta4 = 0
+
 
 def getcoords(px, py, pz, phi):
     # px and py are the desired points of the end-effector
@@ -53,6 +58,89 @@ def getcoords(px, py, pz, phi):
     # then the second motor does the same, etc...
     output_list = []
 
+    #"""
+    # First, make the commandString for PEN1 (theta_4), i.e., the top motor,
+    # taking into account the previous angle
+    global prevTheta4
+    angleDiff = theta_4 - prevTheta4
+    if angleDiff != 0:
+        commandString = "A"
+        t4 = 0
+        for x in range(0, abs(math.floor(angleDiff / 5))):
+            if angleDiff > 0:
+                commandString += ",0,{:.0f},1000".format(prevTheta4 + 5 * (t4 + 1))
+                t4 += 1
+            elif angleDiff < 0:
+                commandString += ",0,{:.0f},1000".format(prevTheta4 - 5 * t4)
+                t4 += 1
+        if angleDiff - 5 * t4 != 0:
+            commandString += ",0,{:.2f},1000".format(theta_4)
+        commandString += "\n"
+        output_list.append(commandString)
+        prevTheta4 = theta_4    # Update prevTheta4
+
+
+    # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top,
+    # taking into account the previous angle
+    global prevTheta3
+    angleDiff = theta_3 - prevTheta3
+    if angleDiff != 0:
+        commandString = "A"
+        t3 = 0
+        for x in range(0, abs(math.floor(angleDiff / 5))):
+            if angleDiff > 0:
+                commandString += ",1,{:.0f},1000".format(prevTheta3 + 5 * (t3 + 1))
+                t3 += 1
+            elif angleDiff < 0:
+                commandString += ",1,{:.0f},1000".format(prevTheta3 - 5 * t3)
+                t3 += 1
+        if angleDiff - 5 * t3 != 0:
+            commandString += ",1,{:.2f},1000".format(theta_3)
+        commandString += "\n"
+        output_list.append(commandString)
+        prevTheta3 = theta_3    # Update prevTheta3
+
+    # Make the commandString for PEN4 (theta_1), i.e., the bottom motor,
+    # taking into account the previous angle
+    commandString = "A"
+    t1 = 0
+    global prevTheta1
+    angleDiff = theta_1 - prevTheta1
+    for x in range(0, abs(math.floor(angleDiff / 5))):
+        if angleDiff > 0:
+            commandString += ",3,{:.0f},1000".format(prevTheta1 + 5 * (t1 + 1))
+            t1 += 1
+        elif angleDiff < 0:
+            commandString += ",3,{:.0f},1000".format(prevTheta1 - 5 * t1)
+            t1 += 1
+    if angleDiff - 5 * t1 != 0:
+        commandString += ",3,{:.2f},1000".format(theta_1)
+    commandString += "\n"
+    output_list.append(commandString)
+    prevTheta1 = theta_1    # Update prevTheta1
+
+    # Lastly, make the commandString for PEN3 (theta_2),
+    # taking into account the previous angle
+    global prevTheta2
+    angleDiff = theta_2 - prevTheta2
+    if angleDiff != 0:
+        commandString = "A"
+        t2 = 0
+        for x in range(0, abs(math.floor(angleDiff / 5))):
+            if angleDiff > 0:
+                commandString += ",2,{:.0f},1000".format(prevTheta2 + 5 * (t2 + 1))
+                t2 += 1
+            elif angleDiff < 0:
+                commandString += ",2,{:.0f},1000".format(prevTheta2 - 5 * t2)
+                t2 += 1
+        if angleDiff - 5 * t2 != 0:
+            commandString += ",2,{:.2f},1000".format(theta_2)
+        commandString += "\n"
+        output_list.append(commandString)
+        prevTheta2 = theta_2    # Update prevTheta2
+    #"""
+
+    """
     # First, make the commandString for PEN1 (theta_4), i.e., the top motor
     commandString = "A"
     t4 = 0
@@ -112,6 +200,7 @@ def getcoords(px, py, pz, phi):
         commandString += ",2,{:.2f},1000".format(theta_2)
     commandString += "\n"
     output_list.append(commandString)
+    """
 
     for commandString in output_list:
         print(commandString, end="")
