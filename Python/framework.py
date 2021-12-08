@@ -5,7 +5,7 @@ from tkinter import HORIZONTAL, NW
 
 # import EDMO_Serial_Communication_Python_RingBuffer_Final
 from Python import Minimax
-import computervision.test_player
+from computervision.test_player import play, preprocesses, draw_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
@@ -63,7 +63,7 @@ def state_start(state, frame, gameboard):
     elif state == "wait_move":
         # if game_finished():
         #   return "end"
-        paper_cut, grid = computervision.test_player.preprocesses(frame)[0]
+        paper_cut, grid = preprocesses(frame)[0]
 
         try:
             # Draw grid wait on user
@@ -72,7 +72,7 @@ def state_start(state, frame, gameboard):
                 cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
-                    paper_cut = computervision.test_player.draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+                    paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
         except:
             # print("something wrong in corners list")
             pass
@@ -99,7 +99,8 @@ def start_game():
     vcap = cv2.VideoCapture(0)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam #{}'.format())
-    computervision.test_player.play(vcap, difficulty)
+    play(vcap, difficulty)
+
 
     """
     game_screen = tk.Tk()

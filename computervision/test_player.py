@@ -8,7 +8,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow import keras
 
-import Python.framework
+
 from Python import Minimax
 from computervision.pre_processes import matrix_transformations
 from computervision.pre_processes import PreProccesing
