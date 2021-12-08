@@ -1,11 +1,14 @@
+import time
+
 import serial
 import numpy as np
 from timeit import default_timer as timer
 
 ######## INIT serial communication variables ################################
 import IK
+import computervision.test_player as tp
 
-ser = serial.Serial('COM10', 57600)  # select com-port and the serial com baud rate
+ser = serial.Serial('COM3', 57600)  # select com-port and the serial com baud rate
 ser.flushInput()  # empty the serial buffer
 ser_input = []  # emtpy the serial input array
 current_time = 0
@@ -18,8 +21,8 @@ interval = 0.5  # serial read update time
 # commandString2 = '2,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
 # commandString3 = '3,2,10,0,2,0,1000,2,-10,5000\n'   # data string to send to arduino
 # commandString4 = '4,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
-commandString5 = 'S,1,0,0,2,0,2000\n'  # S,motor,angle,delay,motor,angle,delay
-commandString6 = 'A,0,-30,0,1,0,0,2,0,0,3,0,0\n'
+commandString5 = 'S,0,0,0,1,0,0,2,0,0,3,0,2000\n'  # S,motor,angle,delay,motor,angle,delay
+commandString6 = 'A,0,-30,0,1,0,0,2,0,0,3,0,2000\n'
 
 
 ############################# SEND DATA ##################################
@@ -33,10 +36,34 @@ def sendData():
     # ser.write(commandString3.encode())
     # ser.write(commandString4.encode())
     # ser.write(commandString5.encode())
-    output = IK.getcoords(30, 10, 22.1, 69)
     ser.write(commandString6.encode())
+
+    coords = tp.main()
+    for c in coords:
+        # x = c[0], y = c[1], z = c[2], phi = c[3]
+        output = IK.getcoords(c[1], c[0], c[2], c[3])
+
+        for x in output:
+            print("sending", x, end="")
+            ser.write(x.encode())
+        # time.sleep(10)
+
+    print()
+    # Formatting is IK.getcoords(y, x, z, phi)
+    output = IK.getcoords(30, 10, 40, 69)
     for x in output:
-        ser.write(x.encode())
+        print("sending", x, end="")
+        # ser.write(x.encode())
+
+    output2 = IK.getcoords(30, -20, 40, 69)
+    for x in output2:
+        print("sending", x, end="")
+        # ser.write(x.encode())
+
+    # ser.write(commandString5.encode())
+    # time.sleep(30)
+    # ser.flushInput()
+
     # ser.write(output.encode())
 
 
@@ -62,4 +89,4 @@ while True:
     # if interval is reached, check if there is a new serial input
     if current_time - prev_time >= interval:
         prev_time = current_time
-        recData()
+        # recData()
