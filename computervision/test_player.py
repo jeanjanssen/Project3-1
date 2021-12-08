@@ -8,6 +8,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow import keras
 
+import Python.framework
 from Python import Minimax
 from computervision.pre_processes import matrix_transformations
 from computervision.pre_processes import PreProccesing
@@ -236,7 +237,7 @@ def preprocesses(frame):
     return output
 
 
-def play(vcap):
+def play(vcap, difficulty):
     """Play tic tac toe game with computer that uses the alphabeta algorithm"""
     # Initialize opponent (computer)
     gameboard = Tic()
@@ -352,7 +353,7 @@ def play(vcap):
         # it = it +1
 
         player = get_enemy(player)
-        computer_move = Minimax.determine(gameboard.squares, player, 100)  # computer move is a number between 1 and 9
+        computer_move = Minimax.determine(gameboard.squares, player, difficulty)  # computer move is a number between 1 and 9
         print('computer_move', computer_move)
         # computer_move = CompTurn(gameboard.squares)
         # print(gameboard.squares)
@@ -410,7 +411,7 @@ def main():
     global model
     os.path
     # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('data/model2.h5')
+    model = load_model('../data/model2.h5')
     # model = keras.models.load_model('data/model.h5')
 
     # Initialize webcam feed

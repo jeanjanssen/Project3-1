@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import HORIZONTAL, NW
 
 # import EDMO_Serial_Communication_Python_RingBuffer_Final
+from Python import Minimax
 import computervision.test_player
 import cv2
 from tensorflow.keras.models import load_model
@@ -33,7 +34,7 @@ end: End the state machine, making clear that the game has finished
 """
 
 
-def state_start(state, frame):
+def state_start(state, frame, gameboard):
     if state == "begin":
         # Check who starts the game
         if v == 1:
@@ -51,7 +52,9 @@ def state_start(state, frame):
     elif state == "moving":
         global list_index
         if list_index > len(output_list):
-            list_index = 0;
+            if gameboard.complete():
+                return "end"
+            list_index = 0
             return "wait_move"
         command_string = output_list[list_index]
         # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
@@ -83,8 +86,22 @@ Then start up and maintain the camera, call the collision detection and the stat
 
 
 def start_game():
+    difficulty = slider.get()
+    print(slider.get())
     # Create Second screen with grid
     start_screen.destroy()
+
+    global model
+    os.path
+    model = load_model('../data/model2.h5')
+
+    # Initialize webcam feed
+    vcap = cv2.VideoCapture(0)
+    if not vcap.isOpened():
+        raise IOError('could not get feed from cam #{}'.format())
+    computervision.test_player.play(vcap, difficulty)
+
+    """
     game_screen = tk.Tk()
     game_screen.title('Tic Tac Toe vs. robot arm')
     game_screen.configure(background='#a6c3e5')
@@ -111,6 +128,9 @@ def start_game():
     canvas.create_image(0, 0, image=tb_image, anchor=NW)
 
     tk.mainloop()
+    """
+
+    """
     # Initialize opponent (computer)
     gameboard = Tic()
     gamehistory = {}
@@ -139,16 +159,20 @@ def start_game():
 
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
-        """
+
+    
         if motion_detection.motiondection(frame):
             while motion_detection.motiondection(frame):
                 pass
-        """
+        
+
+        if not key == 32:
+            cv2.imshow('original', frame)
+            continue
 
         # Run the methods according to a state machine
-        # state = state_start("begin", frame)
-
-    tk.mainloop()
+        # state = state_start("begin", frame, gameboard)
+    """
 
 
 # Open up starting window
@@ -200,9 +224,11 @@ Text2.insert(1.0, "Difficulty level:")
 Text2.configure(state='disabled')
 Text2.tag_add("center", "1.0", "end")
 Text2.pack()
-Slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5').place(x=175, y=425)
-
+slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5')
+slider.place(x=175, y=425)
+slider.set(100)
 tk.mainloop()
+
 
 """
 The framework of the application using a state machine
