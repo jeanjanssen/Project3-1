@@ -248,6 +248,26 @@ def human_turn(c_choice, h_choice):
     print(f'Human turn [{h_choice}]')
     render(board, c_choice, h_choice)
 
+    # TEST
+    # if depth == 9:
+    #     x = choice([0, 1, 2])
+    #     y = choice([0, 1, 2])
+    # else:
+    #     move = minimax(board, depth, HUMAN)
+    #     x, y = move[0], move[1]
+    #
+    # random_or_not = random.randint(0, 100)
+    # level = 40
+    # if random_or_not <= level:
+    #     set_move(x, y, HUMAN)
+    # else:
+    #     # play random move, that is valid and not the best move
+    #     possible_coords = empty_cells(board)
+    #     x_rand, y_rand = x, y
+    #     while x_rand == x and y_rand == y and len(possible_coords) > 1:
+    #         x_rand, y_rand = random.choice(possible_coords)[0], random.choice(possible_coords)[1]
+    #     set_move(x_rand, y_rand, HUMAN)
+
     while move < 1 or move > 9:
         try:
             # TODO Instead of numpad input, retrieve board's state with camera and return current board
@@ -271,11 +291,15 @@ def main():
     """
     Main function that calls all functions
     """
+    global board
     clean()
     h_choice = ''  # X or O
     c_choice = ''  # X or O
     first = ''  # if human is the first
     level = -1
+
+    # for test
+    # h_choice = 'X'
 
     # Human chooses X or O to play
     while h_choice != 'O' and h_choice != 'X':
@@ -294,6 +318,9 @@ def main():
     else:
         c_choice = 'X'
 
+    # for test
+    # level = 100
+
     # Choose level of difficulty
     while level > 100 or level < 0:
         try:
@@ -303,6 +330,9 @@ def main():
             exit()
         except (KeyError, ValueError):
             print('Bad choice')
+
+    # for test
+    # first = 'Y'
 
     # Human may starts first
     clean()
@@ -314,6 +344,13 @@ def main():
             exit()
         except (KeyError, ValueError):
             print('Bad choice')
+
+    # TEST
+    # count_Hwin = 0
+    # count_Rwin = 0
+    # count_draw = 0
+    # for i in range(20):
+    #     print('i:', i, ', current board:', board)
 
     # Main loop of this game
     while len(empty_cells(board)) > 0 and not game_over(board):
@@ -330,16 +367,28 @@ def main():
         print(f'Human turn [{h_choice}]')
         render(board, c_choice, h_choice)
         print('YOU WIN!')
+        # count_Hwin += 1
     elif wins(board, COMP):
         # clean()
         print(f'Computer turn [{c_choice}]')
         render(board, c_choice, h_choice)
         print('YOU LOSE!')
+        #count_Rwin += 1
     else:
         # clean()
         render(board, c_choice, h_choice)
         print('DRAW!')
+        # count_draw += 1
 
+    # board = [
+    #     [0, 0, 0],
+    #     [0, 0, 0],
+    #     [0, 0, 0],
+    # ]
+
+    # print('draw:', count_draw)
+    # print('human win:', count_Hwin)
+    # print('robot win:', count_Rwin)
     exit()
 
 
@@ -394,9 +443,10 @@ def determine(currentBoard, currentPlayer, level):
     currentPlayer is 'O' or 'X'
     level is the level fo difficulty (from 0 to 100)
     """
-    #print(currentBoard)
+    # print('level: ', level)
+    # print(currentBoard)
     board = convertBoard(currentBoard)
-    #print(board)
+    # print(board)
 
     depth = len(empty_cells(board))
     if depth == 0 or game_over(board):
@@ -412,7 +462,7 @@ def determine(currentBoard, currentPlayer, level):
     random_or_not = random.randint(0, 100)
     if random_or_not <= level:
         computer_move = convertPosition(x, y)
-        #print('current computer move is ', computer_move)
+        # print('current computer move is ', computer_move)
         return computer_move
     else:
         # play random move, that is valid and not the best move
@@ -421,7 +471,7 @@ def determine(currentBoard, currentPlayer, level):
         while x_rand == x and y_rand == y and len(possible_coords) > 1:
             x_rand, y_rand = random.choice(possible_coords)[0], random.choice(possible_coords)[1]
         computer_move = convertPosition(x_rand, y_rand)
-        #print('current computer move is ', computer_move)
+        print('current computer move is ', computer_move)
         return computer_move
 
 
