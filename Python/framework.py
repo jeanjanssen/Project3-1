@@ -27,8 +27,8 @@ def update_ui_turn(turn):
 """
 State machine for waiting for and making moves
 begin: Start the state machine
-make_move: Calculate correct move, calculate the kinematics and send those to the arduino
-moving: Making the calculated move and getting back to the original position
+make_move: Calculate correct move, calculate the kinematics and compute an output list
+moving: Sending the next value of the output list to the arduino
 wait_move: Wait for the player to make a move, checking the board the entire time
 end: End the state machine, making clear that the game has finished
 """
@@ -91,6 +91,7 @@ def start_game():
     # Create Second screen with grid
     start_screen.destroy()
 
+    # Play the game with test_player
     global model
     os.path
     model = load_model('../data/model2.h5')
@@ -101,7 +102,7 @@ def start_game():
         raise IOError('could not get feed from cam #{}'.format())
     play(vcap, difficulty)
 
-
+    # Frameworking for 3rd phase
     """
     game_screen = tk.Tk()
     game_screen.title('Tic Tac Toe vs. robot arm')
