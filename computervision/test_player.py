@@ -17,10 +17,9 @@ from computervision.alphabeta import Tic, get_enemy
 """
 Detect the coordinates of the sheet, first point is center so hit ignore since we only want the corners.  
 
-also computes birds eye view (if use)
 """
 
-MIN_GRID_SIZE = 8000
+MIN_GRID_SIZE = 500
 
 
 def detect_Corners_paper(frame, thresh, add_margin=True):
@@ -380,14 +379,16 @@ def play(vcap, difficulty):
         cv2.imshow('bird view', paper_cut)
         message = True
 
-    # Show winner
+  
+        # Show winner
     winner = gameboard.winner()
     height = paper.shape[0]
-    text = 'Winner is {}'.format(str(winner))
-    cv2.putText(paper, text, (10, height - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-    cv2.imshow('bird view', paper)
+    text = 'Winner is {}!!'.format(str(winner))
+    cv2.putText(frame, text, (350, height - 500),
+                cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 4)
+    cv2.imshow('finished', frame)
     cv2.waitKey(0) & 0xFF
+
 
     # Close windows
     vcap.release()
