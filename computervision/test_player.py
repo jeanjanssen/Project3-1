@@ -403,9 +403,9 @@ def main():
     # TEST:
     # TODO z should be 21.1, below is for testing purposes
     phi = 69
-    g = [(-21.2, 40.50, 35, phi), (0, 40.50, 35, phi), (21.2, 40.50, 35, phi),
-         (-21.2, 25.25, 35, phi), (0, 25.25, 35, phi), (21.2, 25.25, 35, phi),
-         (-21.2, 10.00, 35, phi), (0, 10.00, 35, phi), (21.2, 10.00, 35, phi)]
+    g = [(-21.2, 40.50, 21.1, phi), (0, 40.50, 21.1, phi), (21.2, 40.50, 21.1, phi),
+         (-21.2, 25.25, 21.1, phi), (0, 25.25, 21.1, phi), (21.2, 25.25, 21.1, phi),
+         (-21.2, 10.00, 21.1, phi), (0, 10.00, 21.1, phi), (21.2, 10.00, 21.1, phi)]
     middleCoord = getMiddleCoord(g, 2)
     crossCoords = getCoordsToSketchCross(middleCoord)
     # circleCoords = getCoordsToSketchCircle(middleCoord)
