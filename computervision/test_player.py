@@ -200,17 +200,20 @@ def scaleGrid(grid):
     return scaledGrid
 
 
+
+
 def draw_SYMBOL(baseimage, symbol, placement):
+
     x, y, w, h = placement
     if symbol == 'O':
         centroid = (x + int(w / 2), y + int(h / 2))
-        cv2.circle(baseimage, centroid, 10, (0, 0, 0), 2)
+        cv2.circle(baseimage, centroid, 20, (0, 0, 0), 6)
     elif symbol == 'X':
         # Draws the 'X' shape
         cv2.line(baseimage, (x + 10, y + 7), (x + w - 10, y + h - 7),
-                 (0, 0, 0), 2)
+                 (0, 0, 0), 6)
         cv2.line(baseimage, (x + 10, y + h - 7), (x + w - 10, y + 7),
-                 (0, 0, 0), 2)
+                 (0, 0, 0), 6)
     return baseimage
 
 
@@ -295,7 +298,7 @@ def play(vcap, difficulty):
             for i, (x, y, w, h) in enumerate(grid):
 
                 # cv2.rectangle(paper, (x, y), (x + w, y + h), (0, 0, 0), 2)
-                cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
+                cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 4)
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
