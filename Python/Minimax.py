@@ -13,6 +13,8 @@ This software is available under GPL license.
 Author: Clederson Cruz
 Year: 2017
 License: GNU GENERAL PUBLIC LICENSE (GPL)
+
+Edited by: Adele Imparato
 """
 
 HUMAN = -1
