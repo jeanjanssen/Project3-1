@@ -12,6 +12,8 @@ import os
 import cv2
 import numpy as np
 import scipy
+import time
+from contextlib import redirect_stdout
 
 
 
@@ -28,15 +30,20 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 # Replicate results
 np.random.seed(42)
 
+
  # directory paths so training set (data)
 
  # depends on paths in your system
-ROOT_DIRECTORY = '../data/images' # root directory path
+
+time = time.asctime()
+ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test directory
 input_shape = (32, 32, 1)
 batch_size = 32
-epochs = 250
+epochs = 100
+
+patience = 25 # early stopping
 
 # Build and compile model
 training_model = Sequential()
@@ -53,12 +60,13 @@ training_model.add(Dense(64))
 training_model.add(Activation('relu'))
 training_model.add(Dropout(0.4))
 
+Dense_TWO= False
 #training_model.add(Dense(32))
 #training_model.add(Activation('relu'))
 #training_model.add(Dropout(0.3))
 
 training_model.add(Dense(3, activation='softmax'))
-training_model.summary()
+k = training_model.summary()
 
 training_model.compile(loss='categorical_crossentropy',
                        optimizer='rmsprop',
@@ -106,6 +114,9 @@ print('instances for training =', len(X_set_train))
 print('instances for evaluation =',len(X_set_test))
 #X_set_train = np.repeat(X_set_train,3)
 
+#steps_per_epoch = len(X_set_train)//batch_size
+steps_per_epoch = 12
+
 ## super small data set to lets create more :)
 
 train_datagenarator = ImageDataGenerator(
@@ -127,14 +138,14 @@ val_set_generator = train_datagenarator.flow(
 
 # Train and evaluate
 callbacks = [
-    EarlyStopping(patience=25, verbose=1, restore_best_weights=True)]
+    EarlyStopping(patience=patience, verbose=1, restore_best_weights=True)]
 
 print('Training model...')
 # history
 hist = training_model.fit(
     train_set_generator,
     #steps_per_epoch = len(X_set_train)//batch_size,
-    steps_per_epoch=12,
+    steps_per_epoch=steps_per_epoch,
     epochs=epochs,
     validation_data=val_set_generator,
     validation_steps = len(X_set_test)//batch_size,
@@ -146,9 +157,34 @@ test_datagen = ImageDataGenerator(rescale=1 / 255)
 X_set_test, y_set_test = next(test_datagen.flow(X_set_test, y_set_test, batch_size=len(X_set_test)))
 
 loss, accuracy = training_model.evaluate(X_set_test, y_set_test, batch_size=batch_size)
+
 print('Crossentropy loss:',loss)
 print('Accuracy:' , accuracy)
+
+
+
+f = open("output.txt", "a")
+print("-----------------------------------------------------------------------------------------------",file=f)
+print('Dense second', Dense_TWO, file= f)
+print("time of training local:", time, file= f)
+print('instances for training =', len(X_set_train), file = f)
+print('instances for evaluation =',len(X_set_test),file= f)
+print("Steps per epoch:",steps_per_epoch,file=f )
+print("Batch size :", batch_size,file = f)
+print("Epochs:", epochs,file = f )
+print("Early Stopping patience:", patience, file= f )
+print("Crossentropy loss:", loss, file=f)
+print("Accuracy:",accuracy , file=f)
+
+
+print("-----------------------------------------------------------------------------------------------",file=f)
+f.close()
+with open('modelsummary.txt', 'w') as f:
+    with redirect_stdout(f):
+        training_model.summary()
+
 
 # Save model
 #training_model.save('../data/model3.h5')
 # print('Saved model to disk')
+
