@@ -106,3 +106,15 @@ Early Stopping patience: 25
 Crossentropy loss: 0.16213281452655792
 Accuracy: 0.9500000476837158
 -----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Dense second False
+time of training local: Sun Dec 26 16:32:19 2021
+instances for training = 480
+instances for evaluation = 120
+Steps per epoch: 12
+Batch size : 32
+Epochs: 100
+Early Stopping patience: 25
+Crossentropy loss: 0.5152820944786072
+Accuracy: 0.7750000357627869
+-----------------------------------------------------------------------------------------------

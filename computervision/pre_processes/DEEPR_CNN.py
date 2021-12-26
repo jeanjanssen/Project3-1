@@ -5,7 +5,7 @@ import os
 import cv2
 from matplotlib import pyplot as plt
 from sklearn.model_selection import KFold
-
+from contextlib import redirect_stdout
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D
@@ -140,6 +140,10 @@ def run_test():
     model = model_builder()
     model.fit(train_x, train_y, epochs=10, batch_size=32, verbose=0)
     #model.save('test_deeper_model.h5')
+    with open('deepermodelsummary.txt', 'w') as f:
+      with  redirect_stdout(f):
+        model.summary()
+
 
 
 run_test()
