@@ -1,5 +1,5 @@
 """
-Alphabeta algorithm. All credit goes to cwoebker and his Python implementation
+Alphabeta algorithm. All credit goes to cwoebker and his GameAI implementation
 of the algorithm. Source code is in https://cbwoebker.com/posts/tic-tac-toe.
 """
 
