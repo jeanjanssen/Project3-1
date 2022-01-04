@@ -139,7 +139,7 @@ def run_test():
     performance(scores)
     model = model_builder()
     model.fit(train_x, train_y, epochs=10, batch_size=32, verbose=0)
-    #model.save('test_deeper_model.h5')
+    model.save('test_deeper_model.h5')
     with open('deepermodelsummary.txt', 'w') as f:
       with  redirect_stdout(f):
         model.summary()

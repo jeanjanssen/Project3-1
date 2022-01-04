@@ -12,7 +12,7 @@ from tensorflow import keras
 from GameAI import TTT_Minimax
 from computervision.pre_processes import matrix_transformations
 from computervision.pre_processes import PreProccesing
-from computervision.alphabeta import Tic, get_enemy
+from computervision.gameboard import Tic, get_enemy
 
 """
 Detect the coordinates of the sheet, first point is center so hit ignore since we only want the corners.  
@@ -79,7 +79,7 @@ def get_3X3_GRID(threshold_img):
 
     # Grid's coordinates
     # print(height,"height")
-    # print(width,"widht")
+    # print(width,"width")
     # print(top_left,"TL")
     # print((bottom_left,'BL'))
     # width_rectangle = (top_right-top_left)
