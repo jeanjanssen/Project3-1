@@ -33,29 +33,25 @@ def sendData():
     # ser.write(commandString3.encode())
     # ser.write(commandString4.encode())
     # ser.write(commandString5.encode())
-    ser.write(commandString6.encode())
+    # ser.write(commandString6.encode())
 
-    coords = tp.main()
-    for c in coords:
-        # x = c[0], y = c[1], z = c[2], phi = c[3]
-        output = IK.getcoords(c[1], c[0], c[2], c[3])
+    # Code to hopefully draw an X
+    # coords = tp.main()
+    # for c in coords:
+    #     # x = c[0], y = c[1], z = c[2], phi = c[3]
+    #     output = IK.getcoords(c[1], c[0], c[2], c[3])
+    #
+    #     for x in output:
+    #         print("sending", x, end="")
+    #         ser.write(x.encode())
+    #     # time.sleep(10)
 
-        for x in output:
-            print("sending", x, end="")
-            ser.write(x.encode())
-        # time.sleep(10)
-
-    print()
+    # print()
     # Formatting is IK.getcoords(y, x, z, phi)
-    output = IK.getcoords(30, 10, 40, 69)
+    output = IK.getcoords(10, 10, 22.1, 69)
     for x in output:
         print("sending", x, end="")
-        # ser.write(x.encode())
-
-    output2 = IK.getcoords(30, -20, 40, 69)
-    for x in output2:
-        print("sending", x, end="")
-        # ser.write(x.encode())
+        ser.write(x.encode())
 
     # ser.write(commandString5.encode())
     # time.sleep(30)
