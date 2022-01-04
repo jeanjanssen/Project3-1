@@ -6,10 +6,18 @@ l2 = 13.4
 l3 = 12.1
 l4 = 12.5
 
-prevTheta1 = 0
-prevTheta2 = 0
-prevTheta3 = 0
-prevTheta4 = 0
+prevTheta1 = 0.0
+prevTheta2 = 0.0
+prevTheta3 = 0.0
+prevTheta4 = 0.0
+
+
+def getAngles():
+    """
+    Returns
+        prevTheta1 (angle PEN4), prevTheta2 (angle PEN3), prevTheta3 (angle PEN2), prevTheta4 (angle PEN1)
+    """
+    return prevTheta1, prevTheta2, prevTheta3, prevTheta4
 
 
 def getcoords(px, py, pz, phi):
@@ -26,6 +34,10 @@ def getcoords(px, py, pz, phi):
     C = pz - l1 - l4 * math.sin(phi)
 
     theta_3 = math.acos((A ** 2 + B ** 2 + C ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
+    # Take into account boundaries
+    theta_3 = rad2deg(theta_3)
+    theta_3 = min(max(10, theta_3), 100)
+    theta_3 = deg2rad(theta_3)
 
     a = l3 * math.sin(theta_3)
     b = l2 * l3 * math.cos(theta_3)
@@ -46,12 +58,17 @@ def getcoords(px, py, pz, phi):
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
     theta_2 = rad2deg(theta_2)
-    theta_2 = min(max(-45, theta_2), 45)
+    theta_2 = min(max(-20, theta_2), 70)
     theta_2 = theta_2 * -1
     theta_3 = rad2deg(theta_3)
-    theta_3 = min(max(-45, theta_3), 45)
+    theta_3 = min(max(10, theta_3), 100)
     theta_4 = phi - theta_2 - theta_3
     theta_4 = min(max(-90, theta_4), 90)
+
+    # Take into account offset
+    theta_2 -= 25
+    theta_3 -= 55
+
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
@@ -150,5 +167,5 @@ def make_list(theta_1, theta_2, theta_3, theta_4)
 
 def move_kinematics(player)
     if player = 'X'
-    
+
     elif player = 'O'
