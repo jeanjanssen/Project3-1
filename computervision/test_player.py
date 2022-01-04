@@ -9,7 +9,7 @@ from tensorflow.keras.models import load_model
 from tensorflow import keras
 
 
-from Python import Minimax
+from GameAI import TTT_Minimax
 from computervision.pre_processes import matrix_transformations
 from computervision.pre_processes import PreProccesing
 from computervision.alphabeta import Tic, get_enemy
@@ -355,7 +355,7 @@ def play(vcap, difficulty):
         # it = it +1
 
         player = get_enemy(player)
-        computer_move = Minimax.determine(gameboard.squares, player, difficulty)  # computer move is a number between 1 and 9
+        computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)  # computer move is a number between 1 and 9
         print('computer_move', computer_move)
         # computer_move = CompTurn(gameboard.squares)
         # print(gameboard.squares)

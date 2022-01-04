@@ -4,8 +4,10 @@ import tkinter as tk
 from tkinter import HORIZONTAL, NW
 
 # import EDMO_Serial_Communication_Python_RingBuffer_Final
+
 import IK
 from Python import Minimax
+from GameAI import TTT_Minimax
 from computervision.test_player import play, preprocesses, draw_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model

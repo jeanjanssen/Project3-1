@@ -1,7 +1,4 @@
-import time
-
 import serial
-import numpy as np
 from timeit import default_timer as timer
 
 ######## INIT serial communication variables ################################
