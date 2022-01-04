@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import HORIZONTAL, NW
 
 # import EDMO_Serial_Communication_Python_RingBuffer_Final
+import IK
 from Python import Minimax
 from computervision.test_player import play, preprocesses, draw_SYMBOL
 import cv2
@@ -16,6 +17,7 @@ list_index = 0
 output_list = []
 # turn = "Your turn"
 gamehistory = {}
+player = 'X'
 
 
 # def gameFinished():
@@ -30,6 +32,8 @@ begin: Start the state machine
 make_move: Calculate correct move, calculate the kinematics and compute an output list
 moving: Sending the next value of the output list to the arduino
 wait_move: Wait for the player to make a move, checking the board the entire time
+wait_move_first: The same as wait_move, where the symbol for the player and computer is yet to be decided by the 
+                 players move.
 end: End the state machine, making clear that the game has finished
 """
 
@@ -39,30 +43,43 @@ def state_start(state, frame, gameboard):
         # Check who starts the game
         if v == 1:
             update_ui_turn("robot")
+            global player
+            player = 'X'
             return "make_move"
         if v == 2:
             update_ui_turn("player")
-            return "wait_move"
+            return "wait_move_first"
     elif state == "make_move":
-        # Calculate move
-        # Get move positions
-        # Compute Inverse Kinematics and output list
-        # Output list consist of: moving to drawing position, drawing X or O and moving back to start position
+        # computer move is a number between 1 and 9
+        global player
+        global difficulty
+        computer_move = Minimax.determine(gameboard.squares, player, difficulty)
+        # Calculate the coordinates and get the Inverse kinematics
+        coords = calculate_coordinates(computer_move)
+        global output_list
+        # Create commands to move to the desired point
+        output_list.append(IK.getcoords(coords.get(1), coords.get(2), coords.get(3), coords.get(4)))
+        # Create commands to draw the X or O
+        output_list.append(IK.move_kinematics(player))
+        # Create commands to move back to the idle position
+        output_list.append(IK.makelist(0, 0, 0, 0))
         return "moving"
     elif state == "moving":
+        # Check whether the output_list has been iterated over
         global list_index
         if list_index > len(output_list):
             if gameboard.complete():
                 return "end"
             list_index = 0
             return "wait_move"
+        # If the output_list still has unread values, send the next one to the arduino
         command_string = output_list[list_index]
         # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
         list_index += 1
         return "moving"
     elif state == "wait_move":
-        # if game_finished():
-        #   return "end"
+        if gameboard.complete():
+            return "end"
         paper_cut, grid = preprocesses(frame)[0]
 
         try:
@@ -77,6 +94,21 @@ def state_start(state, frame, gameboard):
             # print("something wrong in corners list")
             pass
         return "wait_move"
+    elif state == "wait_move_first":
+        paper_cut, grid = preprocesses(frame)[0]
+
+        try:
+            # Draw grid wait on user
+            for i, (x, y, w, h) in enumerate(grid):
+
+                cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
+                if gamehistory.get(i) is not None:
+                    shape = gamehistory[i]['shape']
+                    paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+        except:
+            # print("something wrong in corners list")
+            pass
+        return "wait_move_first"
 
 
 """
@@ -86,7 +118,6 @@ Then start up and maintain the camera, call the collision detection and the stat
 
 
 def start_game():
-    difficulty = slider.get()
     print(slider.get())
     # Create Second screen with grid
     start_screen.destroy()
@@ -137,7 +168,7 @@ def start_game():
     gameboard = Tic()
     gamehistory = {}
     state = "begin"
-
+    list_index=0
     global model
     os.path
     # model = load_model('computervision/data/model2.h5')
@@ -173,7 +204,7 @@ def start_game():
             continue
 
         # Run the methods according to a state machine
-        # state = state_start("begin", frame, gameboard)
+        # state = state_start("begin", frame, gameboard, difficulty)
     """
 
 
@@ -229,6 +260,7 @@ Text2.pack()
 slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5')
 slider.place(x=175, y=425)
 slider.set(100)
+difficulty = slider.get()
 tk.mainloop()
 
 

@@ -53,12 +53,18 @@ def getcoords(px, py, pz, phi):
     theta_4 = phi - theta_2 - theta_3
     theta_4 = min(max(-90, theta_4), 90)
 
+    # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
+    # print(output)
+
+    return make_list(theta_1, theta_2, theta_3, theta_4)
+
+def make_list(theta_1, theta_2, theta_3, theta_4)
     # For every theta, getting the moves in a list with at most 5 degrees at a time,
     # so that the first motor moves at most 5 degrees until it is at its desired position,
     # then the second motor does the same, etc...
     output_list = []
 
-    #"""
+    # """
     # First, make the commandString for PEN1 (theta_4), i.e., the top motor,
     # taking into account the previous angle
     global prevTheta4
@@ -77,8 +83,7 @@ def getcoords(px, py, pz, phi):
             commandString += ",0,{:.2f},1000".format(theta_4)
         commandString += "\n"
         output_list.append(commandString)
-        prevTheta4 = theta_4    # Update prevTheta4
-
+        prevTheta4 = theta_4  # Update prevTheta4
 
     # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top,
     # taking into account the previous angle
@@ -98,7 +103,7 @@ def getcoords(px, py, pz, phi):
             commandString += ",1,{:.2f},1000".format(theta_3)
         commandString += "\n"
         output_list.append(commandString)
-        prevTheta3 = theta_3    # Update prevTheta3
+        prevTheta3 = theta_3  # Update prevTheta3
 
     # Make the commandString for PEN4 (theta_1), i.e., the bottom motor,
     # taking into account the previous angle
@@ -117,7 +122,7 @@ def getcoords(px, py, pz, phi):
         commandString += ",3,{:.2f},1000".format(theta_1)
     commandString += "\n"
     output_list.append(commandString)
-    prevTheta1 = theta_1    # Update prevTheta1
+    prevTheta1 = theta_1  # Update prevTheta1
 
     # Lastly, make the commandString for PEN3 (theta_2),
     # taking into account the previous angle
@@ -137,75 +142,13 @@ def getcoords(px, py, pz, phi):
             commandString += ",2,{:.2f},1000".format(theta_2)
         commandString += "\n"
         output_list.append(commandString)
-        prevTheta2 = theta_2    # Update prevTheta2
-    #"""
-
-    """
-    # First, make the commandString for PEN1 (theta_4), i.e., the top motor
-    commandString = "A"
-    t4 = 0
-    for x in range(0, abs(math.floor(theta_4 / 5))):
-        if theta_4 > 0:
-            commandString += ",0,{},1000".format(5 * (t4 + 1))
-            t4 += 1
-        elif theta_4 < 0:
-            commandString += ",0,{},1000".format(-5 * t4)
-            t4 += 1
-    if theta_4 - 5 * t4 != 0:
-        commandString += ",0,{:.2f},1000".format(theta_4)
-    commandString += "\n"
-    output_list.append(commandString)
-
-    # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top
-    commandString = "A"
-    t3 = 0
-    for x in range(0, abs(math.floor(theta_3 / 5))):
-        if theta_3 > 0:
-            commandString += ",1,{},1000".format(5 * (t3 + 1))
-            t3 += 1
-        elif theta_3 < 0:
-            commandString += ",1,{},1000".format(-5 * t3)
-            t3 += 1
-    if theta_3 - 5 * t3 != 0:
-        commandString += ",1,{:.2f},1000".format(theta_3)
-    commandString += "\n"
-    output_list.append(commandString)
-
-    # Make the commandString for PEN4 (theta_1), i.e., the bottom motor
-    commandString = "A"
-    t1 = 0
-    for x in range(0, abs(math.floor(theta_1 / 5))):
-        if theta_1 > 0:
-            commandString += ",3,{},1000".format(5 * (t1 + 1))
-            t1 += 1
-        elif theta_1 < 0:
-            commandString += ",3,{},1000".format(-5 * (t1 + 1))
-            t1 += 1
-    if theta_1 - 5 * t1 != 0:
-        commandString += ",3,{:.2f},1000".format(theta_1)
-    commandString += "\n"
-    output_list.append(commandString)
-
-    # Lastly, make the commandString for PEN3 (theta_2)
-    commandString = "A"
-    t2 = 0
-    for x in range(0, abs(math.floor(theta_2 / 5))):
-        if theta_2 > 0:
-            commandString += ",2,{},1000".format(5 * (t2 + 1))
-            t2 += 1
-        elif theta_2 < 0:
-            commandString += ",2,{},1000".format(-5 * t2)
-            t2 += 1
-    if theta_2 - 5 * t2 != 0:
-        commandString += ",2,{:.2f},1000".format(theta_2)
-    commandString += "\n"
-    output_list.append(commandString)
-    """
-
-    for commandString in output_list:
-        print(commandString, end="")
-
-    # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
-    # print(output)
+        prevTheta2 = theta_2  # Update prevTheta2
 
     return output_list
+
+
+
+def move_kinematics(player)
+    if player = 'X'
+    
+    elif player = 'O'
