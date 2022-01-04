@@ -11,7 +11,7 @@ from computervision.test_player import play, preprocesses, draw_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
-from computervision.alphabeta import Tic
+from computervision.gameboard import Tic
 from computervision.pre_processes import motion_detection
 
 list_index = 0

@@ -89,6 +89,7 @@ def motiondection(video):
             if cv2.contourArea(contour_1) <(1000/2) :
 
                 continue
+
             else :
                 detected= False
             (x, y, w, h) = cv2.boundingRect(contour_1)
