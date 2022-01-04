@@ -5,8 +5,7 @@ from tkinter import HORIZONTAL, NW
 
 # import EDMO_Serial_Communication_Python_RingBuffer_Final
 
-import IK
-from Python import Minimax
+from Kinematics import IK
 from GameAI import TTT_Minimax
 from computervision.test_player import play, preprocesses, draw_SYMBOL
 import cv2
@@ -55,7 +54,7 @@ def state_start(state, frame, gameboard):
         # computer move is a number between 1 and 9
         global player
         global difficulty
-        computer_move = Minimax.determine(gameboard.squares, player, difficulty)
+        computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
         # Calculate the coordinates and get the Inverse kinematics
         coords = calculate_coordinates(computer_move)
         global output_list
@@ -70,6 +69,7 @@ def state_start(state, frame, gameboard):
         # Check whether the output_list has been iterated over
         global list_index
         if list_index > len(output_list):
+
             if gameboard.complete():
                 return "end"
             list_index = 0
@@ -92,6 +92,7 @@ def state_start(state, frame, gameboard):
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+                    return "make_move"
         except:
             # print("something wrong in corners list")
             pass
@@ -107,6 +108,9 @@ def state_start(state, frame, gameboard):
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+
+                    return "make_move"
+
         except:
             # print("something wrong in corners list")
             pass
@@ -165,7 +169,7 @@ def start_game():
     tk.mainloop()
     """
 
-    """
+
     # Initialize opponent (computer)
     gameboard = Tic()
     gamehistory = {}
@@ -195,7 +199,6 @@ def start_game():
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
 
-    
         if motion_detection.motiondection(frame):
             while motion_detection.motiondection(frame):
                 pass
@@ -206,8 +209,8 @@ def start_game():
             continue
 
         # Run the methods according to a state machine
-        # state = state_start("begin", frame, gameboard, difficulty)
-    """
+        state = state_start("begin", frame, gameboard, difficulty)
+
 
 
 # Open up starting window
