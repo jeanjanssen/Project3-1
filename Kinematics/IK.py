@@ -62,6 +62,7 @@ def getcoords(px, py, pz):
 
     # Take into account offset
     theta_2 -= 25
+    theta_3 -= 55
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
