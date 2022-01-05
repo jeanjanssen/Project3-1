@@ -1,5 +1,6 @@
 import math as math
 from numpy import *
+import re
 
 l1 = 20.1
 l2 = 13.4
@@ -102,9 +103,11 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         commandString += "\n"
 
         # If the commandString is longer than 100 characters, cut it up into commandStrings with a max length of 100
+        print(commandString)
         while len(commandString) > MAX_LENGTH:
-            index = commandString[0:MAX_LENGTH].rindex(',')
-            index = index - (index % 3)  # index has to be a multiple of 3
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -131,8 +134,9 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
         # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
-            index = commandString[0:MAX_LENGTH].rindex(',')
-            index = index - (index % 3)  # index has to be a multiple of 3
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -159,8 +163,9 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
         # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
-            index = commandString[0:MAX_LENGTH].rindex(',')
-            index = index - (index % 3)  # index has to be a multiple of 3
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -187,8 +192,9 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
         # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
-            index = commandString[0:MAX_LENGTH].rindex(',')
-            index = index - (index % 3)  # index has to be a multiple of 3
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -202,6 +208,7 @@ def move_kinematics(player):
         print("X player\n")
     elif player == 'O':
         print("O Player\n")
+
 
 if __name__ == '__main__':
     a = "A,100,\n"  # \n is one character
