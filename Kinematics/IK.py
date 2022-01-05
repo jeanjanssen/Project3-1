@@ -1,5 +1,6 @@
 import math as math
 from numpy import *
+import re
 
 l1 = 20.1
 l2 = 13.4
@@ -11,6 +12,7 @@ prevTheta2 = 0.0
 prevTheta3 = 0.0
 prevTheta4 = 0.0
 
+MAX_LENGTH = 100    # Maximum length of commandString (100 is consistent with the arduino code!)
 
 def getAngles():
     """
@@ -111,12 +113,12 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     # then the second motor does the same, etc...
     output_list = []
 
-    # """
     # First, make the commandString for PEN1 (theta_4), i.e., the top motor,
     # taking into account the previous angle
     global prevTheta4
     angleDiff = theta_4 - prevTheta4
     if angleDiff != 0:
+        # Make the commandString
         commandString = "A"
         t4 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
@@ -129,6 +131,15 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         if angleDiff - 5 * t4 != 0:
             commandString += ",0,{:.2f},1000".format(theta_4)
         commandString += "\n"
+
+        # If the commandString is longer than 100 characters, cut it up into commandStrings with a max length of 100
+        print(commandString)
+        while len(commandString) > MAX_LENGTH:
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
+            output_list.append(commandString[0:index] + "\n")
+            commandString = "A" + commandString[index:]
         output_list.append(commandString)
         prevTheta4 = theta_4  # Update prevTheta4
 
@@ -137,6 +148,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     global prevTheta3
     angleDiff = theta_3 - prevTheta3
     if angleDiff != 0:
+        # Make the commandString
         commandString = "A"
         t3 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
@@ -149,33 +161,52 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         if angleDiff - 5 * t3 != 0:
             commandString += ",1,{:.2f},1000".format(theta_3)
         commandString += "\n"
+
+        # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+        while len(commandString) > MAX_LENGTH:
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
+            output_list.append(commandString[0:index] + "\n")
+            commandString = "A" + commandString[index:]
         output_list.append(commandString)
         prevTheta3 = theta_3  # Update prevTheta3
 
     # Make the commandString for PEN4 (theta_1), i.e., the bottom motor,
     # taking into account the previous angle
-    commandString = "A"
-    t1 = 0
     global prevTheta1
     angleDiff = theta_1 - prevTheta1
-    for x in range(0, abs(math.floor(angleDiff / 5))):
-        if angleDiff > 0:
-            commandString += ",3,{:.0f},1000".format(prevTheta1 + 5 * (t1 + 1))
-            t1 += 1
-        elif angleDiff < 0:
-            commandString += ",3,{:.0f},1000".format(prevTheta1 - 5 * t1)
-            t1 += 1
-    if angleDiff - 5 * t1 != 0:
-        commandString += ",3,{:.2f},1000".format(theta_1)
-    commandString += "\n"
-    output_list.append(commandString)
-    prevTheta1 = theta_1  # Update prevTheta1
+    if angleDiff != 0:
+        # Make the commandString
+        commandString = "A"
+        t1 = 0
+        for x in range(0, abs(math.floor(angleDiff / 5))):
+            if angleDiff > 0:
+                commandString += ",3,{:.0f},1000".format(prevTheta1 + 5 * (t1 + 1))
+                t1 += 1
+            elif angleDiff < 0:
+                commandString += ",3,{:.0f},1000".format(prevTheta1 - 5 * t1)
+                t1 += 1
+        if angleDiff - 5 * t1 != 0:
+            commandString += ",3,{:.2f},1000".format(theta_1)
+        commandString += "\n"
+
+        # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+        while len(commandString) > MAX_LENGTH:
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
+            output_list.append(commandString[0:index] + "\n")
+            commandString = "A" + commandString[index:]
+        output_list.append(commandString)
+        prevTheta1 = theta_1  # Update prevTheta1
 
     # Lastly, make the commandString for PEN3 (theta_2),
     # taking into account the previous angle
     global prevTheta2
     angleDiff = theta_2 - prevTheta2
     if angleDiff != 0:
+        # Make the commandString
         commandString = "A"
         t2 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
@@ -188,6 +219,14 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         if angleDiff - 5 * t2 != 0:
             commandString += ",2,{:.2f},1000".format(theta_2)
         commandString += "\n"
+
+        # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+        while len(commandString) > MAX_LENGTH:
+            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
+            output_list.append(commandString[0:index] + "\n")
+            commandString = "A" + commandString[index:]
         output_list.append(commandString)
         prevTheta2 = theta_2  # Update prevTheta2
 
@@ -199,3 +238,8 @@ def move_kinematics(player):
         print("X player\n")
     elif player == 'O':
         print("O Player\n")
+
+
+if __name__ == '__main__':
+    a = "A,100,\n"  # \n is one character
+    print(len(a))
