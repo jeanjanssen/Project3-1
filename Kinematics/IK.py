@@ -104,6 +104,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         # If the commandString is longer than 100 characters, cut it up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
             index = commandString[0:MAX_LENGTH].rindex(',')
+            index = index - (index % 3)  # index has to be a multiple of 3
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -131,6 +132,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
             index = commandString[0:MAX_LENGTH].rindex(',')
+            index = index - (index % 3)  # index has to be a multiple of 3
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -158,6 +160,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
             index = commandString[0:MAX_LENGTH].rindex(',')
+            index = index - (index % 3)  # index has to be a multiple of 3
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
@@ -185,6 +188,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
         while len(commandString) > MAX_LENGTH:
             index = commandString[0:MAX_LENGTH].rindex(',')
+            index = index - (index % 3)  # index has to be a multiple of 3
             output_list.append(commandString[0:index] + "\n")
             commandString = "A" + commandString[index:]
         output_list.append(commandString)
