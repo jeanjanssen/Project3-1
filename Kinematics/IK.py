@@ -22,54 +22,48 @@ def getAngles():
     return prevTheta1, prevTheta2, prevTheta3, prevTheta4
 
 
-def getcoords(px, py, pz, phi):
+def getcoords(px, py, pz):
     # px and py are the desired points of the end-effector
-    px = px / 30.5
-    py = py / 42.5
-
-    phi = deg2rad(phi)
 
     theta_1 = math.atan2(py, px)
 
-    A = px - l4 * math.cos(theta_1) * math.cos(phi)
-    B = py - l4 * math.sin(theta_1) * math.cos(phi)
-    C = pz - l1 - l4 * math.sin(phi)
+    if px <= (30.5/2):
+        theta_3 = 100
+    else:
+        theta_3 = 70
 
-    theta_3 = math.acos((A ** 2 + B ** 2 + C ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
-    # Take into account boundaries
-    theta_3 = rad2deg(theta_3)
-    theta_3 = min(max(10, theta_3), 100)
-    theta_3 = deg2rad(theta_3)
+    la = getLengthTheta2Theta4(theta_3, l2, l3)
+    lb = l4
 
-    a = l3 * math.sin(theta_3)
-    b = l2 * l3 * math.cos(theta_3)
-    r = sqrt(a ** 2 + b ** 2)
+    theta_4 = -math.atan((px**2 + pz**2 - la**2 - lb**2)/(2*la*lb))
+    theta_2 = math.atan(pz/px)+math.atan((lb*math.sin(theta_4))/(la+lb*math.cos(theta_4)))
 
-    theta_2 = math.atan2(C, -sqrt(r ** 2 - C ** 2)) - math.atan2(a, b)
-    # delta = wx ** 2 + wy ** 2
-    # c2 = (delta - l2 ** 2 - l3 ** 2) / (2 * l2 * l3)
-    # s2 = sqrt(1 - c2 ** 2)
-    # theta_3 = arctan2(s2, c2)
+
+    # A = px - l4 * math.cos(theta_1) * math.cos(phi)
+    # B = py - l4 * math.sin(theta_1) * math.cos(phi)
+    # C = pz - l1 - l4 * math.sin(phi)
     #
-    # s1 = ((l2 + l3 * c2) * wy - l3 * s2 * wx) / delta
-    # c1 = ((l2 + l3 * c2) * wx + l3 * s2 * wy) / delta
-    # theta_2 = arctan2(s1, c1)
+    # theta_3 = math.acos((A ** 2 + B ** 2 + C ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
+    # # Take into account boundaries
+    # theta_3 = rad2deg(theta_3)
+    # theta_3 = min(max(10, theta_3), 100)
+    # theta_3 = deg2rad(theta_3)
+    #
+    # a = l3 * math.sin(theta_3)
+    # b = l2 * l3 * math.cos(theta_3)
+    # r = sqrt(a ** 2 + b ** 2)
+    #
+    # theta_2 = math.atan2(C, -sqrt(r ** 2 - C ** 2)) - math.atan2(a, b)
 
     phi = rad2deg(phi)
     theta_1 = rad2deg(theta_1)
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
-    theta_2 = rad2deg(theta_2)
     theta_2 = min(max(-20, theta_2), 70)
-    theta_2 = theta_2 * -1
-    theta_3 = rad2deg(theta_3)
-    theta_3 = min(max(10, theta_3), 100)
-    theta_4 = phi - theta_2 - theta_3
     theta_4 = min(max(-90, theta_4), 90)
 
     # Take into account offset
     theta_2 -= 25
-    theta_3 -= 55
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
