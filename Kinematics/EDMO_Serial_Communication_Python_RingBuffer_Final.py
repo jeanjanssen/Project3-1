@@ -19,7 +19,12 @@ interval = 0.5  # serial read update time
 # commandString3 = '3,2,10,0,2,0,1000,2,-10,5000\n'   # data string to send to arduino
 # commandString4 = '4,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
 commandString5 = 'S,0,0,0,1,0,0,2,0,0,3,0,2000\n'  # S,motor,angle,delay,motor,angle,delay
-commandString6 = 'A,0,-30,0,1,0,0,2,0,0,3,0,2000\n'
+
+# Due to the offset in two of the motors, to get the arm up straight the angles should be 0, -55, -25, 0.
+# We give -20, -45, -25, 0, because this makes sure that the arm is almost up straight and does not exceed its
+# boundaries taking into account that it doesn't slam into the table first.
+commandString6 = 'A,0,-20,100,1,-45,100,2,-25,100,3,0,1000\n'
+
 
 
 ############################# SEND DATA ##################################

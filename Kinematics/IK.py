@@ -7,10 +7,11 @@ l2 = 13.4
 l3 = 12.1
 l4 = 12.5
 
-prevTheta1 = 0.0
-prevTheta2 = 0.0
-prevTheta3 = 0.0
-prevTheta4 = 0.0
+# Previous thetas such that the arm is (almost) up straight at the start
+prevTheta1 = 0.0    # PEN4, bottom motor
+prevTheta2 = -25.0  # PEN3
+prevTheta3 = -45.0  # PEN2
+prevTheta4 = -20.0  # PEN1, top motor
 
 MAX_LENGTH = 100    # Maximum length of commandString (100 is consistent with the arduino code!)
 
@@ -58,10 +59,13 @@ def getcoords(px, py, pz):
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
     theta_2 = min(max(-20, theta_2), 70)
+    # theta_3 is commented out since we now use a predetermined angle
+    # theta_3 = min(max(10, theta_3), 100)
     theta_4 = min(max(-90, theta_4), 90)
 
     # Take into account offset
     theta_2 -= 25
+    # theta_3 -= 55
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
