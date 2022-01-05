@@ -31,7 +31,7 @@ def getcoords(px, py, pz):
     if px <= (30.5/2):
         theta_3 = 100
     else:
-        theta_3 = 70
+        theta_3 = 50
 
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
