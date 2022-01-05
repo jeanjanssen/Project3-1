@@ -54,8 +54,6 @@ def getcoords(px, py, pz):
     # r = sqrt(a ** 2 + b ** 2)
     #
     # theta_2 = math.atan2(C, -sqrt(r ** 2 - C ** 2)) - math.atan2(a, b)
-
-    phi = rad2deg(phi)
     theta_1 = rad2deg(theta_1)
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
