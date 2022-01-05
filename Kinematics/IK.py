@@ -87,26 +87,6 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
     return length_t2_t4
 
 
-def getTheta2(l2, l3, length_t2_t4):  # l2 and l3 can be taken from the class FK
-    """
-    Method to get theta2 when knowing theta3, length2 and length3
-    Takes as input length2, length3 and the length between theta2 and theta4
-    Returns the value of theta2
-    """
-    t2 = math.acos((length_t2_t4 ** 2 + l2 ** 2 - l3 ** 2) / (2 * l2 * length_t2_t4))
-    return t2
-
-
-def getTheta4(l2, l3, length_t2_t4):  # l2 and l3 can be taken from the class FK
-    """
-    Method to get theta4 when knowing theta3, length2 and length3
-    Takes as input length2, length3 and the length between theta2 and theta4
-    Returns the value of theta4
-    """
-    t4 = math.acos((length_t2_t4 ** 2 + l3 ** 2 - l2 ** 2) / (2 * l3 * length_t2_t4))
-    return t4
-
-
 def make_list(theta_1, theta_2, theta_3, theta_4):
     # For every theta, getting the moves in a list with at most 5 degrees at a time,
     # so that the first motor moves at most 5 degrees until it is at its desired position,
