@@ -204,9 +204,9 @@ def constrainCommandStringLength(commandString):
 
 def move_kinematics(player):
     if player == 'X':
-        print("X player\n")
+        pass
     elif player == 'O':
-        print("O Player\n")
+        pass
 
 
 if __name__ == '__main__':
