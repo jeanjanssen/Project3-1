@@ -29,9 +29,9 @@ def getcoords(px, py, pz):
 
     theta_1 = math.atan2(px, py)
 
-    if py <= 25:
-        theta_3 = 100
-    elif py > 25:
+    if py <= 20:
+        theta_3 = 95
+    elif py > 20:
         theta_3 = 50
 
     theta_3 = deg2rad(theta_3)
@@ -41,8 +41,8 @@ def getcoords(px, py, pz):
     print("la =", la, "\nlb =", lb)
 
     # theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
-    theta_4 = 2 * math.atan((math.sqrt((la + lb)**2 - (py**2 + pz**2))) / (math.sqrt((py**2 + pz**2) - (la-lb))))
-    theta_2 = math.atan(pz / py) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
+    theta_4 = 2 * math.atan((math.sqrt((la + lb)**2 - (pz**2 + py**2))) / (math.sqrt((pz**2 + py**2) - (la-lb)**2)))
+    theta_2 = math.atan(py / pz) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
 
     # A = px - l4 * math.cos(theta_1) * math.cos(phi)
     # B = py - l4 * math.sin(theta_1) * math.cos(phi)
@@ -63,17 +63,18 @@ def getcoords(px, py, pz):
     theta_2 = rad2deg(theta_2)
     theta_3 = rad2deg(theta_3)
     theta_4 = rad2deg(theta_4)
+    theta_4 -= (180 - ((180 - theta_3) + abs(theta_2)))
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
     theta_2 = min(max(-20, theta_2), 70)
     # theta_3 is commented out since we now use a predetermined angle
     # theta_3 = min(max(10, theta_3), 100)
     theta_4 = min(max(-90, theta_4), 90)
+    theta_4 -= 27.47
 
     # Take into account offset
     theta_2 -= 25
-    theta_3 -= 55
-    theta_4 -= 27.47
+    theta_3 -= 50
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
