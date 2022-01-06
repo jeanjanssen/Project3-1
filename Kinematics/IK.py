@@ -8,12 +8,13 @@ l3 = 12.1
 l4 = 12.5
 
 # Previous thetas such that the arm is (almost) up straight at the start
-prevTheta1 = 0.0    # PEN4, bottom motor
+prevTheta1 = 0.0  # PEN4, bottom motor
 prevTheta2 = -25.0  # PEN3
 prevTheta3 = -45.0  # PEN2
 prevTheta4 = -20.0  # PEN1, top motor
 
-MAX_LENGTH = 100    # Maximum length of commandString (100 is consistent with the arduino code!)
+MAX_LENGTH = 100  # Maximum length of commandString (100 is consistent with the arduino code!)
+
 
 def getAngles():
     """
@@ -28,17 +29,18 @@ def getcoords(px, py, pz):
 
     theta_1 = math.atan2(py, px)
 
-    if px <= (30.5/2):
+    if px <= 25:
         theta_3 = 100
-    else:
+    elif px > 25:
         theta_3 = 50
+
+    theta_3 = deg2rad(theta_3)
 
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
 
-    theta_4 = -math.atan((px**2 + pz**2 - la**2 - lb**2)/(2*la*lb))
-    theta_2 = math.atan(pz/px)+math.atan((lb*math.sin(theta_4))/(la+lb*math.cos(theta_4)))
-
+    theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
+    theta_2 = math.atan(pz / px) + math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
 
     # A = px - l4 * math.cos(theta_1) * math.cos(phi)
     # B = py - l4 * math.sin(theta_1) * math.cos(phi)
@@ -56,6 +58,9 @@ def getcoords(px, py, pz):
     #
     # theta_2 = math.atan2(C, -sqrt(r ** 2 - C ** 2)) - math.atan2(a, b)
     theta_1 = rad2deg(theta_1)
+    theta_2 = rad2deg(theta_2)
+    theta_3 = rad2deg(theta_3)
+    theta_4 = rad2deg(theta_4)
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
     theta_2 = min(max(-20, theta_2), 70)
@@ -65,11 +70,11 @@ def getcoords(px, py, pz):
 
     # Take into account offset
     theta_2 -= 25
-    # theta_3 -= 55
+    theta_3 -= 55
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
-
+    print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
     return make_list(theta_1, theta_2, theta_3, theta_4)
 
 
@@ -109,7 +114,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         commandString += "\n"
 
         # If the commandString is longer than 100 characters, cut it up into commandStrings with a max length of 100
-        print(commandString)
+        # print(commandString)
         while len(commandString) > MAX_LENGTH:
             commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
             commaIndices = [commaIndex.start() for commaIndex in commaIndices]

@@ -38,7 +38,7 @@ def sendData():
     # ser.write(commandString3.encode())
     # ser.write(commandString4.encode())
     # ser.write(commandString5.encode())
-    # ser.write(commandString6.encode())
+    ser.write(commandString6.encode())
 
     # Code to hopefully draw an X
     # coords = tp.main()
@@ -53,7 +53,7 @@ def sendData():
 
     # print()
     # Formatting is IK.getcoords(x, y, z)
-    output = IK.getcoords(10, 5, 40.1)
+    output = IK.getcoords(28, 1, 2)
     for x in output:
         print("sending", x, end="")
         ser.write(x.encode())
