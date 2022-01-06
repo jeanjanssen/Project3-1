@@ -5,7 +5,7 @@ from re import finditer
 l1 = 20.1
 l2 = 13.4
 l3 = 12.1
-l4 = 12.5
+l4 = 14
 
 # Previous thetas such that the arm is (almost) up straight at the start
 prevTheta1 = 0.0  # PEN4, bottom motor
@@ -27,20 +27,22 @@ def getAngles():
 def getcoords(px, py, pz):
     # px and py are the desired points of the end-effector
 
-    theta_1 = math.atan2(py, px)
+    theta_1 = math.atan2(px, py)
 
-    if px <= 25:
+    if py <= 25:
         theta_3 = 100
-    elif px > 25:
+    elif py > 25:
         theta_3 = 50
 
     theta_3 = deg2rad(theta_3)
 
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
+    print("la =", la, "\nlb =", lb)
 
-    theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
-    theta_2 = math.atan(pz / px) + math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
+    # theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
+    theta_4 = 2 * math.atan((math.sqrt((la + lb)**2 - (py**2 + pz**2))) / (math.sqrt((py**2 + pz**2) - (la-lb))))
+    theta_2 = math.atan(pz / py) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
 
     # A = px - l4 * math.cos(theta_1) * math.cos(phi)
     # B = py - l4 * math.sin(theta_1) * math.cos(phi)
@@ -71,6 +73,7 @@ def getcoords(px, py, pz):
     # Take into account offset
     theta_2 -= 25
     theta_3 -= 55
+    theta_4 -= 27.47
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
@@ -84,7 +87,7 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
     Takes as input theta3, length2 and length3
     Returns the length between theta2 and theta4
     """
-    length_t2_t4 = math.sqrt(l3 ** 2 + l2 ** 2 - 2 * l3 * l2 * math.cos(theta3))
+    length_t2_t4 = math.sqrt((l3**2) + (l2**2) - (2 * l3 * l2 * math.cos(math.pi-theta3)))
     return length_t2_t4
 
 
