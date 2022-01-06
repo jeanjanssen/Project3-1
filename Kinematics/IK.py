@@ -1,6 +1,6 @@
 import math as math
 from numpy import *
-import re
+from re import finditer
 
 l1 = 20.1
 l2 = 13.4
@@ -111,17 +111,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t4 += 1
         if angleDiff - 5 * t4 != 0:
             commandString += ",0,{:.2f},1000".format(theta_4)
-        commandString += "\n"
-
-        # If the commandString is longer than 100 characters, cut it up into commandStrings with a max length of 100
-        # print(commandString)
-        while len(commandString) > MAX_LENGTH:
-            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
-            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
-            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
-            output_list.append(commandString[0:index] + "\n")
-            commandString = "A" + commandString[index:]
-        output_list.append(commandString)
+        output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta4 = theta_4  # Update prevTheta4
 
     # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top,
@@ -141,16 +131,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t3 += 1
         if angleDiff - 5 * t3 != 0:
             commandString += ",1,{:.2f},1000".format(theta_3)
-        commandString += "\n"
-
-        # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
-        while len(commandString) > MAX_LENGTH:
-            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
-            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
-            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
-            output_list.append(commandString[0:index] + "\n")
-            commandString = "A" + commandString[index:]
-        output_list.append(commandString)
+        output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta3 = theta_3  # Update prevTheta3
 
     # Make the commandString for PEN4 (theta_1), i.e., the bottom motor,
@@ -170,16 +151,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t1 += 1
         if angleDiff - 5 * t1 != 0:
             commandString += ",3,{:.2f},1000".format(theta_1)
-        commandString += "\n"
-
-        # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
-        while len(commandString) > MAX_LENGTH:
-            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
-            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
-            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
-            output_list.append(commandString[0:index] + "\n")
-            commandString = "A" + commandString[index:]
-        output_list.append(commandString)
+        output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta1 = theta_1  # Update prevTheta1
 
     # Lastly, make the commandString for PEN3 (theta_2),
@@ -199,19 +171,35 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t2 += 1
         if angleDiff - 5 * t2 != 0:
             commandString += ",2,{:.2f},1000".format(theta_2)
-        commandString += "\n"
-
-        # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
-        while len(commandString) > MAX_LENGTH:
-            commaIndices = re.finditer(',', commandString[0:MAX_LENGTH])
-            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
-            index = commaIndices[len(commaIndices) - (len(commaIndices) % 3)]
-            output_list.append(commandString[0:index] + "\n")
-            commandString = "A" + commandString[index:]
-        output_list.append(commandString)
+        output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta2 = theta_2  # Update prevTheta2
 
     return output_list
+
+
+def constrainCommandStringLength(commandString):
+    # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+    commandStringList = []
+    while len(commandString) > MAX_LENGTH:
+        # Get the indices of where the commas are
+        commaIndices = finditer(',', commandString[0:MAX_LENGTH])
+        commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+
+        # Get cutoffPoint
+        maxCommaIndex = len(commaIndices) - 1
+        if maxCommaIndex % 3 == 0:
+            cutoffPoint = commaIndices[maxCommaIndex]
+        else:
+            cutoffPoint = commaIndices[maxCommaIndex - (maxCommaIndex % 3)]
+
+        # Split commandStrings
+        commandStringList.append(commandString[0:cutoffPoint] + "\n")
+        commandString = "A" + commandString[cutoffPoint:]
+
+    # Append last commandString
+    commandStringList.append(commandString)
+    # print(commandStringList)
+    return commandStringList
 
 
 def move_kinematics(player):
@@ -222,5 +210,6 @@ def move_kinematics(player):
 
 
 if __name__ == '__main__':
-    a = "A,100,\n"  # \n is one character
-    print(len(a))
+    output = getcoords(28, 1, 2)
+    for x in output:
+        print("sending", x, end="")
