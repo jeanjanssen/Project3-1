@@ -24,6 +24,9 @@ def getcoords(px, py, pz, phi):
     # px and py are the desired points of the end-effector
     px = px / 30.5
     py = py / 42.5
+    # px is positive upwards and negative downwards
+    # py is negative to the right, positive to the left
+    # pz is 22.1
 
     phi = deg2rad(phi)
 
@@ -69,13 +72,13 @@ def getcoords(px, py, pz, phi):
     theta_2 -= 25
     theta_3 -= 55
 
-
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
 
     return make_list(theta_1, theta_2, theta_3, theta_4)
 
-def make_list(theta_1, theta_2, theta_3, theta_4)
+
+def make_list(theta_1, theta_2, theta_3, theta_4):
     # For every theta, getting the moves in a list with at most 5 degrees at a time,
     # so that the first motor moves at most 5 degrees until it is at its desired position,
     # then the second motor does the same, etc...
@@ -165,7 +168,8 @@ def make_list(theta_1, theta_2, theta_3, theta_4)
 
 
 
-def move_kinematics(player)
-    if player = 'X'
-
-    elif player = 'O'
+def move_kinematics(player):
+    if player == 'X':
+        pass
+    elif player == 'O':
+        pass

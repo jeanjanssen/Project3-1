@@ -39,6 +39,15 @@ end: End the state machine, making clear that the game has finished
 """
 
 
+def calculate_coordinates(computer_move):
+    ik_coords = []
+    cv_coords = gamehistory[computer_move]['bbox']
+    ik_coords.append((cv_coords.get(1)*(30.5/500) - 30.5/2))
+    ik_coords.append((cv_coords.get(0)*(42.5/700) - 42.5/2))
+    ik_coords.append(0)
+    return ik_coords
+
+
 def state_start(state, frame, gameboard):
     if state == "begin":
         # Check who starts the game
@@ -55,24 +64,28 @@ def state_start(state, frame, gameboard):
         global player
         global difficulty
         computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
-        # Calculate the coordinates and get the Inverse kinematics
+        # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
         coords = calculate_coordinates(computer_move)
         global output_list
         # Create commands to move to the desired point
-        output_list.append(IK.getcoords(coords.get(1), coords.get(2), coords.get(3), coords.get(4)))
+        output_list.append(IK.getcoords(coords.get(1), coords.get(2), 22.1, coords.get(3)))
         # Create commands to draw the X or O
         output_list.append(IK.move_kinematics(player))
         # Create commands to move back to the idle position
-        output_list.append(IK.makelist(0, 0, 0, 0))
+        output_list.append(IK.make_list(0, 0, 0, 0))
+        gameboard.make_move(computer_move, player)
+        gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
         return "moving"
     elif state == "moving":
         # Check whether the output_list has been iterated over
         global list_index
         if list_index > len(output_list):
+            paper_cut, grid = preprocesses(frame)[0]
 
             if gameboard.complete():
                 return "end"
             list_index = 0
+            output_list = []
             return "wait_move"
         # If the output_list still has unread values, send the next one to the arduino
         command_string = output_list[list_index]
@@ -80,10 +93,15 @@ def state_start(state, frame, gameboard):
         list_index += 1
         return "moving"
     elif state == "wait_move":
-        if gameboard.complete():
-            return "end"
         paper_cut, grid = preprocesses(frame)[0]
-
+        try:
+            gameboard.make_move(computer_move, player)
+            gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
+            paper_cut = draw_SYMBOL(paper_cut, 'O', grid[computer_move])
+            gameboard.show()
+            # print(it)
+        except:
+            pass
         try:
             # Draw grid wait on user
             for i, (x, y, w, h) in enumerate(grid):
@@ -92,6 +110,9 @@ def state_start(state, frame, gameboard):
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+                    gameboard.make_move(i, shape)
+                    if gameboard.complete():
+                        return "end"
                     return "make_move"
         except:
             # print("something wrong in corners list")
@@ -108,7 +129,7 @@ def state_start(state, frame, gameboard):
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
-
+                    gameboard.make_move(i, shape)
                     return "make_move"
 
         except:
@@ -202,15 +223,13 @@ def start_game():
         if motion_detection.motiondection(frame):
             while motion_detection.motiondection(frame):
                 pass
-        
 
         if not key == 32:
             cv2.imshow('original', frame)
             continue
 
         # Run the methods according to a state machine
-        state = state_start("begin", frame, gameboard, difficulty)
-
+        state = state_start("begin", frame, gameboard)
 
 
 # Open up starting window
