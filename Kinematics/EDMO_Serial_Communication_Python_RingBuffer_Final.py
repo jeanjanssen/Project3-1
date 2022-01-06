@@ -5,7 +5,7 @@ from timeit import default_timer as timer
 import IK
 import computervision.test_player as tp
 
-ser = serial.Serial('COM3', 57600)  # select com-port and the serial com baud rate
+ser = serial.Serial('COM10', 57600)  # select com-port and the serial com baud rate
 ser.flushInput()  # empty the serial buffer
 ser_input = []  # emtpy the serial input array
 current_time = 0
@@ -13,13 +13,18 @@ prev_time = 0
 interval = 0.5  # serial read update time
 
 # Example commands to drive the motors
-# commandString = '0,0,25,0,0,45,1000,0,0,5000\n'     # data string to send to arduino
-# commandString1 = '1,2,5,0,2,10,1000,2,30,2000\n'    # data string to send to arduino
-# commandString2 = '2,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
-# commandString3 = '3,2,10,0,2,0,1000,2,-10,5000\n'   # data string to send to arduino
-# commandString4 = '4,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
+commandString = '0,0,25,0,0,45,1000,0,0,5000\n'     # data string to send to arduino
+commandString1 = '1,2,5,0,2,10,1000,2,30,2000\n'    # data string to send to arduino
+commandString2 = '2,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
+commandString3 = '3,2,10,0,2,0,1000,2,-10,5000\n'   # data string to send to arduino
+commandString4 = '4,3,45,0,3,-45,1000,3,0,5000\n'   # data string to send to arduino
 commandString5 = 'S,0,0,0,1,0,0,2,0,0,3,0,2000\n'  # S,motor,angle,delay,motor,angle,delay
-commandString6 = 'A,0,-30,0,1,0,0,2,0,0,3,0,2000\n'
+
+# Due to the offset in two of the motors, to get the arm up straight the angles should be 0, -55, -25, 0.
+# We give -20, -45, -25, 0, because this makes sure that the arm is almost up straight and does not exceed its
+# boundaries taking into account that it doesn't slam into the table first.
+commandString6 = 'A,0,-20,100,1,-45,100,2,-25,100,3,0,1000\n'
+
 
 
 ############################# SEND DATA ##################################
@@ -35,27 +40,23 @@ def sendData():
     # ser.write(commandString5.encode())
     ser.write(commandString6.encode())
 
-    coords = tp.main()
-    for c in coords:
-        # x = c[0], y = c[1], z = c[2], phi = c[3]
-        output = IK.getcoords(c[1], c[0], c[2], c[3])
+    # Code to hopefully draw an X
+    # coords = tp.main()
+    # for c in coords:
+    #     # x = c[0], y = c[1], z = c[2], phi = c[3]
+    #     output = IK.getcoords(c[1], c[0], c[2], c[3])
+    #
+    #     for x in output:
+    #         print("sending", x, end="")
+    #         ser.write(x.encode())
+    #     # time.sleep(10)
 
-        for x in output:
-            print("sending", x, end="")
-            ser.write(x.encode())
-        # time.sleep(10)
-
-    print()
-    # Formatting is IK.getcoords(y, x, z, phi)
-    output = IK.getcoords(30, 10, 40, 69)
+    # print()
+    # Formatting is IK.getcoords(x, y, z)
+    output = IK.getcoords(28, 1, 2)
     for x in output:
         print("sending", x, end="")
-        # ser.write(x.encode())
-
-    output2 = IK.getcoords(30, -20, 40, 69)
-    for x in output2:
-        print("sending", x, end="")
-        # ser.write(x.encode())
+        ser.write(x.encode())
 
     # ser.write(commandString5.encode())
     # time.sleep(30)
