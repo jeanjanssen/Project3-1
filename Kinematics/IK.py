@@ -84,7 +84,7 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
     Takes as input theta3, length2 and length3
     Returns the length between theta2 and theta4
     """
-    length_t2_t4 = math.sqrt(l3 ** 2 + l2 ** 2 - 2 * l3 * l2 * math.cos(theta3))
+    length_t2_t4 = math.sqrt((l3**2) + (l2**2) - (2 * l3 * l2 * math.cos(180-theta3)))
     return length_t2_t4
 
 
