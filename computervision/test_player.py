@@ -8,7 +8,6 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow import keras
 
-
 from GameAI import TTT_Minimax
 from computervision.pre_processes import matrix_transformations
 from computervision.pre_processes import PreProccesing
@@ -20,6 +19,7 @@ Detect the coordinates of the sheet, first point is center so hit ignore since w
 """
 
 MIN_GRID_SIZE = 500
+grid = []
 
 
 def detect_Corners_paper(frame, thresh, add_margin=True):
@@ -35,27 +35,27 @@ def detect_Corners_paper(frame, thresh, add_margin=True):
     return paper, corners
 
 
-"""decects the symbol in one box of the grid """
-
-
 def detect_SYMBOL(box):
+    """detects the symbol in one box of the grid """
+
     mapper = {0: None, 1: 'X', 2: 'O'}
     box = PreProccesing.Frame_PRE_proccsing(box)
     idx = np.argmax(model.predict(box))
     print("mapper found", idx, "which is symbol :", mapper[idx])
     return mapper[idx]
 
-    """Returns 3 x 3 grid, 
-     Find grid's center cell, and based on it fetch
-     the other eight cells
-    """
-
 
 def get_3X3_GRID(threshold_img):
-    middle_center = PreProccesing.return_contourdbox(threshold_img)
-    center_x, center_y, width, height = middle_center
+    """Returns 3 x 3 grid,
+     Find grid's center cell, and based on it fetch the other eight cells
+    """
 
-    # Useful coords
+    global grid
+
+    middle_center = PreProccesing.return_contourdbox(threshold_img)
+    center_x, center_y, width, height = list(middle_center)
+
+    # Useful coordinates
     left = center_x - width
     right = center_x + width
     top = center_y - height
@@ -63,19 +63,19 @@ def get_3X3_GRID(threshold_img):
 
     # Middle row
 
-    middle_left = (left, center_y, width, height)
-    middle_right = (right, center_y, width, height)
+    middle_left = [left, center_y, width, height]
+    middle_right = [right, center_y, width, height]
 
     # Top row
 
-    top_left = (left, top, width, height)
-    top_center = (center_x, top, width, height)
-    top_right = (right, top, width, height)
+    top_left = [left, top, width, height]
+    top_center = [center_x, top, width, height]
+    top_right = [right, top, width, height]
 
     # Bottom row
-    bottom_left = (left, bottom, width, height)
-    bottom_center = (center_x, bottom, width, height)
-    bottom_right = (right, bottom, width, height)
+    bottom_left = [left, bottom, width, height]
+    bottom_center = [center_x, bottom, width, height]
+    bottom_right = [right, bottom, width, height]
 
     # Grid's coordinates
     # print(height,"height")
@@ -84,24 +84,27 @@ def get_3X3_GRID(threshold_img):
     # print((bottom_left,'BL'))
     # width_rectangle = (top_right-top_left)
     # height_rectangle =  (bottom_left-top_left)
+
     if (width * height > MIN_GRID_SIZE):
-        Grids = [top_left, top_center, top_right,
-                 middle_left, middle_center, middle_right,
-                 bottom_left, bottom_center, bottom_right]
-        return Grids
+        grid = [top_left, top_center, top_right,
+                middle_left, middle_center, middle_right,
+                bottom_left, bottom_center, bottom_right]
+        return grid
 
 
-def getMiddleCoord(grid, cellNr):
-    # Grids = [top_left, top_center, top_right,
+def getMiddleCoord(cellNr):
+    global grid
+    # grid = [top_left, top_center, top_right,
     # middle_left, middle_center, middle_right,
     # bottom_left, bottom_center, bottom_right]
 
-    print(grid)
-    scaleGrid(grid)
+    print('grid:', grid)
+    grid = scaleGrid()
+    print('scaled grid:', grid)
 
     x = 0
     y = 0
-    z = 22.1  # default value
+    z = 21.1  # default value
     power = 69  # default value
 
     if cellNr == 1:
@@ -190,20 +193,46 @@ def getCoordsToSketchCircle(middleCoord):
     return coords
 
 
-def scaleGrid(grid):
-    boardX = (-20, 20)
-    boardY = (20, 30)
+def scaleGrid():
+    global grid
 
-    scaledGrid = grid
-    # TODO
+    longSideBoard = (-21.25, 21.25)  # y
+    lengthBoard = 42.5
+    shortSideBoard = (10, 40.5)  # x
+    widthBoard = 30.5
+
+    longSideCV = (125, 857)
+    lengthCV = 732
+    shortSideCV = (88, 628)
+    widthCV = 540
+
+    z = 21.1  # default value
+    power = 69  # default value
+
+    scaledGrid = [[round(longSideBoard[0] + (grid[0][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[0][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[1][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[1][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[2][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[2][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[3][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[3][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[4][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[4][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[5][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[5][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[6][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[6][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[7][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[7][0] / lengthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[8][1] / widthCV * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[8][0] / lengthCV * widthBoard), 1), z, power]
+                  ]
 
     return scaledGrid
 
 
-
-
 def draw_SYMBOL(baseimage, symbol, placement):
-
     x, y, w, h = placement
     if symbol == 'O':
         centroid = (x + int(w / 2), y + int(h / 2))
@@ -218,6 +247,8 @@ def draw_SYMBOL(baseimage, symbol, placement):
 
 
 def preprocesses(frame):
+    global grid
+
     output = []
     # Preprocesses for finding board
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -241,6 +272,9 @@ def preprocesses(frame):
 
 def play(vcap, difficulty):
     """Play tic tac toe game with computer that uses the alphabeta algorithm"""
+
+    global grid
+
     # Initialize opponent (computer)
     gameboard = Tic()
     gamehistory = {}
@@ -355,8 +389,16 @@ def play(vcap, difficulty):
         # it = it +1
 
         player = get_enemy(player)
-        computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)  # computer move is a number between 1 and 9
+        computer_move = TTT_Minimax.determine(gameboard.squares, player,
+                                              difficulty)  # computer move is a number between 1 and 9
         print('computer_move', computer_move)
+
+        middleCoord = getMiddleCoord(computer_move)
+        crossCoords = getCoordsToSketchCross(middleCoord)
+        circleCoords = getCoordsToSketchCircle(middleCoord)
+        print('Cross coordinates:', crossCoords)
+        print('circle coordinates:', circleCoords)
+
         # computer_move = CompTurn(gameboard.squares)
         # print(gameboard.squares)
         # print(computer_move, "CompTurn")
@@ -382,7 +424,6 @@ def play(vcap, difficulty):
         cv2.imshow('bird view', paper_cut)
         message = True
 
-  
         # Show winner
     winner = gameboard.winner()
     height = paper.shape[0]
@@ -391,7 +432,6 @@ def play(vcap, difficulty):
                 cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 4)
     cv2.imshow('finished', frame)
     cv2.waitKey(0) & 0xFF
-
 
     # Close windows
     vcap.release()
@@ -403,35 +443,37 @@ def main():
     # TEST:
     # TODO z should be 21.1, below is for testing purposes
     phi = 69
-    g = [(-21.2, 40.50, 21.1, phi), (0, 40.50, 21.1, phi), (21.2, 40.50, 21.1, phi),
-         (-21.2, 25.25, 21.1, phi), (0, 25.25, 21.1, phi), (21.2, 25.25, 21.1, phi),
-         (-21.2, 10.00, 21.1, phi), (0, 10.00, 21.1, phi), (21.2, 10.00, 21.1, phi)]
-    middleCoord = getMiddleCoord(g, 2)
-    crossCoords = getCoordsToSketchCross(middleCoord)
-    # circleCoords = getCoordsToSketchCircle(middleCoord)
-    print('Cross coordinates:', crossCoords)
-    # print('circle coordinates:', circleCoords)
+    # g = [(-21.2, 40.50, 21.1, phi), (0, 40.50, 21.1, phi), (21.2, 40.50, 21.1, phi),
+    #     (-21.2, 25.25, 21.1, phi), (0, 25.25, 21.1, phi), (21.2, 25.25, 21.1, phi),
+    #     (-21.2, 10.00, 21.1, phi), (0, 10.00, 21.1, phi), (21.2, 10.00, 21.1, phi)]
+    # middleCoord = getMiddleCoord(2)
+    # crossCoords = getCoordsToSketchCross(middleCoord)
+    # # circleCoords = getCoordsToSketchCircle(middleCoord)
+    # print('Cross coordinates:', crossCoords)
+    # # print('circle coordinates:', circleCoords)
     # sketch cross using the robotic arm
 
     """Check if everything's okay and start game"""
-    # # Load model
-    # global model
-    # os.path
-    # # assert os.path.exists(args.model), '{} does not exist'
-    # model = load_model('../data/model2.h5')
-    # # model = keras.models.load_model('data/model.h5')
-    #
-    # # Initialize webcam feed
-    # vcap = cv2.VideoCapture(0)
-    # if not vcap.isOpened():
-    #     raise IOError('could not get feed from cam #{}'.format())
-    #
-    # # Announce winner!
-    # winner = play(vcap)
-    # print('Winner is:', winner)
-    # sys.exit()
+    # Load model
+    global model
+    global grid
+    os.path
+    # assert os.path.exists(args.model), '{} does not exist'
+    model = load_model('../data/model2.h5')
+    # model = keras.models.load_model('data/model.h5')
 
-    return crossCoords
+    # Initialize webcam feed
+    vcap = cv2.VideoCapture(0)
+    if not vcap.isOpened():
+        raise IOError('could not get feed from cam #{}'.format())
+
+    # Announce winner!
+    winner = play(vcap, 100)
+    print('Winner is:', winner)
+
+    sys.exit()
+
+    # return crossCoords
 
 
 if __name__ == '__main__':
