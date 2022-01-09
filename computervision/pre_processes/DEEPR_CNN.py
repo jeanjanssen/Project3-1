@@ -15,7 +15,7 @@ from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
 n_folds =5
-ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images' # root directory path
+ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images copy' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test
 
@@ -116,6 +116,7 @@ def diagnostics(histories):
         plt.subplot(2, 1, 1)
         plt.title('Cross Entropy Loss')
         plt.plot(histories[i].history['loss'], color='blue', label='train')
+        print(histories[i].history['loss'])
         plt.plot(histories[i].history['val_loss'], color='orange', label='test')
         plt.subplot(2, 1, 2)
         plt.title('Classification Accuracy')
