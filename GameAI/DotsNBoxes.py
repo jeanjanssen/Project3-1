@@ -1,8 +1,12 @@
 from random import *
 import collections
-from Algorithm import *
-from Board import *
-from Nodes import *
+from GameAI import Board
+#from Board import *
+#from Nodes import *
+
+from GameAI.Algorithm import Algo
+from GameAI.Board import Game
+from GameAI.Nodes import Thing
 
 """
 Playing Dots and Boxes in Python with AI. You play the game against artificial intelligence 

@@ -14,7 +14,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
-n_folds =5
+n_folds =15
 ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images copy' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test

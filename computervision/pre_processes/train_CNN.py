@@ -36,12 +36,12 @@ np.random.seed(42)
  # depends on paths in your system
 
 time = time.asctime()
-ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images' # root directory path
+ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images copy' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test directory
 input_shape = (32, 32, 1)
 batch_size = 32
-epochs = 100
+epochs = 10
 
 patience = 25 # early stopping
 
