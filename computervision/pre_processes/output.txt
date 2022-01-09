@@ -118,3 +118,63 @@ Early Stopping patience: 25
 Crossentropy loss: 0.5152820944786072
 Accuracy: 0.7750000357627869
 -----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Dense second False
+time of training local: Sun Jan  9 16:02:26 2022
+instances for training = 3320
+instances for evaluation = 120
+Steps per epoch: 12
+Batch size : 32
+Epochs: 100
+Early Stopping patience: 25
+Crossentropy loss: 0.8894284963607788
+Accuracy: 0.7333333492279053
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Dense second False
+time of training local: Sun Jan  9 16:16:36 2022
+instances for training = 5189
+instances for evaluation = 120
+Steps per epoch: 12
+Batch size : 32
+Epochs: 100
+Early Stopping patience: 25
+Crossentropy loss: 0.6082403063774109
+Accuracy: 0.8333333730697632
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Dense second False
+time of training local: Sun Jan  9 16:17:09 2022
+instances for training = 5189
+instances for evaluation = 120
+Steps per epoch: 12
+Batch size : 32
+Epochs: 10
+Early Stopping patience: 25
+Crossentropy loss: 0.6055352687835693
+Accuracy: 0.7666667103767395
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Dense second False
+time of training local: Sun Jan  9 16:22:45 2022
+instances for training = 5189
+instances for evaluation = 597
+Steps per epoch: 12
+Batch size : 32
+Epochs: 10
+Early Stopping patience: 25
+Crossentropy loss: 0.7035031318664551
+Accuracy: 0.7688441872596741
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+Dense second False
+time of training local: Sun Jan  9 16:24:49 2022
+instances for training = 5189
+instances for evaluation = 1040
+Steps per epoch: 12
+Batch size : 32
+Epochs: 10
+Early Stopping patience: 25
+Crossentropy loss: 0.7575112581253052
+Accuracy: 0.5980769395828247
+-----------------------------------------------------------------------------------------------
