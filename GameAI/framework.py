@@ -16,9 +16,9 @@ from computervision.pre_processes import motion_detection
 
 list_index = 0
 output_list = []
-# turn = "Your turn"
 gamehistory = {}
 player = 'X'
+computer_move = 0
 
 
 # def gameFinished():
@@ -63,6 +63,7 @@ def state_start(state, frame, gameboard):
         # computer move is a number between 1 and 9
         global player
         global difficulty
+        global computer_move
         computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
         coords = calculate_coordinates(computer_move)
@@ -72,9 +73,7 @@ def state_start(state, frame, gameboard):
         # Create commands to draw the X or O
         output_list.append(IK.move_kinematics(player))
         # Create commands to move back to the idle position
-        output_list.append(IK.make_list(0, 0, 0, 0))
-        gameboard.make_move(computer_move, player)
-        gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
+        output_list.append(IK.make_list(0, -25, -45, -20))
         return "moving"
     elif state == "moving":
         # Check whether the output_list has been iterated over
@@ -95,9 +94,10 @@ def state_start(state, frame, gameboard):
     elif state == "wait_move":
         paper_cut, grid = preprocesses(frame)[0]
         try:
+            global computer_move
             gameboard.make_move(computer_move, player)
-            gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
-            paper_cut = draw_SYMBOL(paper_cut, 'O', grid[computer_move])
+            gamehistory[computer_move] = {'shape': player, 'bbox': grid[computer_move]}
+            paper_cut = draw_SYMBOL(paper_cut, player, grid[computer_move])
             gameboard.show()
             # print(it)
         except:
@@ -130,6 +130,7 @@ def state_start(state, frame, gameboard):
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
                     gameboard.make_move(i, shape)
+                    player = gameboard.getenemy(shape)
                     return "make_move"
 
         except:
