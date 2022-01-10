@@ -1,12 +1,12 @@
 import math
+import IK
 
-l1 = 0.0   # length from the base till the first joint
 l2 = 13.4
 l3 = 12.1
-l4 = 12.5   # or 12.8?
-l_pen = 6.0 # check whether length from end effector to the tip of the pen is correct every time before using FK
+l4 = 12.5    # or 12.8?
+l_pen = 6.0  # check whether length from end effector to the tip of the pen is correct every time before using FK
 
-TABLE_Z = 1.0
+TABLE_Z = 1.0   # height from theta2 to the table
 
 
 # Calculate position (other two methods can be removed if goal_z doesn't need the +1)
@@ -30,18 +30,12 @@ def calc_position(theta1, theta2, theta3, theta4):
     rad1, rad2, rad23, rad234, rad234pen = get_angles_in_radians(theta1, theta2, theta3, theta4)
 
     # Calculating the coordinates
-    y = l2 * math.sin(rad2) + l3 * math.sin(rad23) + l4 * math.sin(rad234)
-    z = l2 * math.cos(rad2) + l3 * math.cos(rad23) + l4 * math.cos(rad234)
-
-    # Add pen to y & z
-    y += l_pen * math.sin(rad234pen)
-    z += l_pen * math.cos(rad234pen)
-
-    z += l1
+    xy = l2 * math.sin(rad2) + l3 * math.sin(rad23) + l4 * math.sin(rad234) + l_pen * math.sin(rad234pen)
+    z = l2 * math.cos(rad2) + l3 * math.cos(rad23) + l4 * math.cos(rad234) + l_pen * math.cos(rad234pen)
 
     # Calculate x & y given the angle of the bottom motor
-    x = y * math.sin(rad1)
-    y = y * math.cos(rad1)
+    x = xy * math.sin(rad1)
+    y = xy * math.cos(rad1)
 
     return x, y, z
 
@@ -99,8 +93,8 @@ if __name__ == '__main__':
     theta_3 = 45.0
     theta_4 = 0.0
 
-    IK.getcoords(20, 10, 21.1, 69)
-    theta_1, theta_2, theta_3, theta_4 = IK.getAngles()
+    # IK.getcoords(20, 10, 21.1)
+    # theta_1, theta_2, theta_3, theta_4 = IK.getAngles()
     theta_2 += 55   # Reach of PEN2 is between 10 and 100 degrees
     theta_3 += 25   # Reach of PEN3 is between -20 and 70 degrees
     print(theta_1, theta_2, theta_3, theta_4)

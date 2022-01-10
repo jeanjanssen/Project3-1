@@ -162,7 +162,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t4 += 1
         if angleDiff - 5 * t4 != 0:
             commandString += ",0,{:.2f},1000".format(theta_4)
-        output_list.extend(constrainCommandStringLength(commandString + "\n"))
+        # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta4 = theta_4  # Update prevTheta4
 
     # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top,
@@ -171,7 +171,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     angleDiff = theta_3 - prevTheta3
     if angleDiff != 0:
         # Make the commandString
-        commandString = "A"
+        # commandString = "A"
         t3 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
@@ -182,7 +182,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t3 += 1
         if angleDiff - 5 * t3 != 0:
             commandString += ",1,{:.2f},1000".format(theta_3)
-        output_list.extend(constrainCommandStringLength(commandString + "\n"))
+        # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta3 = theta_3  # Update prevTheta3
 
     # Make the commandString for PEN4 (theta_1), i.e., the bottom motor,
@@ -191,7 +191,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     angleDiff = theta_1 - prevTheta1
     if angleDiff != 0:
         # Make the commandString
-        commandString = "A"
+        # commandString = "A"
         t1 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
@@ -202,7 +202,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
                 t1 += 1
         if angleDiff - 5 * t1 != 0:
             commandString += ",3,{:.2f},1000".format(theta_1)
-        output_list.extend(constrainCommandStringLength(commandString + "\n"))
+        # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta1 = theta_1  # Update prevTheta1
 
     # Lastly, make the commandString for PEN3 (theta_2),
@@ -211,7 +211,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     angleDiff = theta_2 - prevTheta2
     if angleDiff != 0:
         # Make the commandString
-        commandString = "A"
+        # commandString = "A"
         t2 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
