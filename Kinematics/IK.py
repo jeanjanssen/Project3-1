@@ -1,6 +1,7 @@
 import math as math
 from numpy import *
 from re import finditer
+from Kinematics import FK
 
 l1 = 20.1
 l2 = 13.4
@@ -27,22 +28,68 @@ def getAngles():
 def getcoords(px, py, pz):
     # px and py are the desired points of the end-effector
 
+    if py <= 17.5:
+        case = 1
+    elif 17.5 < py <= 25.25:
+        case = 2
+    elif 25.25 < py <= 33:
+        case = 3
+    elif 33 < py:
+        case = 4
+
     theta_1 = math.atan2(px, py)
 
-    if py <= 20:
+    py = math.sqrt((px**2) + (py**2))
+
+    if case == 1 or case == 2:
         theta_3 = 95
-    elif py > 20:
+    elif case == 3 or case == 4:
         theta_3 = 50
 
     theta_3 = deg2rad(theta_3)
 
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
-    print("la =", la, "\nlb =", lb)
+    lc = math.sqrt((py**2) + (pz**2))
+    print("la =", la, "\nlb =", lb, "\nlc =", lc, "\npy =", py)
+
+    theta_a = math.acos((lb**2+lc**2-la**2)/(2*lb*lc))
+    theta_b = math.acos((la**2+lc**2-lb**2)/(2*la*lc))
+    theta_c = math.acos((la ** 2 + lb ** 2 - lc ** 2) /( 2 * la * lb))
+    print("theta_a", theta_a, ", theta_b", theta_b, ", theta_c", theta_c, "\nwhole triangle:", theta_c+theta_b+theta_a)
+
+    theta_d = math.acos((la**2+l3**2-l2**2)/(2*la*l3))
+    print("theta_d", theta_d)
+    theta_d += theta_c
+    print("theta_d", theta_d)
+    theta_d = math.pi - theta_d
+    print("theta_d", theta_d)
+    theta_d = rad2deg(theta_d)
+    print(theta_d)
+    print(theta_3)
+    theta_4 = theta_d
+    theta_4 -= 26.0
+    print("theta_4", theta_4)
+    theta_4 = min(max(-90, theta_4), 90)
+
+    theta_e = math.acos((l2**2+la**2-l3**2)/(2*l2*la))
+    print(theta_e)
+    theta_e += theta_b
+    print("theta_e", theta_e)
+    print(rad2deg(theta_e))
+    theta_e += math.atan(pz/py)
+    print(theta_e)
+    theta_2 = rad2deg(theta_e)
+    theta_2 = 90 - theta_2
+
+
+
+
 
     # theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
-    theta_4 = 2 * math.atan((math.sqrt((la + lb)**2 - (pz**2 + py**2))) / (math.sqrt((pz**2 + py**2) - (la-lb)**2)))
-    theta_2 = math.atan(py / pz) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
+    #theta_4 = 2 * math.atan(
+    #    (math.sqrt((la + lb) ** 2 - (pz ** 2 + py ** 2))) / (math.sqrt((pz ** 2 + py ** 2) - (la - lb) ** 2)))
+    #theta_2 = math.atan(py / pz) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
 
     # A = px - l4 * math.cos(theta_1) * math.cos(phi)
     # B = py - l4 * math.sin(theta_1) * math.cos(phi)
@@ -53,6 +100,9 @@ def getcoords(px, py, pz):
     # theta_3 = rad2deg(theta_3)
     # theta_3 = min(max(10, theta_3), 100)
     # theta_3 = deg2rad(theta_3)
+    print(theta_3)
+    theta_3 = rad2deg(theta_3)
+    print(theta_3)
     #
     # a = l3 * math.sin(theta_3)
     # b = l2 * l3 * math.cos(theta_3)
@@ -60,26 +110,23 @@ def getcoords(px, py, pz):
     #
     # theta_2 = math.atan2(C, -sqrt(r ** 2 - C ** 2)) - math.atan2(a, b)
     theta_1 = rad2deg(theta_1)
-    theta_2 = rad2deg(theta_2)
-    theta_3 = rad2deg(theta_3)
-    theta_4 = rad2deg(theta_4)
-    theta_4 -= (180 - ((180 - theta_3) + abs(theta_2)))
     # print("Theta_1 =", theta_1)
     theta_1 = min(max(-45, theta_1), 45)
     theta_2 = min(max(-20, theta_2), 70)
     # theta_3 is commented out since we now use a predetermined angle
     # theta_3 = min(max(10, theta_3), 100)
-    theta_4 = min(max(-90, theta_4), 90)
-    theta_4 -= 27.47
+
+
 
     # Take into account offset
-    theta_2 -= 25
-    theta_3 -= 50
+    #theta_2 -= 25
+    #theta_3 -= 50
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
     print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
-    return make_list(theta_1, theta_2, theta_3, theta_4)
+    return theta_1, theta_2, theta_3, theta_4
+    #return make_list(theta_1, theta_2, theta_3, theta_4)
 
 
 def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the class FK
@@ -214,6 +261,9 @@ def move_kinematics(player):
 
 
 if __name__ == '__main__':
-    output = getcoords(28, 1, 2)
-    for x in output:
-        print("sending", x, end="")
+    output = getcoords(-10, 20, 1)
+    print(FK.calc_position(output[0], output[1], output[2], output[3]))
+    #for x in output:
+    #    print("sending", x, end="")
+
+

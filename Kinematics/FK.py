@@ -1,13 +1,12 @@
 import math
-import IK
 
-l1 = 20.1   # length from the base till the first joint
+l1 = 0.0   # length from the base till the first joint
 l2 = 13.4
 l3 = 12.1
 l4 = 12.5   # or 12.8?
 l_pen = 6.0 # check whether length from end effector to the tip of the pen is correct every time before using FK
 
-TABLE_Z = 21.1
+TABLE_Z = 1.0
 
 
 # Calculate position (other two methods can be removed if goal_z doesn't need the +1)
@@ -119,3 +118,5 @@ if __name__ == '__main__':
     print(goal_x, goal_y, goal_z)
 
     collision_check(cur_x, cur_y, cur_z, goal_x, goal_y, goal_z)
+
+
