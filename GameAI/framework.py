@@ -1,30 +1,39 @@
 import os
 import tkinter
 import tkinter as tk
-from tkinter import HORIZONTAL, NW
+from tkinter import HORIZONTAL
 
 # import EDMO_Serial_Communication_Python_RingBuffer_Final
 
 from Kinematics import IK
 from GameAI import TTT_Minimax
-from computervision.test_player import play, preprocesses, draw_SYMBOL
+from computervision.test_player import preprocesses, draw_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
 from computervision.gameboard import Tic
 from computervision.pre_processes import motion_detection
 
+global list_index
 list_index = 0
+global output_list
 output_list = []
+global gamehistory
 gamehistory = {}
+global player
 player = 'X'
-computer_move = 0
 
-
-# def gameFinished():
 
 def update_ui_turn(turn):
     pass
+
+def calculate_coordinates(computer_move):
+    ik_coords = []
+    cv_coords = gamehistory[computer_move]['bbox']
+    ik_coords.append((cv_coords.get(1)*(30.5/500) + 10))
+    ik_coords.append((-cv_coords.get(0)*(42.5/700) - 42.5))
+    ik_coords.append(0)
+    return ik_coords
 
 
 """
@@ -37,17 +46,6 @@ wait_move_first: The same as wait_move, where the symbol for the player and comp
                  players move.
 end: End the state machine, making clear that the game has finished
 """
-
-
-def calculate_coordinates(computer_move):
-    ik_coords = []
-    cv_coords = gamehistory[computer_move]['bbox']
-    ik_coords.append((cv_coords.get(1)*(30.5/500) - 30.5/2))
-    ik_coords.append((cv_coords.get(0)*(42.5/700) - 42.5/2))
-    ik_coords.append(0)
-    return ik_coords
-
-
 def state_start(state, frame, gameboard):
     if state == "begin":
         # Check who starts the game
@@ -61,14 +59,13 @@ def state_start(state, frame, gameboard):
             return "wait_move_first"
     elif state == "make_move":
         # computer move is a number between 1 and 9
-        global player
         global difficulty
         global computer_move
         computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
         coords = calculate_coordinates(computer_move)
-        global output_list
         # Create commands to move to the desired point
+        global output_list
         output_list.append(IK.getcoords(coords.get(1), coords.get(2), 22.1, coords.get(3)))
         # Create commands to draw the X or O
         output_list.append(IK.move_kinematics(player))
@@ -94,7 +91,6 @@ def state_start(state, frame, gameboard):
     elif state == "wait_move":
         paper_cut, grid = preprocesses(frame)[0]
         try:
-            global computer_move
             gameboard.make_move(computer_move, player)
             gamehistory[computer_move] = {'shape': player, 'bbox': grid[computer_move]}
             paper_cut = draw_SYMBOL(paper_cut, player, grid[computer_move])
@@ -145,11 +141,12 @@ Then start up and maintain the camera, call the collision detection and the stat
 """
 
 
-def start_game():
+def start_TTT_game():
     print(slider.get())
     # Create Second screen with grid
     start_screen.destroy()
 
+    """
     # Play the game with test_player
     global model
     os.path
@@ -160,6 +157,7 @@ def start_game():
     if not vcap.isOpened():
         raise IOError('could not get feed from cam #{}'.format())
     play(vcap, difficulty)
+    """
 
     # Frameworking for 3rd phase
     """
@@ -220,10 +218,11 @@ def start_game():
 
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
-
-        if motion_detection.motiondection(frame):
-            while motion_detection.motiondection(frame):
+        video = frame + lastframe
+        if motion_detection.motiondection(video):
+            while motion_detection.motiondection(video):
                 pass
+        lastframe = frame
 
         if not key == 32:
             cv2.imshow('original', frame)
@@ -231,6 +230,9 @@ def start_game():
 
         # Run the methods according to a state machine
         state = state_start("begin", frame, gameboard)
+
+def start_dots_and_boxes():
+    pass
 
 
 # Open up starting window
@@ -266,13 +268,21 @@ tk.Radiobutton(start_screen, text="Human", justify="center", variable=v, value=2
 v.set(1)
 
 # Play game Button
-ORG_PG_Image = Image.open("Play_game_button.gif")
-RPG_Image = ORG_PG_Image.resize((200, 100), Image.ANTIALIAS)
-PG_Image = ImageTk.PhotoImage(RPG_Image)
+ORG_PTTT_Image = Image.open("Play_TTT_Button.gif")
+RPTTT_Image = ORG_PTTT_Image.resize((190, 100), Image.ANTIALIAS)
+PTTT_Image = ImageTk.PhotoImage(RPTTT_Image)
 
-PG_button = tk.Button(start_screen, command=start_game, image=PG_Image, width=200, height=100, bd=0,
-                      highlightbackground='#a6c3e5')
-PG_button.pack(pady=10)
+P_TTT_button = tk.Button(start_screen, command=start_TTT_game, image=PTTT_Image, width=200, height=100, bd=0,
+                          highlightbackground='#a6c3e5')
+P_TTT_button.place(x=155, y=265)
+
+ORG_PDB_Image = Image.open("Play_D&B_Button.gif")
+RPDB_Image = ORG_PDB_Image.resize((190, 100), Image.ANTIALIAS)
+PDB_Image = ImageTk.PhotoImage(RPDB_Image)
+P_DG_button = tk.Button(start_screen, command=start_dots_and_boxes, image=PDB_Image, width=200, height=100, bd=0,
+                        highlightbackground='#a6c3e5')
+P_DG_button.place(x=395, y=265)
+
 
 # Difficulty Slider
 Text2 = tk.Text(start_screen, height=1, width=100, font=("Arial", 24), bg='#a6c3e5',
@@ -281,66 +291,9 @@ Text2.tag_configure("center", justify="center")
 Text2.insert(1.0, "Difficulty level:")
 Text2.configure(state='disabled')
 Text2.tag_add("center", "1.0", "end")
-Text2.pack()
+Text2.place(x=-285, y=375)
 slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5')
 slider.place(x=175, y=425)
 slider.set(100)
 difficulty = slider.get()
 tk.mainloop()
-
-
-"""
-The framework of the application using a state machine
-Six states:
-begin: begin the loop
-make_move: calculate move and move arm to the position, whilst checking for collision
-avoid: collision detected: move out of the way
-wait_avoid: wait for the collision to move out of the field
-wait_move: wait for the player to make a move, whilst checking for collision
-end: game has finished, end the loop
-
-state = "begin"
-first_move = 0
-
-class Status:
-
-def State_start(state):
-    if state == "begin":
-        if first_move == 0:
-            state = "make_move"
-        elif first_move == 1:
-            state = "wait_move"
-    elif state == "make_move":
-        if game_end:
-            state == end
-        else:
-            if Check_collision()
-                state == avoid
-                last_state = make_move
-            Make the move()
-            if Check collision()
-                state == avoid
-            if game_end:
-                state == end
-            else:
-                state == wait_move
-    elif state == "avoid":
-        Move_away()  (most likely to upright position)
-        state == wait_avoid;
-    elif state == "wait_avoid":
-        if !Check_collision
-            state = last_state
-    elif state == "wait_move":
-        if Check_collision()
-            state == avoid
-        else Check_board()
-            if updated_board = true
-                board = updated
-                state = make_move
-    elif state == "end":
-        Move_to_start_position()
-        return game
-    else:
-        return state
-
-"""
