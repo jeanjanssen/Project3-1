@@ -2,23 +2,27 @@
 
 
 import cv2   # use pip instal opencv
-
+from computervision import test_player
 
 # set is first iterartion by intilization set to None
 
 video = cv2.VideoCapture(0)
 
 def motiondection(video):
+
     detected= False
     baseline_image_1 = None
     baseline_image_2 = None
     baseline_image_3 = None
+    baseline_frame = None
 # loop video
     while True:
 
         # Read in frame from webcam
         check, frame = video.read()
         kernelsize = 21
+
+
         # Initializing motion
         motion = 0
 
@@ -27,7 +31,22 @@ def motiondection(video):
 
         gray = cv2.GaussianBlur(gray, (kernelsize, kernelsize), 0)
 
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 6)
         #print(gray.shape)
+        grid = test_player.get_3X3_GRID(thresh)
+
+        try:
+            # Draw grid wait on user
+            for i, (x, y, w, h) in enumerate(grid):
+
+                # cv2.rectangle(paper, (x, y), (x + w, y + h), (0, 0, 0), 2)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), -1)
+
+        except:
+            # print("something wrong in corners list")
+            pass
+
+        cv2.imshow("d",frame)
         height, width = gray.shape
         frame_partONE=gray[0:height, 0:width-1050]
         cv2.imshow("frame_part_one", frame_partONE)
@@ -124,6 +143,8 @@ def motiondection(video):
             #cv2.rectangle(thresh_frame_1, (x, y), (x + w, y + h), (0, 255, 0), 3)
             #cv2.rectangle(frame, (x+950, y), (950+x + w, y + h), ( 255, 0,0), 3)
             #return detected
+
+
 
 
         motion = 1
