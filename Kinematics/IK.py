@@ -6,7 +6,7 @@ from Kinematics import FK
 l1 = 20.1
 l2 = 13.4
 l3 = 12.1
-l4 = 14
+l4 = 14  # length to the pen
 
 # Previous thetas such that the arm is (almost) up straight at the start
 prevTheta1 = 0.0  # PEN4, bottom motor
@@ -39,7 +39,7 @@ def getcoords(px, py, pz):
 
     theta_1 = math.atan2(px, py)
 
-    py = math.sqrt((px**2) + (py**2))
+    py = math.sqrt((px ** 2) + (py ** 2))
 
     if case == 1 or case == 2:
         theta_3 = 95
@@ -50,15 +50,16 @@ def getcoords(px, py, pz):
 
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
-    lc = math.sqrt((py**2) + (pz**2))
+    lc = math.sqrt((py ** 2) + (pz ** 2))
     print("la =", la, "\nlb =", lb, "\nlc =", lc, "\npy =", py)
 
-    theta_a = math.acos((lb**2+lc**2-la**2)/(2*lb*lc))
-    theta_b = math.acos((la**2+lc**2-lb**2)/(2*la*lc))
-    theta_c = math.acos((la ** 2 + lb ** 2 - lc ** 2) /( 2 * la * lb))
-    print("theta_a", theta_a, ", theta_b", theta_b, ", theta_c", theta_c, "\nwhole triangle:", theta_c+theta_b+theta_a)
+    theta_a = math.acos((lb ** 2 + lc ** 2 - la ** 2) / (2 * lb * lc))
+    theta_b = math.acos((la ** 2 + lc ** 2 - lb ** 2) / (2 * la * lc))
+    theta_c = math.acos((la ** 2 + lb ** 2 - lc ** 2) / (2 * la * lb))
+    print("theta_a", theta_a, ", theta_b", theta_b, ", theta_c", theta_c, "\nwhole triangle:",
+          theta_c + theta_b + theta_a)
 
-    theta_d = math.acos((la**2+l3**2-l2**2)/(2*la*l3))
+    theta_d = math.acos((la ** 2 + l3 ** 2 - l2 ** 2) / (2 * la * l3))
     print("theta_d", theta_d)
     theta_d += theta_c
     print("theta_d", theta_d)
@@ -72,24 +73,20 @@ def getcoords(px, py, pz):
     print("theta_4", theta_4)
     theta_4 = min(max(-90, theta_4), 90)
 
-    theta_e = math.acos((l2**2+la**2-l3**2)/(2*l2*la))
+    theta_e = math.acos((l2 ** 2 + la ** 2 - l3 ** 2) / (2 * l2 * la))
     print(theta_e)
     theta_e += theta_b
     print("theta_e", theta_e)
     print(rad2deg(theta_e))
-    theta_e += math.atan(pz/py)
+    theta_e += math.atan(pz / py)
     print(theta_e)
     theta_2 = rad2deg(theta_e)
     theta_2 = 90 - theta_2
 
-
-
-
-
     # theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
-    #theta_4 = 2 * math.atan(
+    # theta_4 = 2 * math.atan(
     #    (math.sqrt((la + lb) ** 2 - (pz ** 2 + py ** 2))) / (math.sqrt((pz ** 2 + py ** 2) - (la - lb) ** 2)))
-    #theta_2 = math.atan(py / pz) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
+    # theta_2 = math.atan(py / pz) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
 
     # A = px - l4 * math.cos(theta_1) * math.cos(phi)
     # B = py - l4 * math.sin(theta_1) * math.cos(phi)
@@ -116,17 +113,51 @@ def getcoords(px, py, pz):
     # theta_3 is commented out since we now use a predetermined angle
     # theta_3 = min(max(10, theta_3), 100)
 
-
-
     # Take into account offset
-    #theta_2 -= 25
-    #theta_3 -= 50
+    # theta_2 -= 25
+    # theta_3 -= 50
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
     print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
     return theta_1, theta_2, theta_3, theta_4
-    #return make_list(theta_1, theta_2, theta_3, theta_4)
+    # return make_list(theta_1, theta_2, theta_3, theta_4)
+
+
+# second try
+def getCoords2(px, py, pz):
+    """
+    returns angles in degrees
+    """
+    theta1 = math.atan(px / py)
+    theta1 = rad2deg(theta1)
+
+    a = math.sqrt(py ** 2 + px ** 2) - l4
+    b = pz - l1
+
+    # theta3 = - math.acos((a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
+    value = (a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3)
+    # print(value**2)
+    theta3 = - math.atan(math.sqrt(1 - value ** 2) / value)
+
+    theta2prime = math.atan(b / a) + math.atan((l3 * math.sin(theta3)) / (l2 + l3 * math.cos(theta3)))
+    theta2prime = rad2deg(theta2prime)
+
+    theta3 = rad2deg(theta3)
+
+    theta2 = theta2prime - 90
+
+    theta4 = 90 - theta2prime - theta3
+
+    print("Theta1 =", theta1, "\nTheta2 =", theta2prime, "\nTheta3 =", theta3, "\nTheta4 =", theta4)
+    # Take into account offset
+    theta2 -= 25
+    theta3 -= 50
+    theta4 -= 20
+
+    # TODO consider motors range
+
+    return make_list(theta1, theta2, theta3, theta4)
 
 
 def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the class FK
@@ -135,7 +166,7 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
     Takes as input theta3, length2 and length3
     Returns the length between theta2 and theta4
     """
-    length_t2_t4 = math.sqrt((l3**2) + (l2**2) - (2 * l3 * l2 * math.cos(math.pi-theta3)))
+    length_t2_t4 = math.sqrt((l3 ** 2) + (l2 ** 2) - (2 * l3 * l2 * math.cos(math.pi - theta3)))
     return length_t2_t4
 
 
@@ -263,7 +294,5 @@ def move_kinematics(player):
 if __name__ == '__main__':
     output = getcoords(-10, 20, 1)
     print(FK.calc_position(output[0], output[1], output[2], output[3]))
-    #for x in output:
+    # for x in output:
     #    print("sending", x, end="")
-
-
