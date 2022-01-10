@@ -35,12 +35,20 @@ def detect_Corners_paper(frame, thresh, add_margin=True):
     return paper, corners
 
 
-def detect_SYMBOL(box):
+def detect_SYMBOL(box, player):
     """detects the symbol in one box of the grid """
 
     mapper = {0: None, 1: 'X', 2: 'O'}
     box = PreProccesing.Frame_PRE_proccsing(box)
+
+
     idx = np.argmax(model.predict(box))
+    if (player == "X") :
+        if (idx == 2):
+            idx = 0
+    else :
+        if (idx == 1):
+            idx = 0
     print("mapper found", idx, "which is symbol :", mapper[idx])
     return mapper[idx]
 
@@ -300,7 +308,7 @@ def play(vcap, difficulty):
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # _, blurry_thresh_gray_frame = cv2.threshold(gray_frame, 170, 255, cv2.THRESH_BINARY)
         blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                         cv2.THRESH_BINARY_INV, 199, 7)
+                                                         cv2.THRESH_BINARY_INV, 199, 20)
         cv2.imshow("preprosses input", blurry_thresh_gray_frame)
         blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
         paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
@@ -322,7 +330,7 @@ def play(vcap, difficulty):
         paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
         # paper_thresh = cv2.threshold(  paper_gray, 170, 255, cv2.THRESH_BINARY_INV)
         paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,
-                                             6)
+                                             9)
         paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
         cv2.imshow("threshold", paper_thresh_cut)
         grid = get_3X3_GRID(paper_thresh_cut)
@@ -349,6 +357,7 @@ def play(vcap, difficulty):
             cv2.imshow('original', frame)
             cv2.imshow('bird view', paper_cut)
             continue
+        #player = 'O'
         player = 'X'
 
         # iterate through cells to find player move
@@ -362,7 +371,7 @@ def play(vcap, difficulty):
                 # Find what is inside each free cell
 
                 cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
-                shape = detect_SYMBOL(cell)
+                shape = detect_SYMBOL(cell,player)
 
                 # print(shape)
                 if shape is not None:
@@ -459,7 +468,7 @@ def main():
     global grid
     os.path
     # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('../data/model2.h5')
+    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/data/test_deeper_model.h5')
     # model = keras.models.load_model('data/model.h5')
 
     # Initialize webcam feed

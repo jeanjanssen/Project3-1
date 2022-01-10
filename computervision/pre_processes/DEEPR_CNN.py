@@ -14,8 +14,8 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
-n_folds =15
-ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images copy' # root directory path
+n_folds =5
+ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test
 
@@ -140,7 +140,7 @@ def run_test():
     performance(scores)
     model = model_builder()
     model.fit(train_x, train_y, epochs=10, batch_size=32, verbose=0)
-    model.save('test_deeper_model.h5')
+    model.save('test_deeper_model_old2.h5')
     with open('deepermodelsummary.txt', 'w') as f:
       with  redirect_stdout(f):
         model.summary()
