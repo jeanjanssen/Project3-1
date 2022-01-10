@@ -300,7 +300,7 @@ def play(vcap, difficulty):
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # _, blurry_thresh_gray_frame = cv2.threshold(gray_frame, 170, 255, cv2.THRESH_BINARY)
         blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                         cv2.THRESH_BINARY_INV, 11, 7)
+                                                         cv2.THRESH_BINARY_INV, 199, 7)
         cv2.imshow("preprosses input", blurry_thresh_gray_frame)
         blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
         paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
@@ -321,7 +321,7 @@ def play(vcap, difficulty):
         # Thresholding to find grid
         paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
         # paper_thresh = cv2.threshold(  paper_gray, 170, 255, cv2.THRESH_BINARY_INV)
-        paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11,
+        paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,
                                              6)
         paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
         cv2.imshow("threshold", paper_thresh_cut)
