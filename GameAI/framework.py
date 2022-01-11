@@ -27,12 +27,17 @@ player = 'X'
 def update_ui_turn(turn):
     pass
 
+def move_coordinates(player)
+    if player == 'X':
+        pass
+    if player == 'O':
+        pass
+
 def calculate_coordinates(computer_move):
     ik_coords = []
     cv_coords = gamehistory[computer_move]['bbox']
-    ik_coords.append((cv_coords.get(1)*(30.5/500) + 10))
-    ik_coords.append((-cv_coords.get(0)*(42.5/700) - 42.5))
-    ik_coords.append(0)
+    ik_coords.append((-cv_coords.get(0)*(42.5/733) - 42.5))
+    ik_coords.append((cv_coords.get(1)*(30.5/540) + 10))
     return ik_coords
 
 
