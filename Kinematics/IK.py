@@ -1,4 +1,4 @@
-import math as math
+import math
 from numpy import *
 from re import finditer
 from Kinematics import FK
@@ -9,19 +9,16 @@ l3 = 12.1
 l4 = 14  # length to the pen
 
 # Previous thetas such that the arm is (almost) up straight at the start
-prevTheta1 = 0.0  # PEN4, bottom motor
+prevTheta1 = 0.0    # PEN4, bottom motor
 prevTheta2 = -25.0  # PEN3
 prevTheta3 = -45.0  # PEN2
 prevTheta4 = -20.0  # PEN1, top motor
 
-MAX_LENGTH = 100  # Maximum length of commandString (100 is consistent with the arduino code!)
+MAX_LENGTH = 100  # Maximum length of commandString (100 is consistent with arduino code! Don't enter higher values!)
 
 
 def getAngles():
-    """
-    Returns
-        prevTheta1 (angle PEN4), prevTheta2 (angle PEN3), prevTheta3 (angle PEN2), prevTheta4 (angle PEN1)
-    """
+    """ Returns prevTheta1 (angle PEN4), prevTheta2 (angle PEN3), prevTheta3 (angle PEN2), prevTheta4 (angle PEN1) """
     return prevTheta1, prevTheta2, prevTheta3, prevTheta4
 
 
@@ -34,7 +31,7 @@ def getcoords(px, py, pz):
         case = 2
     elif 25.25 < py <= 33:
         case = 3
-    elif 33 < py:
+    elif 33 > py:
         case = 4
 
     theta_1 = math.atan2(px, py)
@@ -53,6 +50,7 @@ def getcoords(px, py, pz):
     lc = math.sqrt((py ** 2) + (pz ** 2))
     print("la =", la, "\nlb =", lb, "\nlc =", lc, "\npy =", py)
 
+    # TODO remove theta_a and theta_b since we only need theta_c???
     theta_a = math.acos((lb ** 2 + lc ** 2 - la ** 2) / (2 * lb * lc))
     theta_b = math.acos((la ** 2 + lc ** 2 - lb ** 2) / (2 * la * lc))
     theta_c = math.acos((la ** 2 + lb ** 2 - lc ** 2) / (2 * la * lb))
@@ -113,15 +111,10 @@ def getcoords(px, py, pz):
     # theta_3 is commented out since we now use a predetermined angle
     # theta_3 = min(max(10, theta_3), 100)
 
-    # Take into account offset
-    # theta_2 -= 25
-    # theta_3 -= 50
-
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
     print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
     return theta_1, theta_2, theta_3, theta_4
-    # return make_list(theta_1, theta_2, theta_3, theta_4)
 
 
 # second try
@@ -171,10 +164,31 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
 
 
 def make_list(theta_1, theta_2, theta_3, theta_4):
-    # For every theta, getting the moves in a list with at most 5 degrees at a time,
-    # so that the first motor moves at most 5 degrees until it is at its desired position,
-    # then the second motor does the same, etc...
+    """ Makes a list of commandStrings which are to be sent to the motors
+
+    For every theta, getting the moves in a list with at most 5 degrees at a time,
+    so that the first motor moves at most 5 degrees until it is at its desired position,
+    then the second motor does the same, etc...
+
+    Parameters
+    ----------
+        theta_1 : float
+            Angle of the bottom motor (PEN4) in degrees
+        theta_2 : float
+            Angle of the third motor (PEN3) in degrees
+        theta_3 : float
+            Angle of the second motor (PEN2) in degrees
+        theta_4 : float
+            Angle of the top motor (PEN1) in degrees
+
+    Returns a list of commandStrings to be sent to the motors
+    """
+
+    # TODO method now makes one big list, might still need some tweaking
+
+    # Initialize output_list
     output_list = []
+    commandString = "A"
 
     # First, make the commandString for PEN1 (theta_4), i.e., the top motor,
     # taking into account the previous angle
@@ -182,7 +196,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     angleDiff = theta_4 - prevTheta4
     if angleDiff != 0:
         # Make the commandString
-        commandString = "A"
+        # commandString = "A"
         t4 = 0
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
@@ -260,7 +274,13 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
 
 def constrainCommandStringLength(commandString):
-    # If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+    """ If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+
+    Parameters
+    ----------
+        commandString : String
+            complete commandString of all movements
+    """
     commandStringList = []
     while len(commandString) > MAX_LENGTH:
         # Get the indices of where the commas are
@@ -280,7 +300,7 @@ def constrainCommandStringLength(commandString):
 
     # Append last commandString
     commandStringList.append(commandString)
-    # print(commandStringList)
+
     return commandStringList
 
 
@@ -292,6 +312,7 @@ def move_kinematics(player):
 
 
 if __name__ == '__main__':
+    # Formatting is getcoords(x, y, z)
     output = getcoords(-10, 20, 1)
     print(FK.calc_position(output[0], output[1], output[2], output[3]))
     # for x in output:

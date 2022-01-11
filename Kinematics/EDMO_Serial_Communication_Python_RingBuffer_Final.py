@@ -38,7 +38,17 @@ def sendData():
     # coords = tp.main()
     # for c in coords:
     #     # x = c[0], y = c[1], z = c[2], phi = c[3]
-    #     output = IK.getcoords(c[1], c[0], c[2], c[3])
+    #     # Formatting is IK.getcoords(x, y, z)
+    #     theta1, theta2, theta3, theta4 = IK.getcoords(c[1], c[0], c[2], c[3])
+    #     print("Calculating position given the angles of the inverse kinematics...")
+    #     print(FK.calc_position(theta1, theta2, theta3, theta4))
+    #
+    #     # Applying offset for the motors
+    #     theta2 -= 25
+    #     theta3 -= 50
+    #
+    #     # Getting the commandStrings
+    #     output = IK.make_list(theta1, theta2, theta3, theta4)
     #
     #     for x in output:
     #         print("sending", x, end="")
@@ -54,7 +64,7 @@ def sendData():
 
     # Applying offset for the motors
     theta2 -= 25
-    theta3 -= 50
+    theta3 -= 50    # TODO or 55?
 
     # Getting the commandStrings
     output = IK.make_list(theta1, theta2, theta3, theta4)
