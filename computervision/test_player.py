@@ -43,11 +43,11 @@ def detect_SYMBOL(box, player):
 
 
     idx = np.argmax(model.predict(box))
-    if (player == "X") :
-        if (idx == 2):
+    if player == "X" :
+        if idx == 2:
             idx = 0
     else :
-        if (idx == 1):
+        if idx == 1:
             idx = 0
     print("mapper found", idx, "which is symbol :", mapper[idx])
     return mapper[idx]
@@ -113,7 +113,6 @@ def getMiddleCoord(cellNr):
     x = 0
     y = 0
     z = 21.1  # default value
-    power = 69  # default value
 
     if cellNr == 1:
         x = abs(grid[0][0] - grid[2][0]) / 6
@@ -143,7 +142,7 @@ def getMiddleCoord(cellNr):
         x = 5 * (abs(grid[6][0] - grid[8][0]) / 6)
         y = 5 * (abs(grid[0][1] - grid[6][1]) / 6)
 
-    middleCoord = (grid[0][0] + x, grid[0][1] + y, z, power)
+    middleCoord = (grid[0][0] + x, grid[0][1] + y, z)
     return middleCoord
 
 
@@ -155,16 +154,15 @@ def getCoordsToSketchCross(middleCoord):
     x = middleCoord[0]
     y = middleCoord[1]
     z = middleCoord[2]
-    power = middleCoord[3]
 
     coords = []
-    coord0 = (x - width_dist, y + height_dist, z, power)  # top left coord of cross
+    coord0 = (x - width_dist, y + height_dist, z)  # top left coord of cross
     coord1 = middleCoord
-    coord2 = (x + width_dist, y - height_dist, z, power)  # bottom right coord of cross
-    coord3 = (x + width_dist, y - height_dist, z + 3, power)  # position in the air before sketching second line
-    coord4 = (x + width_dist, y + height_dist, z, power)  # top right coord of cross
+    coord2 = (x + width_dist, y - height_dist, z)  # bottom right coord of cross
+    coord3 = (x + width_dist, y - height_dist, z + 3)  # position in the air before sketching second line
+    coord4 = (x + width_dist, y + height_dist, z)  # top right coord of cross
     coord5 = middleCoord
-    coord6 = (x - width_dist, y - height_dist, z, power)  # bottom left coord of cross
+    coord6 = (x - width_dist, y - height_dist, z)  # bottom left coord of cross
 
     coords.append(coord0)
     coords.append(coord1)
@@ -189,13 +187,12 @@ def getCoordsToSketchCircle(middleCoord):
     x = middleCoord[0]
     y = middleCoord[1]
     z = middleCoord[2]
-    power = middleCoord[3]
 
     for i in range(nrOfDots):
         currentAngle = 0 + (i * angle)
         cos = round(math.cos(currentAngle), 2)
         sin = round(math.cos(currentAngle), 2)
-        c = (x + cos * ray, y + sin * ray, z, power)
+        c = (x + cos * ray, y + sin * ray, z)
         coords.append(c)
 
     return coords
@@ -215,26 +212,25 @@ def scaleGrid():
     widthCV = 540
 
     z = 21.1  # default value
-    power = 69  # default value
 
     scaledGrid = [[round(longSideBoard[0] + (grid[0][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[0][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[0][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[1][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[1][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[1][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[2][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[2][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[2][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[3][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[3][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[3][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[4][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[4][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[4][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[5][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[5][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[5][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[6][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[6][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[6][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[7][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[7][1] / widthCV * widthBoard), 1), z, power],
+                   round(shortSideBoard[1] - (grid[7][1] / widthCV * widthBoard), 1), z],
                   [round(longSideBoard[0] + (grid[8][0] / lengthBoard * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[8][1] / widthCV * widthBoard), 1), z, power]
+                   round(shortSideBoard[1] - (grid[8][1] / widthCV * widthBoard), 1), z]
                   ]
 
     return scaledGrid
