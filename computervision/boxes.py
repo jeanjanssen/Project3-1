@@ -48,19 +48,19 @@ cols = pts[:, 0]
 rows = pts[:, 1]
 
 if rows[0] == rows[1]:
-    count = 2
+    count_rows = 2
     i = 1
     while i < 10:
         if rows[i] == rows[i+1]:
-            count += 1
+            count_rows += 1
 
         i += 1
 
-print(count)
+print(count_rows)
 
-width = float(count)
+width = float(count_rows)
 print(width, "width")
-height = rng / count
+height = rng / count_rows
 print(height, "height")
 
 
@@ -82,7 +82,7 @@ def main():
         if x == "1":
 
             # Board_Xdim = int(input("\nPlease enter the number of rows for the board: \n")) * 2 + 1
-            Board_Xdim = getWidth(count)
+            Board_Xdim = getWidth(count_rows)
             if Board_Xdim < 5:
                 print("\nthe number of rows should at least be 2\n")
                 exit()
