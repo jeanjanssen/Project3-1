@@ -198,14 +198,13 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         # Make the commandString
         # commandString = "A"
         t4 = 0
-        for x in range(0, abs(math.floor(angleDiff / 5))):
+        for x in range(0, abs(math.floor(angleDiff / 10))):
             if angleDiff > 0:
-                commandString += ",0,{:.0f},1000".format(prevTheta4 + 5 * (t4 + 1))
-                t4 += 1
+                commandString += ",0,{:.0f},1000".format(prevTheta4 + 10 * (t4 + 1))
             elif angleDiff < 0:
-                commandString += ",0,{:.0f},1000".format(prevTheta4 - 5 * t4)
-                t4 += 1
-        if angleDiff - 5 * t4 != 0:
+                commandString += ",0,{:.0f},1000".format(prevTheta4 - 10 * t4)
+            t4 += 1
+        if angleDiff - 10 * t4 != 0:
             commandString += ",0,{:.2f},1000".format(theta_4)
         # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta4 = theta_4  # Update prevTheta4
@@ -221,10 +220,9 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
                 commandString += ",1,{:.0f},1000".format(prevTheta3 + 5 * (t3 + 1))
-                t3 += 1
             elif angleDiff < 0:
                 commandString += ",1,{:.0f},1000".format(prevTheta3 - 5 * t3)
-                t3 += 1
+            t3 += 1
         if angleDiff - 5 * t3 != 0:
             commandString += ",1,{:.2f},1000".format(theta_3)
         # output_list.extend(constrainCommandStringLength(commandString + "\n"))
@@ -241,10 +239,9 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
                 commandString += ",3,{:.0f},1000".format(prevTheta1 + 5 * (t1 + 1))
-                t1 += 1
             elif angleDiff < 0:
                 commandString += ",3,{:.0f},1000".format(prevTheta1 - 5 * t1)
-                t1 += 1
+            t1 += 1
         if angleDiff - 5 * t1 != 0:
             commandString += ",3,{:.2f},1000".format(theta_1)
         # output_list.extend(constrainCommandStringLength(commandString + "\n"))
@@ -261,16 +258,120 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
                 commandString += ",2,{:.0f},1000".format(prevTheta2 + 5 * (t2 + 1))
-                t2 += 1
             elif angleDiff < 0:
                 commandString += ",2,{:.0f},1000".format(prevTheta2 - 5 * t2)
-                t2 += 1
+            t2 += 1
         if angleDiff - 5 * t2 != 0:
             commandString += ",2,{:.2f},1000".format(theta_2)
         output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta2 = theta_2  # Update prevTheta2
 
     return output_list
+
+
+def drawLine(x1, y1, z1, x2, y2, z2):
+    # Get the angles of the motors at the begin and end location
+    th11, th21, th31, th41 = getcoords(x1, y1, z1)
+    th12, th22, th32, th42 = getcoords(x2, y2, z2)
+
+    # TODO first make code correct with begin and end coordinates, then look for maybe adding an intermediate coordinate
+    # # Get intermediate angles if the distance between begin and end location is bigger than 5
+    # th13, th23, th33, th43 = 0, 0, 0, 0
+    # if math.sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2) > 5:
+    #     th13, th23, th33, th43 = getcoords(abs((x1+x2)/2), abs((y1+y2)/2), abs((z1+z2)/2))
+
+    # TODO
+    #  1. Make output_list for motor to move to the first position (Done?)
+    #  2. Check whether angle of motor changes when going to new position
+    #       a. If so, make commandString for this motor (Done)
+    #       b. Then check with other motors and make new commandString of these commandStrings combined
+    #       c. Check if they make sense using FK, i.e., the pen still touches the table
+    #  3. Add commandStrings of end position to output_list
+
+    # TODO probably update the make_list or make a new method, because it keeps the previous position in mind when
+    #  going to multiple positions in one run
+    output_list = make_list(th11, th21, th31, th41)
+
+    # Get commandStrings for motors that change their angles
+    pre_output_list = []
+    if th11 != th12:
+        pre_output_list.append(singleMotorCommandString(th12, 3))
+    if th21 != th22:
+        pre_output_list.append(singleMotorCommandString(th22, 2))
+    if th31 != th32:
+        pre_output_list.append(singleMotorCommandString(th32, 1))
+    if th41 != th42:
+        pre_output_list.append(singleMotorCommandString(th42, 0))
+
+    # TODO make commandStrings for moving the motors "simultaneously" using the commandStrings from the pre_output_list
+
+
+def makeListPerMotor(theta1, theta2, theta3, theta4):
+    pass
+
+
+def singleMotorCommandString(theta, motorID):
+    """
+    Create commandString for a single motor with ID={0: theta4(PEN1), 1: theta3(PEN2), 2: theta2(PEN3), 3: theta1(PEN4)}
+
+    Parameters
+    ----------
+        theta : float
+            The angle of the motor in degrees
+        motorID : int
+            ID is an integer with value 0, 1, 2 or 3, where 0 belongs to theta4, 1 to theta3, 2 to theta2, 3 to theta1
+
+    Returns a commandString if the angle is different from the previous angle and an empty string otherwise
+    """
+    # Get previous angle of the motor
+    prevTheta = getPrevTheta(motorID)
+
+    # Make commandString for the motor
+    angleDiff = theta - prevTheta
+    if angleDiff != 0:
+        # Make the commandString
+        commandString = "A"
+        k = 0
+        for x in range(0, abs(math.floor(angleDiff / 10))):
+            if angleDiff > 0:
+                commandString += ",{},{:.0f},1000".format(motorID, prevTheta + 10 * (k + 1))
+            elif angleDiff < 0:
+                commandString += ",{},{:.0f},1000".format(motorID, prevTheta - 10 * k)
+            k += 1
+        if angleDiff - 10 * k != 0:
+            commandString += ",{},{:.2f},1000".format(motorID, theta)
+        commandString += "\n"
+
+        # Update previous angle of the motor
+        updatePrevTheta(theta, motorID)
+
+        return commandString
+    return ""
+
+
+def getPrevTheta(ID):
+    """ Get previous angle of the motor given ID """
+    global prevTheta1, prevTheta2, prevTheta3, prevTheta4
+    switch = {
+        0: prevTheta4,
+        1: prevTheta3,
+        2: prevTheta2,
+        3: prevTheta1,
+    }
+    return switch.get(ID)
+
+
+def updatePrevTheta(theta, ID):
+    """ Update prevTheta of motor with ID to theta """
+    global prevTheta1, prevTheta2, prevTheta3, prevTheta4
+    if ID == 0:
+        prevTheta4 = theta
+    elif ID == 1:
+        prevTheta3 = theta
+    elif ID == 2:
+        prevTheta2 = theta
+    elif ID == 3:
+        prevTheta1 = theta
 
 
 def constrainCommandStringLength(commandString):
@@ -313,7 +414,14 @@ def move_kinematics(player):
 
 if __name__ == '__main__':
     # Formatting is getcoords(x, y, z)
-    output = getcoords(-10, 20, 1)
-    print(FK.calc_position(output[0], output[1], output[2], output[3]))
-    # for x in output:
-    #    print("sending", x, end="")
+    theta1, theta2, theta3, theta4 = getcoords(-10, 20, 1)
+    print("Calculating position given the angles of the inverse kinematics...")
+    print(FK.calc_position(theta1, theta2, theta3, theta4))
+    # Apply offset
+    theta2 -= 25
+    theta3 -= 50
+    # Make list of commandStrings
+    output = make_list(theta1, theta2, theta3, theta4)
+    # print(output)
+    for x in output:
+       print("sending", x, end="")
