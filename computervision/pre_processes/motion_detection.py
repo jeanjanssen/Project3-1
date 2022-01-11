@@ -32,19 +32,7 @@ def motiondection(video):
         gray = cv2.GaussianBlur(gray, (kernelsize, kernelsize), 0)
 
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 6)
-        #print(gray.shape)
-        grid = test_player.get_3X3_GRID(thresh)
 
-        try:
-            # Draw grid wait on user
-            for i, (x, y, w, h) in enumerate(grid):
-
-                # cv2.rectangle(paper, (x, y), (x + w, y + h), (0, 0, 0), 2)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), -1)
-
-        except:
-            # print("something wrong in corners list")
-            pass
 
         cv2.imshow("d",frame)
         height, width = gray.shape
@@ -62,7 +50,7 @@ def motiondection(video):
 
 
 
-   # set first frame as baseline
+    # set first frame as baseline
         if baseline_image_1 is None:
             baseline_image_1 = frame_partONE
             continue
@@ -75,11 +63,37 @@ def motiondection(video):
             baseline_image_3 = frame_partTHREE
             continue
 
+        if detected is True :
+            baseline_frame = frame
+            continue
 
-        # Difference between baseline and current frame
+
+
+
+
+        #Difference between baseline and current frame
         diff_frame_1 = cv2.absdiff(baseline_image_1, frame_partONE)
         diff_frame_2 = cv2.absdiff(baseline_image_2, frame_partTWO)
         diff_frame_3 = cv2.absdiff(baseline_image_3, frame_partTHREE)
+        if detected is True :
+         diff_frame_complete = cv2.absdiff(baseline_frame, frame)
+         thresh_frame_complete = cv2.adaptiveThreshold(diff_frame_complete, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                       cv2.THRESH_BINARY_INV,
+                                                       21,
+                                                       5)
+         cnts_complete, _ = cv2.findContours(thresh_frame_complete.copy(),
+                                             cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+         for contour_comp in cnts_complete:
+             # if cv2.contourArea(contour) > 50000 and cv2.contourArea(contour) <1000000000000000000000 :  # detection threshold contour area
+             if cv2.contourArea(contour_comp) < (1000 / 2):
+
+                 continue
+
+             else:
+                 detected = False
+             (x, y, w, h) = cv2.boundingRect(contour_comp)
+             detected = True
+
         '''
         if differance in current image and the baseline is bigger then intensity threshold set pixel value white (255)
         intensity difference we will have to calibrate accoriding to the webcam 
@@ -92,6 +106,8 @@ def motiondection(video):
                                            5)
         thresh_frame_3 = cv2.adaptiveThreshold(diff_frame_3, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21,
                                            5)
+
+
         #dilate for better coheracne
         #thresh_frame = cv2.dilate(thresh_frame, None, iterations=1)
 
@@ -103,15 +119,17 @@ def motiondection(video):
         cnts_3, _ = cv2.findContours(thresh_frame_3.copy(),
                                  cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        for contour_1 in cnts_1:
+
+
+        for contour_comp in cnts_1:
              #if cv2.contourArea(contour) > 50000 and cv2.contourArea(contour) <1000000000000000000000 :  # detection threshold contour area
-            if cv2.contourArea(contour_1) <(1000/2) :
+            if cv2.contourArea(contour_comp) <(1000/2) :
 
                 continue
 
             else :
                 detected= False
-            (x, y, w, h) = cv2.boundingRect(contour_1)
+            (x, y, w, h) = cv2.boundingRect(contour_comp)
             detected= True
 
             #cv2.rectangle(thresh_frame_1, (x, y), (x + w, y + h), (0, 255, 0), 3)
@@ -143,6 +161,7 @@ def motiondection(video):
             #cv2.rectangle(thresh_frame_1, (x, y), (x + w, y + h), (0, 255, 0), 3)
             #cv2.rectangle(frame, (x+950, y), (950+x + w, y + h), ( 255, 0,0), 3)
             #return detected
+
 
 
 
