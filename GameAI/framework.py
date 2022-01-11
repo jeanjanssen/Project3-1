@@ -27,11 +27,42 @@ player = 'X'
 def update_ui_turn(turn):
     pass
 
-def move_coordinates(player)
+def move_coordinates(player, middleCoord):
     if player == 'X':
-        pass
+        getCoordsToSketchCross(middleCoord)
     if player == 'O':
         pass
+
+def getCoordsToSketchCross(middleCoord):
+    print(middleCoord)
+    height_dist = 2  # TODO test which value is best
+    width_dist = 2  # TODO test which value is best
+
+    x = middleCoord[0]
+    y = middleCoord[1]
+    z = middleCoord[2]
+    power = middleCoord[3]
+
+    coords = []
+    coord0 = (x - width_dist, y + height_dist, z, power)  # top left coord of cross
+    coord1 = middleCoord
+    coord2 = (x + width_dist, y - height_dist, z, power)  # bottom right coord of cross
+    coord3 = (x + width_dist, y - height_dist, z + 3, power)  # position in the air before sketching second line
+    coord4 = (x + width_dist, y + height_dist, z, power)  # top right coord of cross
+    coord5 = middleCoord
+    coord6 = (x - width_dist, y - height_dist, z, power)  # bottom left coord of cross
+
+    coords.append(coord0)
+    coords.append(coord1)
+    coords.append(coord2)
+    coords.append(coord3)
+    coords.append(coord4)
+    coords.append(coord5)
+    coords.append(coord6)
+
+    print(coords)
+
+    return coords
 
 def calculate_coordinates(computer_move):
     ik_coords = []
