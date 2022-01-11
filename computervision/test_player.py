@@ -217,24 +217,24 @@ def scaleGrid():
     z = 21.1  # default value
     power = 69  # default value
 
-    scaledGrid = [[round(longSideBoard[0] + (grid[0][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[0][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[1][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[1][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[2][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[2][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[3][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[3][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[4][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[4][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[5][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[5][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[6][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[6][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[7][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[7][0] / lengthCV * widthBoard), 1), z, power],
-                  [round(longSideBoard[0] + (grid[8][1] / widthCV * lengthBoard), 1),
-                   round(shortSideBoard[1] - (grid[8][0] / lengthCV * widthBoard), 1), z, power]
+    scaledGrid = [[round(longSideBoard[0] + (grid[0][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[0][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[1][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[1][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[2][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[2][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[3][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[3][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[4][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[4][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[5][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[5][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[6][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[6][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[7][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[7][1] / widthCV * widthBoard), 1), z, power],
+                  [round(longSideBoard[0] + (grid[8][0] / lengthBoard * lengthBoard), 1),
+                   round(shortSideBoard[1] - (grid[8][1] / widthCV * widthBoard), 1), z, power]
                   ]
 
     return scaledGrid
