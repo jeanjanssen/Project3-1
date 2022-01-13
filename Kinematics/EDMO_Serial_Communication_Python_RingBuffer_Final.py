@@ -1,5 +1,6 @@
 import serial
 from timeit import default_timer as timer
+from time import sleep
 
 ######## INIT serial communication variables ################################
 import IK
@@ -68,9 +69,20 @@ def sendData():
     # Getting the commandStrings
     # output = IK.make_list(theta1, theta2, theta3, theta4)
     output = IK.drawLine(2.5, 22.5, 1, 2.5, 27.5, 1)
+    # output = IK.drawLine(0, 25, 1, 5, 25, 1)
+    # output.extend(IK.drawLine(0, 25, 1, 5, 25, 1))
+
+    # output = IK.drawLine(-2.5, 17.5, 1, -2.5, 32.5, 1)
+    # output.extend(IK.drawLine(2.5, 17.5, 1, 2.5, 32.5, 1))
+    # output.extend(IK.drawLine(-7.5, 22.5, 1, 7.5, 22.5, 1))
+    # output.extend(IK.drawLine(-7.5, 27.5, 1, 7.5, 27.5, 1))
 
     # Sending the commandStrings
+    count = 0
     for x in output:
+        count += 1
+        # if (count - 1) % 25 == 0:
+        #     sleep(10)
         print("sending", x, end="")
         ser.write(x.encode())
 

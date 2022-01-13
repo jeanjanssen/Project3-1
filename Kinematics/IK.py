@@ -14,6 +14,8 @@ prevTheta2 = -25.0  # PEN3
 prevTheta3 = -45.0  # PEN2
 prevTheta4 = -20.0  # PEN1, top motor
 
+# CommandString to return the robotic arm to an up straight position
+RETURN_COMMANDSTRING = "A,0,-20,1000,1,-45,0,2,-25,0,3,0,0\n"
 MAX_LENGTH = 100  # Maximum length of commandString (100 is consistent with arduino code! Don't enter higher values!)
 
 
@@ -66,7 +68,7 @@ def getcoords(px, py, pz):
     # print(theta_d)
     # print(theta_3)
     theta_4 = theta_d
-    theta_4 -= 25.0  # TODO 24, 25 or 26
+    theta_4 -= 24.0  # TODO 24, 25 or 26
     # print("theta_4", theta_4)
     theta_4 = min(max(-90, theta_4), 90)
 
@@ -276,12 +278,31 @@ def drawLine(x1, y1, z1, x2, y2, z2):
     th11, th21, th31, th41 = getcoords(x1, y1, z1)
     th12, th22, th32, th42 = getcoords(x2, y2, z2)
 
+    # TODO smoothing the movement using steps?
+    print(abs(th11 - th12))
+    print(abs(th21 - th22))
+    print(abs(th31 - th32))
+    print(abs(th41 - th42))
+
+    # Get number of steps
+    steps = 0
+    new_step = int(abs(th11 - th12) / 10)
+    steps = max(steps, new_step)
+    new_step = int(abs(th21 - th22) / 10)
+    steps = max(steps, new_step)
+    new_step = int(abs(th31 - th32) / 10)
+    steps = max(steps, new_step)
+    new_step = int(abs(th41 - th42) / 10)
+    steps = max(steps, new_step)
+    print("steps =", steps)
+
     print("Thetas start position:\nTheta1 =", th11, "\nTheta2 =", th21, "\nTheta3 =", th31, "\nTheta4 =", th41, "\n")
     print("Thetas end position:\nTheta1 =", th12, "\nTheta2 =", th22, "\nTheta3 =", th32, "\nTheta4 =", th42, "\n")
 
     print(FK.calc_position(th11, th21, th31, th41))
     print(FK.calc_position((th11+th12)/2, (th21+th22)/2, (th31+th32)/2, (th41+th42)/2))
     print(FK.calc_position(th12, th22, th32, th42))
+    print()
 
     # Applying offsets
     th21, th31 = applyOffset(th21, th31)
@@ -294,45 +315,70 @@ def drawLine(x1, y1, z1, x2, y2, z2):
     commandString = make_list(th11, th21, th31, th41)
     output_list.extend(commandString)
 
+    # TODO check if steps is correctly implemented here
     # add commandString for middle coordinate
     commandString = "A"
-    if th11 != th12:
-        commandString += ",3,{:.2f},50".format((th11 + th12) / 2)
-    if th21 != th22:
-        commandString += ",2,{:.2f},50".format((th21 + th22) / 2)
-    if th31 != th32:
-        commandString += ",1,{:.2f},50".format((th31 + th32) / 2)
-    if th41 != th42:
-        commandString += ",0,{:.2f},50".format((th41 + th42) / 2)
+    for i in range(1, steps):
+        flag = False
+        if th11 != th12:  # Bottom motor (PEN4)
+            # commandString += ",3,{:.2f},0".format((th11 + th12) / 2)
+            commandString += ",3,{:.2f},1000".format(th11 + (th12 - th11) * i / steps)
+            flag = True
+        if th41 != th42:  # Top motor (PEN1)
+            # commandString += ",0,{:.2f},0".format((th41 + th42) / 2)
+            if flag:
+                commandString += ",0,{:.2f},0".format(th41 + (th42 - th41) * i / steps)
+            else:
+                commandString += ",0,{:.2f},1000".format(th41 + (th42 - th41) * i / steps)
+                flag = True
+        if th31 != th32:  # Third motor (PEN2)
+            # commandString += ",1,{:.2f},0".format((th31 + th32) / 2)
+            if flag:
+                commandString += ",1,{:.2f},0".format(th31 + (th32 - th31) * i / steps)
+            else:
+                commandString += ",1,{:.2f},1000".format(th31 + (th32 - th31) * i / steps)
+                flag = True
+        if th21 != th22:  # Second motor (PEN3)
+            # commandString += ",2,{:.2f},0".format((th21 + th22) / 2)
+            if flag:
+                commandString += ",2,{:.2f},0".format(th21 + (th22 - th21) * i / steps)
+            else:
+                commandString += ",2,{:.2f},1000".format(th21 + (th22 - th21) * i / steps)
+                flag = True
 
     # add commandString for end position
     flag = False  # to determine when to add a bigger delay
-    if th11 != th12:
+    if th11 != th12:  # Bottom motor (PEN4)
         commandString += ",3,{:.2f},1000".format(th12)
         flag = True
-    if th21 != th22:
+    if th41 != th42:  # Top motor (PEN1)
         if flag:
-            commandString += ",2,{:.2f},50".format(th22)
+            commandString += ",0,{:.2f},0".format(th42)
         else:
-            commandString += ",2,{:.2f},1000".format(th22)
+            commandString += ",0,{:.2f},1000".format(th42)
             flag = True
-    if th31 != th32:
+    if th31 != th32:  # Third motor (PEN2)
         if flag:
-            commandString += ",1,{:.2f},50".format(th32)
+            commandString += ",1,{:.2f},0".format(th32)
         else:
             commandString += ",1,{:.2f},1000".format(th32)
             flag = True
-    if th41 != th42:
+    if th21 != th22:  # Second motor (PEN3)
         if flag:
-            commandString += ",0,{:.2f},50".format(th42)
+            commandString += ",2,{:.2f},0".format(th22)
         else:
-            commandString += ",0,{:.2f},50".format(th42)
+            commandString += ",2,{:.2f},1000".format(th22)
+            flag = True
     commandString += "\n"
 
+    # Cut commandStrings into pieces of with a maximum of 100 characters
     output_list.extend(constrainCommandStringLength(commandString))
 
-    # for o in output_list:
-    #     print(o, end="")
+    # Add commandString to move it back to its starting position
+    output_list.append(RETURN_COMMANDSTRING)
+
+    for o in output_list:
+        print(o, end="")
 
     return output_list
 
