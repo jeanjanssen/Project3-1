@@ -48,36 +48,35 @@ def getcoords(px, py, pz):
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
     lc = math.sqrt((py ** 2) + (pz ** 2))
-    print("la =", la, "\nlb =", lb, "\nlc =", lc, "\npy =", py)
+    # print("la =", la, "\nlb =", lb, "\nlc =", lc, "\npy =", py)
 
-    # TODO remove theta_a and theta_b since we only need theta_c???
     theta_a = math.acos((lb ** 2 + lc ** 2 - la ** 2) / (2 * lb * lc))
     theta_b = math.acos((la ** 2 + lc ** 2 - lb ** 2) / (2 * la * lc))
     theta_c = math.acos((la ** 2 + lb ** 2 - lc ** 2) / (2 * la * lb))
-    print("theta_a", theta_a, ", theta_b", theta_b, ", theta_c", theta_c, "\nwhole triangle:",
-          theta_c + theta_b + theta_a)
+    # print("theta_a", theta_a, ", theta_b", theta_b, ", theta_c", theta_c, "\nwhole triangle:",
+    #       theta_c + theta_b + theta_a)
 
     theta_d = math.acos((la ** 2 + l3 ** 2 - l2 ** 2) / (2 * la * l3))
-    print("theta_d", theta_d)
+    # print("theta_d", theta_d)
     theta_d += theta_c
-    print("theta_d", theta_d)
+    # print("theta_d", theta_d)
     theta_d = math.pi - theta_d
-    print("theta_d", theta_d)
+    # print("theta_d", theta_d)
     theta_d = rad2deg(theta_d)
-    print(theta_d)
-    print(theta_3)
+    # print(theta_d)
+    # print(theta_3)
     theta_4 = theta_d
-    theta_4 -= 26.0
-    print("theta_4", theta_4)
+    theta_4 -= 25.0  # TODO 24, 25 or 26
+    # print("theta_4", theta_4)
     theta_4 = min(max(-90, theta_4), 90)
 
     theta_e = math.acos((l2 ** 2 + la ** 2 - l3 ** 2) / (2 * l2 * la))
-    print(theta_e)
+    # print(theta_e)
     theta_e += theta_b
-    print("theta_e", theta_e)
-    print(rad2deg(theta_e))
+    # print("theta_e", theta_e)
+    # print(rad2deg(theta_e))
     theta_e += math.atan(pz / py)
-    print(theta_e)
+    # print(theta_e)
     theta_2 = rad2deg(theta_e)
     theta_2 = 90 - theta_2
 
@@ -95,9 +94,9 @@ def getcoords(px, py, pz):
     # theta_3 = rad2deg(theta_3)
     # theta_3 = min(max(10, theta_3), 100)
     # theta_3 = deg2rad(theta_3)
-    print(theta_3)
+    # print(theta_3)
     theta_3 = rad2deg(theta_3)
-    print(theta_3)
+    # print(theta_3)
     #
     # a = l3 * math.sin(theta_3)
     # b = l2 * l3 * math.cos(theta_3)
@@ -113,44 +112,44 @@ def getcoords(px, py, pz):
 
     # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
     # print(output)
-    print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
+    # print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
     return theta_1, theta_2, theta_3, theta_4
 
 
 # second try
-def getCoords2(px, py, pz):
-    """
-    returns angles in degrees
-    """
-    theta1 = math.atan(px / py)
-    theta1 = rad2deg(theta1)
-
-    a = math.sqrt(py ** 2 + px ** 2) - l4
-    b = pz - l1
-
-    # theta3 = - math.acos((a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
-    value = (a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3)
-    # print(value**2)
-    theta3 = - math.atan(math.sqrt(1 - value ** 2) / value)
-
-    theta2prime = math.atan(b / a) + math.atan((l3 * math.sin(theta3)) / (l2 + l3 * math.cos(theta3)))
-    theta2prime = rad2deg(theta2prime)
-
-    theta3 = rad2deg(theta3)
-
-    theta2 = theta2prime - 90
-
-    theta4 = 90 - theta2prime - theta3
-
-    print("Theta1 =", theta1, "\nTheta2 =", theta2prime, "\nTheta3 =", theta3, "\nTheta4 =", theta4)
-    # Take into account offset
-    theta2 -= 25
-    theta3 -= 50
-    theta4 -= 20
-
-    # TODO consider motors range
-
-    return make_list(theta1, theta2, theta3, theta4)
+# def getCoords2(px, py, pz):
+#     """
+#     returns angles in degrees
+#     """
+#     theta1 = math.atan(px / py)
+#     theta1 = rad2deg(theta1)
+#
+#     a = math.sqrt(py ** 2 + px ** 2) - l4
+#     b = pz - l1
+#
+#     # theta3 = - math.acos((a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
+#     value = (a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3)
+#     # print(value**2)
+#     theta3 = - math.atan(math.sqrt(1 - value ** 2) / value)
+#
+#     theta2prime = math.atan(b / a) + math.atan((l3 * math.sin(theta3)) / (l2 + l3 * math.cos(theta3)))
+#     theta2prime = rad2deg(theta2prime)
+#
+#     theta3 = rad2deg(theta3)
+#
+#     theta2 = theta2prime - 90
+#
+#     theta4 = 90 - theta2prime - theta3
+#
+#     print("Theta1 =", theta1, "\nTheta2 =", theta2prime, "\nTheta3 =", theta3, "\nTheta4 =", theta4)
+#     # Take into account offset
+#     theta2 -= 25
+#     theta3 -= 50
+#     theta4 -= 20
+#
+#     # TODO consider motors range
+#
+#     return make_list(theta1, theta2, theta3, theta4)
 
 
 def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the class FK
@@ -270,44 +269,77 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
 
 def drawLine(x1, y1, z1, x2, y2, z2):
+    length = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+    print("Length between points =", length)
+
     # Get the angles of the motors at the begin and end location
     th11, th21, th31, th41 = getcoords(x1, y1, z1)
     th12, th22, th32, th42 = getcoords(x2, y2, z2)
 
-    # TODO first make code correct with begin and end coordinates, then look for maybe adding an intermediate coordinate
-    # # Get intermediate angles if the distance between begin and end location is bigger than 5
-    # th13, th23, th33, th43 = 0, 0, 0, 0
-    # if math.sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2) > 5:
-    #     th13, th23, th33, th43 = getcoords(abs((x1+x2)/2), abs((y1+y2)/2), abs((z1+z2)/2))
+    print("Thetas start position:\nTheta1 =", th11, "\nTheta2 =", th21, "\nTheta3 =", th31, "\nTheta4 =", th41, "\n")
+    print("Thetas end position:\nTheta1 =", th12, "\nTheta2 =", th22, "\nTheta3 =", th32, "\nTheta4 =", th42, "\n")
 
-    # TODO
-    #  1. Make output_list for motor to move to the first position (Done?)
-    #  2. Check whether angle of motor changes when going to new position
-    #       a. If so, make commandString for this motor (Done)
-    #       b. Then check with other motors and make new commandString of these commandStrings combined
-    #       c. Check if they make sense using FK, i.e., the pen still touches the table
-    #  3. Add commandStrings of end position to output_list
+    print(FK.calc_position(th11, th21, th31, th41))
+    print(FK.calc_position((th11+th12)/2, (th21+th22)/2, (th31+th32)/2, (th41+th42)/2))
+    print(FK.calc_position(th12, th22, th32, th42))
 
-    # TODO probably update the make_list or make a new method, because it keeps the previous position in mind when
-    #  going to multiple positions in one run
-    output_list = make_list(th11, th21, th31, th41)
+    # Applying offsets
+    th21, th31 = applyOffset(th21, th31)
+    th22, th32 = applyOffset(th22, th32)
 
-    # Get commandStrings for motors that change their angles
-    pre_output_list = []
+    # Initialise output list
+    output_list = []
+
+    # commandString to move to begin of line
+    commandString = make_list(th11, th21, th31, th41)
+    output_list.extend(commandString)
+
+    # add commandString for middle coordinate
+    commandString = "A"
     if th11 != th12:
-        pre_output_list.append(singleMotorCommandString(th12, 3))
+        commandString += ",3,{:.2f},50".format((th11 + th12) / 2)
     if th21 != th22:
-        pre_output_list.append(singleMotorCommandString(th22, 2))
+        commandString += ",2,{:.2f},50".format((th21 + th22) / 2)
     if th31 != th32:
-        pre_output_list.append(singleMotorCommandString(th32, 1))
+        commandString += ",1,{:.2f},50".format((th31 + th32) / 2)
     if th41 != th42:
-        pre_output_list.append(singleMotorCommandString(th42, 0))
+        commandString += ",0,{:.2f},50".format((th41 + th42) / 2)
 
-    # TODO make commandStrings for moving the motors "simultaneously" using the commandStrings from the pre_output_list
+    # add commandString for end position
+    flag = False  # to determine when to add a bigger delay
+    if th11 != th12:
+        commandString += ",3,{:.2f},1000".format(th12)
+        flag = True
+    if th21 != th22:
+        if flag:
+            commandString += ",2,{:.2f},50".format(th22)
+        else:
+            commandString += ",2,{:.2f},1000".format(th22)
+            flag = True
+    if th31 != th32:
+        if flag:
+            commandString += ",1,{:.2f},50".format(th32)
+        else:
+            commandString += ",1,{:.2f},1000".format(th32)
+            flag = True
+    if th41 != th42:
+        if flag:
+            commandString += ",0,{:.2f},50".format(th42)
+        else:
+            commandString += ",0,{:.2f},50".format(th42)
+    commandString += "\n"
+
+    output_list.extend(constrainCommandStringLength(commandString))
+
+    # for o in output_list:
+    #     print(o, end="")
+
+    return output_list
 
 
-def makeListPerMotor(theta1, theta2, theta3, theta4):
-    pass
+def applyOffset(theta2, theta3):
+    # TODO or -55 for theta3?
+    return theta2-25, theta3-50
 
 
 def singleMotorCommandString(theta, motorID):
@@ -332,13 +364,13 @@ def singleMotorCommandString(theta, motorID):
         # Make the commandString
         commandString = "A"
         k = 0
-        for x in range(0, abs(math.floor(angleDiff / 10))):
+        for x in range(0, abs(math.floor(angleDiff / 5))):
             if angleDiff > 0:
-                commandString += ",{},{:.0f},1000".format(motorID, prevTheta + 10 * (k + 1))
+                commandString += ",{},{:.0f},1000".format(motorID, prevTheta + 5 * (k + 1))
             elif angleDiff < 0:
-                commandString += ",{},{:.0f},1000".format(motorID, prevTheta - 10 * k)
+                commandString += ",{},{:.0f},1000".format(motorID, prevTheta - 5 * k)
             k += 1
-        if angleDiff - 10 * k != 0:
+        if angleDiff - 5 * k != 0:
             commandString += ",{},{:.2f},1000".format(motorID, theta)
         commandString += "\n"
 
@@ -413,15 +445,16 @@ def move_kinematics(player):
 
 
 if __name__ == '__main__':
-    # Formatting is getcoords(x, y, z)
-    theta1, theta2, theta3, theta4 = getcoords(-10, 20, 1)
-    print("Calculating position given the angles of the inverse kinematics...")
-    print(FK.calc_position(theta1, theta2, theta3, theta4))
-    # Apply offset
-    theta2 -= 25
-    theta3 -= 50
-    # Make list of commandStrings
-    output = make_list(theta1, theta2, theta3, theta4)
-    # print(output)
-    for x in output:
-       print("sending", x, end="")
+    drawLine(2.5, 22.5, 1, 2.5, 27.5, 1)
+    # # Formatting is getcoords(x, y, z)
+    # theta1, theta2, theta3, theta4 = getcoords(-10, 20, 1)
+    # print("Calculating position given the angles of the inverse kinematics...")
+    # print(FK.calc_position(theta1, theta2, theta3, theta4))
+    # # Apply offset
+    # theta2 -= 25
+    # theta3 -= 50
+    # # Make list of commandStrings
+    # output = make_list(theta1, theta2, theta3, theta4)
+    # # print(output)
+    # for x in output:
+    #    print("sending", x, end="")

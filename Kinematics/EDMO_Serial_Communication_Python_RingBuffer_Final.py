@@ -58,16 +58,16 @@ def sendData():
 
     ##### TESTING INVERSE KINEMATICS #####
     # Formatting is IK.getcoords(x, y, z)
-    theta1, theta2, theta3, theta4 = IK.getcoords(15, 20, 1)
-    print("Calculating position given the angles of the inverse kinematics...")
-    print(FK.calc_position(theta1, theta2, theta3, theta4))
-
-    # Applying offset for the motors
-    theta2 -= 25
-    theta3 -= 50    # TODO or 55?
-
+    # theta1, theta2, theta3, theta4 = IK.getcoords(15, 20, 1)
+    # print("Calculating position given the angles of the inverse kinematics...")
+    # print(FK.calc_position(theta1, theta2, theta3, theta4))
+    #
+    # # Applying offset for the motors
+    # theta2, theta3 = IK.applyOffset(theta2, theta3)
+    #
     # Getting the commandStrings
-    output = IK.make_list(theta1, theta2, theta3, theta4)
+    # output = IK.make_list(theta1, theta2, theta3, theta4)
+    output = IK.drawLine(2.5, 22.5, 1, 2.5, 27.5, 1)
 
     # Sending the commandStrings
     for x in output:
