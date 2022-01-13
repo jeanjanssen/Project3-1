@@ -67,7 +67,7 @@ def getCoordsToSketchCross(middleCoord):
 def calculate_coordinates(computer_move):
     ik_coords = []
     cv_coords = gamehistory[computer_move]['bbox']
-    ik_coords.append((-cv_coords.get(0)*(42.5/733) - 42.5))
+    ik_coords.append((-cv_coords.get(0)*(42.5/733) - 42.5/2))
     ik_coords.append((cv_coords.get(1)*(30.5/540) + 10))
     return ik_coords
 
