@@ -3,8 +3,8 @@ from timeit import default_timer as timer
 from time import sleep
 
 ######## INIT serial communication variables ################################
-import IK
-import FK
+from Kinematics import IK
+from Kinematics import FK
 import computervision.test_player as tp
 
 ser = serial.Serial('COM3', 57600)  # select com-port and the serial com baud rate

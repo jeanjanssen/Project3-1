@@ -1,5 +1,4 @@
 import math
-import IK
 from numpy import deg2rad
 
 # Lengths between joints. l1 is not needed

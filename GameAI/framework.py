@@ -3,9 +3,7 @@ import tkinter
 import tkinter as tk
 from tkinter import HORIZONTAL
 
-# import EDMO_Serial_Communication_Python_RingBuffer_Final
-
-from Kinematics import IK
+from Kinematics import IK, EDMO_Serial_Communication_Python_RingBuffer_Final
 from GameAI import TTT_Minimax
 from computervision.test_player import preprocesses, draw_SYMBOL
 import cv2
@@ -61,8 +59,8 @@ def getCoordsToSketchCross(middleCoord):
     coords.append(coord6)
 
     print(coords)
-
     return coords
+
 
 def calculate_coordinates(computer_move):
     ik_coords = []
@@ -102,11 +100,14 @@ def state_start(state, frame, gameboard):
         coords = calculate_coordinates(computer_move)
         # Create commands to move to the desired point
         global output_list
-        output_list.append(IK.getcoords(coords.get(1), coords.get(2), 22.1, coords.get(3)))
+        theta_1, theta_2, theta_3, theta_4 = IK.getcoords(coords.get(1), coords.get(2), 1)
+        #
+        theta_2, theta_3 = IK.applyOffset(theta_2, theta_3)
+        output_list.extend(IK.make_list(theta_1, theta_2, theta_3, theta_4))
         # Create commands to draw the X or O
         output_list.append(IK.move_kinematics(player))
         # Create commands to move back to the idle position
-        output_list.append(IK.make_list(0, -25, -45, -20))
+        output_list.extend(IK.make_list(0, -25, -45, -20))
         return "moving"
     elif state == "moving":
         # Check whether the output_list has been iterated over
@@ -121,7 +122,7 @@ def state_start(state, frame, gameboard):
             return "wait_move"
         # If the output_list still has unread values, send the next one to the arduino
         command_string = output_list[list_index]
-        # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+        EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
         list_index += 1
         return "moving"
     elif state == "wait_move":
