@@ -24,7 +24,7 @@ def getAngles():
     return prevTheta1, prevTheta2, prevTheta3, prevTheta4
 
 
-def getcoords(px, py, pz):
+def getcoords(px, py, pz, theta_3):
     # px and py are the desired points of the end-effector
 
     if py <= 17.5:
@@ -40,10 +40,12 @@ def getcoords(px, py, pz):
 
     py = math.sqrt((px ** 2) + (py ** 2))
 
+    """
     if case == 1 or case == 2:
         theta_3 = 95
     elif case == 3 or case == 4:
         theta_3 = 50
+    """
 
     theta_3 = deg2rad(theta_3)
 

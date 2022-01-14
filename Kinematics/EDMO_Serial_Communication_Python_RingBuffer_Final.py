@@ -34,29 +34,11 @@ def sendData():
 
     # Move the arm to the 0 position
     ser.write(commandString6.encode())
-
-    # TODO this is some code for cross or circle sketching?
-    # coords = tp.main()
-    # for c in coords:
-    #     # x = c[0], y = c[1], z = c[2], phi = c[3]
-    #     # Formatting is IK.getcoords(x, y, z)
-    #     theta1, theta2, theta3, theta4 = IK.getcoords(c[1], c[0], c[2], c[3])
-    #     print("Calculating position given the angles of the inverse kinematics...")
-    #     print(FK.calc_position(theta1, theta2, theta3, theta4))
-    #
-    #     # Applying offset for the motors
-    #     theta2 -= 25
-    #     theta3 -= 50
-    #
-    #     # Getting the commandStrings
-    #     output = IK.make_list(theta1, theta2, theta3, theta4)
-    #
-    #     for x in output:
-    #         print("sending", x, end="")
-    #         ser.write(x.encode())
-    #     # time.sleep(10)
-    # print()
-
+    y = 30
+    if y >= 25:
+        theta_3 = 95
+    elif y < 25:
+        theta_3 = 50
     ##### TESTING INVERSE KINEMATICS #####
     # Formatting is IK.getcoords(x, y, z)
     # theta1, theta2, theta3, theta4 = IK.getcoords(15, 20, 1)
