@@ -33,7 +33,7 @@ def getcoords(px, py, pz):
         case = 2
     elif 25.25 < py <= 33:
         case = 3
-    elif 33 > py:
+    else:
         case = 4
 
     theta_1 = math.atan2(px, py)
@@ -271,36 +271,39 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
 
 def drawLine(x1, y1, z1, x2, y2, z2):
+    # Test to show the distance between the coordinates
     length = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
     print("Length between points =", length)
+
+    steps = 1
 
     # Get the angles of the motors at the begin and end location
     th11, th21, th31, th41 = getcoords(x1, y1, z1)
     th12, th22, th32, th42 = getcoords(x2, y2, z2)
 
-    # TODO smoothing the movement using steps?
-    print(abs(th11 - th12))
-    print(abs(th21 - th22))
-    print(abs(th31 - th32))
-    print(abs(th41 - th42))
-
+    # # TODO smoothing the movement using steps?
+    # print(abs(th11 - th12))
+    # print(abs(th21 - th22))
+    # print(abs(th31 - th32))
+    # print(abs(th41 - th42))
+    #
     # Get number of steps
-    steps = 0
-    new_step = int(abs(th11 - th12) / 10)
-    steps = max(steps, new_step)
-    new_step = int(abs(th21 - th22) / 10)
-    steps = max(steps, new_step)
-    new_step = int(abs(th31 - th32) / 10)
-    steps = max(steps, new_step)
-    new_step = int(abs(th41 - th42) / 10)
-    steps = max(steps, new_step)
-    print("steps =", steps)
+    # steps = 0
+    # new_step = int(ceil(abs(th11 - th12) / 10))
+    # steps = max(steps, new_step)
+    # new_step = int(ceil(abs(th21 - th22) / 10))
+    # steps = max(steps, new_step)
+    # new_step = int(ceil(abs(th31 - th32) / 10))
+    # steps = max(steps, new_step)
+    # new_step = int(ceil(abs(th41 - th42) / 10))
+    # steps = max(steps, new_step)
+    # print("steps =", steps)
 
     print("Thetas start position:\nTheta1 =", th11, "\nTheta2 =", th21, "\nTheta3 =", th31, "\nTheta4 =", th41, "\n")
     print("Thetas end position:\nTheta1 =", th12, "\nTheta2 =", th22, "\nTheta3 =", th32, "\nTheta4 =", th42, "\n")
 
     print(FK.calc_position(th11, th21, th31, th41))
-    print(FK.calc_position((th11+th12)/2, (th21+th22)/2, (th31+th32)/2, (th41+th42)/2))
+    # print(FK.calc_position((th11+th12)/2, (th21+th22)/2, (th31+th32)/2, (th41+th42)/2))
     print(FK.calc_position(th12, th22, th32, th42))
     print()
 
@@ -315,38 +318,69 @@ def drawLine(x1, y1, z1, x2, y2, z2):
     commandString = make_list(th11, th21, th31, th41)
     output_list.extend(commandString)
 
+    # Add intermediate steps
+    for i in range(1, steps):
+        th1Temp, th2Temp, th3Temp, th4Temp = getcoords(x1 + (x2 - x1) * i / steps, y1 + (y2 - y1) * i / steps, z1)
+        th2Temp, th3Temp = applyOffset(th2Temp, th3Temp)
+
+        commandString = "A"
+        flag = False
+        if th11 != th1Temp:  # Bottom motor (PEN4)
+            commandString += ",3,{:.2f},1000".format(th1Temp)
+            flag = True
+        if th41 != th4Temp:  # Top motor (PEN1)
+            if flag:
+                commandString += ",0,{:.2f},0".format(th4Temp)
+            else:
+                commandString += ",0,{:.2f},1000".format(th4Temp)
+                flag = True
+        if th31 != th3Temp:  # Third motor (PEN2)
+            if flag:
+                commandString += ",1,{:.2f},0".format(th3Temp)
+            else:
+                commandString += ",1,{:.2f},1000".format(th3Temp)
+                flag = True
+        if th21 != th2Temp:  # Second motor (PEN3)
+            if flag:
+                commandString += ",2,{:.2f},0".format(th2Temp)
+            else:
+                commandString += ",2,{:.2f},1000".format(th2Temp)
+        commandString += "\n"
+        output_list.extend(constrainCommandStringLength(commandString))
+
     # TODO check if steps is correctly implemented here
     # add commandString for middle coordinate
-    commandString = "A"
-    for i in range(1, steps):
-        flag = False
-        if th11 != th12:  # Bottom motor (PEN4)
-            # commandString += ",3,{:.2f},0".format((th11 + th12) / 2)
-            commandString += ",3,{:.2f},1000".format(th11 + (th12 - th11) * i / steps)
-            flag = True
-        if th41 != th42:  # Top motor (PEN1)
-            # commandString += ",0,{:.2f},0".format((th41 + th42) / 2)
-            if flag:
-                commandString += ",0,{:.2f},0".format(th41 + (th42 - th41) * i / steps)
-            else:
-                commandString += ",0,{:.2f},1000".format(th41 + (th42 - th41) * i / steps)
-                flag = True
-        if th31 != th32:  # Third motor (PEN2)
-            # commandString += ",1,{:.2f},0".format((th31 + th32) / 2)
-            if flag:
-                commandString += ",1,{:.2f},0".format(th31 + (th32 - th31) * i / steps)
-            else:
-                commandString += ",1,{:.2f},1000".format(th31 + (th32 - th31) * i / steps)
-                flag = True
-        if th21 != th22:  # Second motor (PEN3)
-            # commandString += ",2,{:.2f},0".format((th21 + th22) / 2)
-            if flag:
-                commandString += ",2,{:.2f},0".format(th21 + (th22 - th21) * i / steps)
-            else:
-                commandString += ",2,{:.2f},1000".format(th21 + (th22 - th21) * i / steps)
-                flag = True
+    # commandString = "A"
+    # for i in range(1, steps):
+    #     flag = False
+    #     if th11 != th12:  # Bottom motor (PEN4)
+    #         # commandString += ",3,{:.2f},0".format((th11 + th12) / 2)
+    #         commandString += ",3,{:.2f},1000".format(th11 + (th12 - th11) * i / steps)
+    #         flag = True
+    #     if th41 != th42:  # Top motor (PEN1)
+    #         # commandString += ",0,{:.2f},0".format((th41 + th42) / 2)
+    #         if flag:
+    #             commandString += ",0,{:.2f},0".format(th41 + (th42 - th41) * i / steps)
+    #         else:
+    #             commandString += ",0,{:.2f},1000".format(th41 + (th42 - th41) * i / steps)
+    #             flag = True
+    #     if th31 != th32:  # Third motor (PEN2)
+    #         # commandString += ",1,{:.2f},0".format((th31 + th32) / 2)
+    #         if flag:
+    #             commandString += ",1,{:.2f},0".format(th31 + (th32 - th31) * i / steps)
+    #         else:
+    #             commandString += ",1,{:.2f},1000".format(th31 + (th32 - th31) * i / steps)
+    #             flag = True
+    #     if th21 != th22:  # Second motor (PEN3)
+    #         # commandString += ",2,{:.2f},0".format((th21 + th22) / 2)
+    #         if flag:
+    #             commandString += ",2,{:.2f},0".format(th21 + (th22 - th21) * i / steps)
+    #         else:
+    #             commandString += ",2,{:.2f},1000".format(th21 + (th22 - th21) * i / steps)
+    #             flag = True
 
     # add commandString for end position
+    commandString = "A"
     flag = False  # to determine when to add a bigger delay
     if th11 != th12:  # Bottom motor (PEN4)
         commandString += ",3,{:.2f},1000".format(th12)
@@ -368,7 +402,6 @@ def drawLine(x1, y1, z1, x2, y2, z2):
             commandString += ",2,{:.2f},0".format(th22)
         else:
             commandString += ",2,{:.2f},1000".format(th22)
-            flag = True
     commandString += "\n"
 
     # Cut commandStrings into pieces of with a maximum of 100 characters
