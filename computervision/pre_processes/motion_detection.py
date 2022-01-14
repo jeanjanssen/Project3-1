@@ -56,7 +56,7 @@ def motiondection(video):
             continue
 
         if baseline_image_2 is None:
-            baseline_image_2= frame_partTWO
+            baseline_image_2 = frame_partTWO
             continue
 
         if baseline_image_3 is None:
