@@ -3,7 +3,8 @@ import tkinter
 import tkinter as tk
 from tkinter import HORIZONTAL
 
-from Kinematics import IK, EDMO_Serial_Communication_Python_RingBuffer_Final
+from Kinematics import IK
+# from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
 from GameAI import TTT_Minimax
 from computervision.test_player import preprocesses, draw_SYMBOL
 import cv2
@@ -122,7 +123,7 @@ def state_start(state, frame, gameboard):
             return "wait_move"
         # If the output_list still has unread values, send the next one to the arduino
         command_string = output_list[list_index]
-        EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+        # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
         list_index += 1
         return "moving"
     elif state == "wait_move":
@@ -237,10 +238,11 @@ def start_TTT_game():
     # model = load_model('computervision/data/model2.h5')
 
     # initialize camera streaming
-    vcap = cv2.VideoCapture(0)
+    vcap = cv2.VideoCapture(1)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam'.format())
     # Stream the camera while playing the game
+    lastframe = vcap.read()[1]
     while state != "end":
         ret, frame = vcap.read()
         key = cv2.waitKey(1) & 0xFF
@@ -255,18 +257,19 @@ def start_TTT_game():
 
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
-        video = frame + lastframe
-        if motion_detection.motiondection(video):
-            while motion_detection.motiondection(video):
+        # video = frame + lastframe
+        if motion_detection.motiondection(vcap):
+            while motion_detection.motiondection(vcap):
                 pass
         lastframe = frame
+
+        # Run the methods according to a state machine
+        state = state_start("begin", frame, gameboard)
 
         if not key == 32:
             cv2.imshow('original', frame)
             continue
 
-        # Run the methods according to a state machine
-        state = state_start("begin", frame, gameboard)
 
 def start_dots_and_boxes():
     pass
