@@ -272,7 +272,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     return output_list
 
 
-def drawLine(x1, y1, z1, x2, y2, z2):
+def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
     # Test to show the distance between the coordinates
     length = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
     print("Length between points =", length)
@@ -280,8 +280,8 @@ def drawLine(x1, y1, z1, x2, y2, z2):
     steps = 1
 
     # Get the angles of the motors at the begin and end location
-    th11, th21, th31, th41 = getcoords(x1, y1, z1)
-    th12, th22, th32, th42 = getcoords(x2, y2, z2)
+    th11, th21, th31, th41 = getcoords(x1, y1, z1, theta_3)
+    th12, th22, th32, th42 = getcoords(x2, y2, z2, theta_3)
 
     # # TODO smoothing the movement using steps?
     # print(abs(th11 - th12))
