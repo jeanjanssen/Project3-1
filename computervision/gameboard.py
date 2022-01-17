@@ -15,8 +15,10 @@ class Tic(object):
         [0, 4, 8], [2, 4, 6])
     winners = ('X-win', 'Draw', 'O-win')
 
-    def __init__(self, squares=[]):
+    def __init__(self, squares=None):
         """Initialize either custom or default board"""
+        if squares is None:
+            squares = []
         if len(squares) == 0:
             self.squares = [None for i in range(9)]
         else:

@@ -26,11 +26,13 @@ player = 'X'
 def update_ui_turn(turn):
     pass
 
+
 def move_coordinates(player, middleCoord):
     if player == 'X':
         getCoordsToSketchCross(middleCoord)
     if player == 'O':
         pass
+
 
 def getCoordsToSketchCross(middleCoord):
     print(middleCoord)
@@ -66,8 +68,8 @@ def getCoordsToSketchCross(middleCoord):
 def calculate_coordinates(computer_move):
     ik_coords = []
     cv_coords = gamehistory[computer_move]['bbox']
-    ik_coords.append((-cv_coords.get(0)*(42.5/733) - 42.5/2))
-    ik_coords.append((cv_coords.get(1)*(30.5/540) + 10))
+    ik_coords.append((-cv_coords.get(0) * (42.5 / 733) - 42.5 / 2))
+    ik_coords.append((cv_coords.get(1) * (30.5 / 540) + 10))
     return ik_coords
 
 
@@ -81,6 +83,8 @@ wait_move_first: The same as wait_move, where the symbol for the player and comp
                  players move.
 end: End the state machine, making clear that the game has finished
 """
+
+
 def state_start(state, frame, gameboard):
     if state == "begin":
         # Check who starts the game
@@ -231,12 +235,11 @@ def start_TTT_game():
     tk.mainloop()
     """
 
-
     # Initialize opponent (computer)
     gameboard = Tic()
     gamehistory = {}
     state = "begin"
-    list_index=0
+    list_index = 0
     global model
     os.path
     # model = load_model('computervision/data/model2.h5')
@@ -318,7 +321,7 @@ RPTTT_Image = ORG_PTTT_Image.resize((190, 100), Image.ANTIALIAS)
 PTTT_Image = ImageTk.PhotoImage(RPTTT_Image)
 
 P_TTT_button = tk.Button(start_screen, command=start_TTT_game, image=PTTT_Image, width=200, height=100, bd=0,
-                          highlightbackground='#a6c3e5')
+                         highlightbackground='#a6c3e5')
 P_TTT_button.pack(pady=10)
 
 # Difficulty Slider
