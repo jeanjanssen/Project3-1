@@ -9,7 +9,7 @@ l3 = 12.1
 l4 = 14  # length to the pen
 
 # Previous thetas such that the arm is (almost) up straight at the start
-prevTheta1 = 0.0    # PEN4, bottom motor
+prevTheta1 = 0.0  # PEN4, bottom motor
 prevTheta2 = -25.0  # PEN3
 prevTheta3 = -45.0  # PEN2
 prevTheta4 = -20.0  # PEN1, top motor
@@ -274,7 +274,7 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
 def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
     # Test to show the distance between the coordinates
-    length = sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+    length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     print("Length between points =", length)
 
     steps = 1
@@ -418,9 +418,30 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
     return output_list
 
 
+def drawPlus(x1, y1, z1, x2, y2, z2, theta_3):
+    list1 = drawLine(x1, y1, z1, x2, y2, z2, theta_3)
+    # Vertical case
+    if x1 == x2:
+        length = abs((y2 - y1) / 2)
+        y3 = (y1 + y2) / 2
+        x3 = x1 - length
+        x4 = x1 + length
+        list2 = drawLine(x3, y3, z1, x4, y3, z2, theta_3)
+    # Horizontal case
+    elif y1 == y2:
+        length2 = abs((x2 - x1) / 2)
+        x5 = (x1 + x2) / 2
+        y4 = y1 - length2
+        y5 = y1 + length2
+        list2 = drawLine(x5, y5, z1, x5, y4, z2, theta_3)
+    list1.extend(list2)
+    list1.extend(RETURN_COMMANDSTRING)
+    return list1
+
+
 def applyOffset(theta2, theta3):
     # TODO or -55 for theta3?
-    return theta2-25, theta3-50
+    return theta2 - 25, theta3 - 50
 
 
 def singleMotorCommandString(theta, motorID):
