@@ -3,6 +3,7 @@ from numpy import *
 from re import finditer
 from Kinematics import FK
 
+
 l1 = 20.1
 l2 = 13.4
 l3 = 12.1
@@ -25,135 +26,70 @@ def getAngles():
 
 
 def getcoords(px, py, pz, theta_3):
+    """ Calculates the angles for the motors given the desired end-effector location (px, py, pz)
+
+    Parameters
+    ----------
+        px : float
+            The desired x-coordinate location of the end-effector
+        py : float
+            The desired y-coordinate location of the end-effector
+        pz : float
+            The desired z-coordinate location of the end-effector.
+        theta_3 : float
+            Angle of motor (PEN2) in degrees
+
+    Returns theta_1, theta_2, theta_3, theta_4, i.e., the calculated angles for the motors
+    """
     # px and py are the desired points of the end-effector
 
-    if py <= 17.5:
-        case = 1
-    elif 17.5 < py <= 25.25:
-        case = 2
-    elif 25.25 < py <= 33:
-        case = 3
-    else:
-        case = 4
+    # theta_3 should be (see e.g. in framework.py):
+    #   * 95 (degrees) if the start coordinate py of a line or position is < 25
+    #   * 50 (degrees) if the start coordinate py of a line or position is >= 25
+    theta_3 = min(max(10, theta_3), 100)  # theta_3 = [10,100]
+    theta_3 = deg2rad(theta_3)  # convert to radians for calculations
 
+    # Calculate theta_1
     theta_1 = math.atan2(px, py)
+    theta_1 = rad2deg(theta_1)
+    theta_1 = min(max(-45, theta_1), 45)  # theta_1 = [-45, 45]
 
-    py = math.sqrt((px ** 2) + (py ** 2))
+    # Calculate length of robot arm into the board given px and py
+    l_xy = math.sqrt((px ** 2) + (py ** 2))
 
-    """
-    if case == 1 or case == 2:
-        theta_3 = 95
-    elif case == 3 or case == 4:
-        theta_3 = 50
-    """
-
-    theta_3 = deg2rad(theta_3)
-
+    # Calculate lengths of the sides (la, lb & lc) of triangle ABC
     la = getLengthTheta2Theta4(theta_3, l2, l3)
     lb = l4
-    lc = math.sqrt((py ** 2) + (pz ** 2))
-    # print("la =", la, "\nlb =", lb, "\nlc =", lc, "\npy =", py)
+    lc = math.sqrt((l_xy ** 2) + (pz ** 2))  # Length from theta_2's joint to end-effector
 
-    theta_a = math.acos((lb ** 2 + lc ** 2 - la ** 2) / (2 * lb * lc))
+    # Calculate angles of triangle ABC. (Only theta_b & theta_c, because theta_a not needed for further calculations)
     theta_b = math.acos((la ** 2 + lc ** 2 - lb ** 2) / (2 * la * lc))
     theta_c = math.acos((la ** 2 + lb ** 2 - lc ** 2) / (2 * la * lb))
-    # print("theta_a", theta_a, ", theta_b", theta_b, ", theta_c", theta_c, "\nwhole triangle:",
-    #       theta_c + theta_b + theta_a)
 
-    theta_d = math.acos((la ** 2 + l3 ** 2 - l2 ** 2) / (2 * la * l3))
-    # print("theta_d", theta_d)
-    theta_d += theta_c
-    # print("theta_d", theta_d)
-    theta_d = math.pi - theta_d
-    # print("theta_d", theta_d)
-    theta_d = rad2deg(theta_d)
-    # print(theta_d)
-    # print(theta_3)
-    theta_4 = theta_d
-    theta_4 -= 24.0  # TODO 24, 25 or 26
-    # print("theta_4", theta_4)
-    theta_4 = min(max(-90, theta_4), 90)
+    # Define the lengths of the sides (ld, le & lf) of triangle DEF
+    ld = l2
+    le = l3
+    lf = la
 
-    theta_e = math.acos((l2 ** 2 + la ** 2 - l3 ** 2) / (2 * l2 * la))
-    # print(theta_e)
-    theta_e += theta_b
-    # print("theta_e", theta_e)
-    # print(rad2deg(theta_e))
-    theta_e += math.atan(pz / py)
-    # print(theta_e)
-    theta_2 = rad2deg(theta_e)
+    # Calculate angles of triangle DEF. (Only theta_d and theta_e, because theta_f = theta_3)
+    theta_d = math.acos((le ** 2 + lf ** 2 - ld ** 2) / (2 * le * lf))
+    theta_e = math.acos((ld ** 2 + lf ** 2 - le ** 2) / (2 * ld * lf))
+
+    # Calculate theta_4
+    theta_4 = math.pi - (theta_d + theta_c)
+    theta_4 = rad2deg(theta_4)
+    theta_4 -= 24.0  # Compensation for the pen (TODO 24, 25 or 26)
+    theta_4 = min(max(-90, theta_4), 90)  # theta_4 = [-90,90]
+
+    # Calculate theta_2
+    theta_2 = theta_e + theta_b + math.atan(pz / l_xy)
+    theta_2 = rad2deg(theta_2)
     theta_2 = 90 - theta_2
+    theta_2 = min(max(-20, theta_2), 70)  # theta_2 = [-20,70]
 
-    # theta_4 = -math.atan((px ** 2 + pz ** 2 - la ** 2 - lb ** 2) / (2 * la * lb))
-    # theta_4 = 2 * math.atan(
-    #    (math.sqrt((la + lb) ** 2 - (pz ** 2 + py ** 2))) / (math.sqrt((pz ** 2 + py ** 2) - (la - lb) ** 2)))
-    # theta_2 = math.atan(py / pz) - math.atan((lb * math.sin(theta_4)) / (la + lb * math.cos(theta_4)))
+    theta_3 = rad2deg(theta_3)  # convert back to degrees
 
-    # A = px - l4 * math.cos(theta_1) * math.cos(phi)
-    # B = py - l4 * math.sin(theta_1) * math.cos(phi)
-    # C = pz - l1 - l4 * math.sin(phi)
-    #
-    # theta_3 = math.acos((A ** 2 + B ** 2 + C ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
-    # # Take into account boundaries
-    # theta_3 = rad2deg(theta_3)
-    # theta_3 = min(max(10, theta_3), 100)
-    # theta_3 = deg2rad(theta_3)
-    # print(theta_3)
-    theta_3 = rad2deg(theta_3)
-    # print(theta_3)
-    #
-    # a = l3 * math.sin(theta_3)
-    # b = l2 * l3 * math.cos(theta_3)
-    # r = sqrt(a ** 2 + b ** 2)
-    #
-    # theta_2 = math.atan2(C, -sqrt(r ** 2 - C ** 2)) - math.atan2(a, b)
-    theta_1 = rad2deg(theta_1)
-    # print("Theta_1 =", theta_1)
-    theta_1 = min(max(-45, theta_1), 45)
-    theta_2 = min(max(-20, theta_2), 70)
-    # theta_3 is commented out since we now use a predetermined angle
-    # theta_3 = min(max(10, theta_3), 100)
-
-    # output = 'A,0,{:.2f},1000,1,{:.2f},1000,2,{:.2f},1000,3,{:.2f},1000\n'.format(theta_4, theta_3, theta_2, theta_1)
-    # print(output)
-    # print("Theta1 =", theta_1, "\nTheta2 =", theta_2, "\nTheta3 =", theta_3, "\nTheta4 =", theta_4)
     return theta_1, theta_2, theta_3, theta_4
-
-
-# second try
-# def getCoords2(px, py, pz):
-#     """
-#     returns angles in degrees
-#     """
-#     theta1 = math.atan(px / py)
-#     theta1 = rad2deg(theta1)
-#
-#     a = math.sqrt(py ** 2 + px ** 2) - l4
-#     b = pz - l1
-#
-#     # theta3 = - math.acos((a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3))
-#     value = (a ** 2 + b ** 2 - l2 ** 2 - l3 ** 2) / (2 * l2 * l3)
-#     # print(value**2)
-#     theta3 = - math.atan(math.sqrt(1 - value ** 2) / value)
-#
-#     theta2prime = math.atan(b / a) + math.atan((l3 * math.sin(theta3)) / (l2 + l3 * math.cos(theta3)))
-#     theta2prime = rad2deg(theta2prime)
-#
-#     theta3 = rad2deg(theta3)
-#
-#     theta2 = theta2prime - 90
-#
-#     theta4 = 90 - theta2prime - theta3
-#
-#     print("Theta1 =", theta1, "\nTheta2 =", theta2prime, "\nTheta3 =", theta3, "\nTheta4 =", theta4)
-#     # Take into account offset
-#     theta2 -= 25
-#     theta3 -= 50
-#     theta4 -= 20
-#
-#     # TODO consider motors range
-#
-#     return make_list(theta1, theta2, theta3, theta4)
 
 
 def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the class FK
@@ -187,92 +123,83 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
     Returns a list of commandStrings to be sent to the motors
     """
 
-    # TODO method now makes one big list, might still need some tweaking
+    # The motors move in the order:
+    #       -> theta_4 (PEN1), i.e., the top motor
+    #       -> theta_3 (PEN2)
+    #       -> theta_1 (PEN4), i.e., the bottom motor
+    #       -> theta_2 (PEN3)
 
-    # Initialize output_list
-    output_list = []
+    # Initialize commandString
     commandString = "A"
 
-    # First, make the commandString for PEN1 (theta_4), i.e., the top motor,
-    # taking into account the previous angle
+    # First, make commandString for PEN1 (theta_4), i.e., the top motor, taking into account the previous angle
     global prevTheta4
-    angleDiff = theta_4 - prevTheta4
-    if angleDiff != 0:
-        # Make the commandString
-        # commandString = "A"
+    angleDiff4 = theta_4 - prevTheta4
+    if angleDiff4 != 0:  # Then make commandString
         t4 = 0
-        for x in range(0, abs(math.floor(angleDiff / 10))):
-            if angleDiff > 0:
+        for x in range(0, abs(math.floor(angleDiff4 / 10))):
+            if angleDiff4 > 0:
                 commandString += ",0,{:.0f},1000".format(prevTheta4 + 10 * (t4 + 1))
-            elif angleDiff < 0:
+            elif angleDiff4 < 0:
                 commandString += ",0,{:.0f},1000".format(prevTheta4 - 10 * t4)
             t4 += 1
-        if angleDiff - 10 * t4 != 0:
+        if angleDiff4 - 10 * t4 != 0:
             commandString += ",0,{:.2f},1000".format(theta_4)
-        # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta4 = theta_4  # Update prevTheta4
 
-    # Make the commandString for PEN2 (theta_3), i.e., the second motor from the top,
-    # taking into account the previous angle
+    # Make commandString for PEN2 (theta_3), i.e., the second motor from the top, taking into account the previous angle
     global prevTheta3
-    angleDiff = theta_3 - prevTheta3
-    if angleDiff != 0:
-        # Make the commandString
-        # commandString = "A"
+    angleDiff3 = theta_3 - prevTheta3
+    if angleDiff3 != 0:  # Then make commandString
         t3 = 0
-        for x in range(0, abs(math.floor(angleDiff / 5))):
-            if angleDiff > 0:
-                commandString += ",1,{:.0f},1000".format(prevTheta3 + 5 * (t3 + 1))
-            elif angleDiff < 0:
-                commandString += ",1,{:.0f},1000".format(prevTheta3 - 5 * t3)
+        for x in range(0, abs(math.floor(angleDiff3 / 10))):
+            if angleDiff3 > 0:
+                commandString += ",1,{:.0f},1000".format(prevTheta3 + 10 * (t3 + 1))
+            elif angleDiff3 < 0:
+                commandString += ",1,{:.0f},1000".format(prevTheta3 - 10 * t3)
             t3 += 1
-        if angleDiff - 5 * t3 != 0:
+        if angleDiff3 - 10 * t3 != 0:
             commandString += ",1,{:.2f},1000".format(theta_3)
-        # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta3 = theta_3  # Update prevTheta3
 
-    # Make the commandString for PEN4 (theta_1), i.e., the bottom motor,
-    # taking into account the previous angle
+    # Make commandString for PEN4 (theta_1), i.e., the bottom motor, taking into account the previous angle
     global prevTheta1
-    angleDiff = theta_1 - prevTheta1
-    if angleDiff != 0:
-        # Make the commandString
-        # commandString = "A"
+    angleDiff1 = theta_1 - prevTheta1
+    if angleDiff1 != 0:  # Then make commandString
         t1 = 0
-        for x in range(0, abs(math.floor(angleDiff / 5))):
-            if angleDiff > 0:
-                commandString += ",3,{:.0f},1000".format(prevTheta1 + 5 * (t1 + 1))
-            elif angleDiff < 0:
-                commandString += ",3,{:.0f},1000".format(prevTheta1 - 5 * t1)
+        for x in range(0, abs(math.floor(angleDiff1 / 10))):
+            if angleDiff1 > 0:
+                commandString += ",3,{:.0f},1000".format(prevTheta1 + 10 * (t1 + 1))
+            elif angleDiff1 < 0:
+                commandString += ",3,{:.0f},1000".format(prevTheta1 - 10 * t1)
             t1 += 1
-        if angleDiff - 5 * t1 != 0:
+        if angleDiff1 - 10 * t1 != 0:
             commandString += ",3,{:.2f},1000".format(theta_1)
-        # output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta1 = theta_1  # Update prevTheta1
 
-    # Lastly, make the commandString for PEN3 (theta_2),
-    # taking into account the previous angle
+    # Lastly, make commandString for PEN3 (theta_2), taking into account the previous angle
     global prevTheta2
-    angleDiff = theta_2 - prevTheta2
-    if angleDiff != 0:
-        # Make the commandString
-        # commandString = "A"
+    angleDiff2 = theta_2 - prevTheta2
+    if angleDiff2 != 0:  # Then make commandString
         t2 = 0
-        for x in range(0, abs(math.floor(angleDiff / 5))):
-            if angleDiff > 0:
-                commandString += ",2,{:.0f},1000".format(prevTheta2 + 5 * (t2 + 1))
-            elif angleDiff < 0:
-                commandString += ",2,{:.0f},1000".format(prevTheta2 - 5 * t2)
+        for x in range(0, abs(math.floor(angleDiff2 / 10))):
+            if angleDiff2 > 0:
+                commandString += ",2,{:.0f},1000".format(prevTheta2 + 10 * (t2 + 1))
+            elif angleDiff2 < 0:
+                commandString += ",2,{:.0f},1000".format(prevTheta2 - 10 * t2)
             t2 += 1
-        if angleDiff - 5 * t2 != 0:
+        if angleDiff2 - 10 * t2 != 0:
             commandString += ",2,{:.2f},1000".format(theta_2)
-        output_list.extend(constrainCommandStringLength(commandString + "\n"))
         prevTheta2 = theta_2  # Update prevTheta2
 
-    return output_list
+    # Return list with commandStrings if one of the thetas changed, else return an empty list
+    if angleDiff4 != 0 or angleDiff3 != 0 or angleDiff1 != 0 or angleDiff2 != 0:
+        return constrainCommandStringLength(commandString + "\n")
+    else:
+        return []
 
 
-def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
+def drawLine(x1, y1, z1, x2, y2, z2, theta_3, returnCommandString=True):
     # Test to show the distance between the coordinates
     length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     print("Length between points =", length)
@@ -410,7 +337,8 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
     output_list.extend(constrainCommandStringLength(commandString))
 
     # Add commandString to move it back to its starting position
-    output_list.append(RETURN_COMMANDSTRING)
+    if returnCommandString:
+        output_list.append(RETURN_COMMANDSTRING)
 
     for o in output_list:
         print(o, end="")
@@ -419,46 +347,56 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
 
 
 def drawPlus(x1, y1, z1, x2, y2, z2, theta_3):
+    # List with commandString(s) to draw the first line
     list1 = drawLine(x1, y1, z1, x2, y2, z2, theta_3)
-    # Vertical case
-    if x1 == x2:
-        length = abs((y2 - y1) / 2)
-        y3 = (y1 + y2) / 2
-        x3 = x1 - length
-        x4 = x1 + length
-        list2 = drawLine(x3, y3, z1, x4, y3, z2, theta_3)
-    # Horizontal case
-    elif y1 == y2:
-        length2 = abs((x2 - x1) / 2)
-        x5 = (x1 + x2) / 2
-        y4 = y1 - length2
-        y5 = y1 + length2
-        list2 = drawLine(x5, y5, z1, x5, y4, z2, theta_3)
-    list1.extend(list2)
+
+    # Determine whether the second line has to be horizontal or vertical and create these commandStrings.
+    if x1 == x2:  # Vertical case
+        length = abs(y2 - y1)
+        y = (y1 + y2) / 2
+        x_left = x1 - length / 2
+        x_right = x1 + length / 2
+        # Make commandString(s) for horizontal line
+        list1.extend(drawLine(x_left, y, z1, x_right, y, z2, theta_3))
+
+    elif y1 == y2:  # Horizontal case
+        length = abs(x2 - x1)
+        x = (x1 + x2) / 2
+        y_bot = y1 - length / 2
+        y_top = y1 + length / 2
+        # Make commandString(s) for vertical line
+        list1.extend(drawLine(x, y_top, z1, x, y_bot, z2, theta_3))
+
+    # Add commandString to return the robot arm to a vertical position
     list1.extend(RETURN_COMMANDSTRING)
+
     return list1
 
 
 def drawBox(x1, y1, z1, x2, y2, z2, theta3):
-    # Give coordinates for the top line of the box!!!
+    # Give coordinates for the top line of the box from left to right!!!
 
     # Make sure the line is horizontal
     if y2 != y1:
         y2 = y1
 
-    # Get thetas for top line
-    theta1s, theta2s, theta3s, theta4s = getcoords(x1, y1, z1, theta3)
-    theta2s, theta3s = applyOffset(theta2s, theta3s)  # Apply offset
-
     # Initialize output_list with commandString(s) to move to the first coordinate
-    output_list = make_list(theta1s, theta2s, theta3s, theta4s)
+    th1s, th2s, th3s, th4s = getcoords(x1, y1, z1, theta3)
+    th2s, th3s = applyOffset(th2s, th3s)  # Apply offset
+    output_list = make_list(th1s, th2s, th3s, th4s)
+
+    prints = True
+    if prints:
+        for output in output_list:
+            print(output)
 
     # Initialize variables for loop
-    commandString = "A"
-    xs = x1, ys = y1, zs = z1
-    xe = x2, ye = y2, ze = z2
-    lineLength = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)  # Calculate length of line
+    xs = x1, ys = y1, zs = z1  # Start coordinates of line
+    xe = x2, ye = y2, ze = z2  # End coordinates of line
+    length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)  # Length of line
+
     # Create commandStrings to draw boxes
+    commandString = "A"
     for i in range(4):
         # Get thetas of line
         th1s, th2s, th3s, th4s = getcoords(xs, ys, zs, theta3)
@@ -497,12 +435,12 @@ def drawBox(x1, y1, z1, x2, y2, z2, theta3):
         if i == 0:
             # New end is (x2, y2-len, z2)
             xe = x2
-            ye = y2 - lineLength
+            ye = y2 - length
             ze = z2
         elif i == 1:
             # New end is (x1, y1-len, z1)
             xe = x1
-            ye = y1 - lineLength
+            ye = y1 - length
             ze = z1
         elif i == 2:
             # New end is (x1, y1, z1)
@@ -595,6 +533,8 @@ def constrainCommandStringLength(commandString):
     ----------
         commandString : String
             complete commandString of all movements
+
+    Returns a list of commandStrings of which each commandString has a maximum length of 100 characters
     """
     commandStringList = []
     while len(commandString) > MAX_LENGTH:
