@@ -418,6 +418,86 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3):
     return output_list
 
 
+def drawBox(x1, y1, z1, x2, y2, z2, theta3):
+    # Give coordinates for the top line of the box!!!
+
+    # Make sure the line is horizontal
+    if y2 != y1:
+        y2 = y1
+
+    # Get thetas for top line
+    theta1s, theta2s, theta3s, theta4s = getcoords(x1, y1, z1, theta3)
+    theta2s, theta3s = applyOffset(theta2s, theta3s)  # Apply offset
+
+    # Initialize output_list with commandString(s) to move to the first coordinate
+    output_list = make_list(theta1s, theta2s, theta3s, theta4s)
+
+    # Initialize variables for loop
+    commandString = "A"
+    xs = x1, ys = y1, zs = z1
+    xe = x2, ye = y2, ze = z2
+    lineLength = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)  # Calculate length of line
+    # Create commandStrings to draw boxes
+    for i in range(4):
+        # Get thetas of line
+        th1s, th2s, th3s, th4s = getcoords(xs, ys, zs, theta3)
+        th1e, th2e, th3e, th4e = getcoords(xe, ye, ze, theta3)
+
+        # Apply offset
+        th2s, th3s = applyOffset(th2s, th3s)
+        th2e, th3e = applyOffset(th2e, th3e)
+
+        # Create commandString with delay of 2 seconds (2000 milliseconds)
+        flag = False
+        if th1s != th1e:  # Bottom motor (PEN4)
+            commandString += ",3,{:.2f},2000".format(th1e)
+            flag = True
+        if th4s != th4e:  # Top motor (PEN1)
+            if flag:
+                commandString += ",0,{:.2f},0".format(th4e)
+            else:
+                commandString += ",0,{:.2f},2000".format(th4e)
+                flag = True
+        if th3s != th3e:  # Third motor (PEN2)
+            if flag:
+                commandString += ",1,{:.2f},0".format(th3e)
+            else:
+                commandString += ",1,{:.2f},2000".format(th3e)
+                flag = True
+        if th2s != th2e:  # Second motor (PEN3)
+            if flag:
+                commandString += ",2,{:.2f},0".format(th2e)
+            else:
+                commandString += ",2,{:.2f},2000".format(th2e)
+
+        # Endpoint becomes startpoint of next line
+        xs = xe, ys = ye, zs = ze
+        # Update new endpoints
+        if i == 0:
+            # New end is (x2, y2-len, z2)
+            xe = x2
+            ye = y2 - lineLength
+            ze = z2
+        elif i == 1:
+            # New end is (x1, y1-len, z1)
+            xe = x1
+            ye = y1 - lineLength
+            ze = z1
+        elif i == 2:
+            # New end is (x1, y1, z1)
+            xe = x1
+            ye = y1
+            ze = z1
+
+    # Add commandString(s) to output_list
+    output_list.extend(constrainCommandStringLength(commandString + "\n"))
+
+    # Add return commandString
+    output_list.append(RETURN_COMMANDSTRING)
+
+    return output_list
+
+
 def applyOffset(theta2, theta3):
     # TODO or -55 for theta3?
     return theta2-25, theta3-50
