@@ -3,189 +3,80 @@
 
 import cv2   # use pip instal opencv
 from computervision import test_player
-
+import time
+import imutils
+import datetime
 # set is first iterartion by intilization set to None
 
-video = cv2.VideoCapture(0)
+def video_cut(frame):
+    cropped_image = frame[100:600, 200:900]
+    return cropped_image
 
+
+video = cv2.VideoCapture(0)
+print("[INFO] warming up...")
+lastUploaded = datetime.datetime.now()
+motionCounter = 0
 def motiondection(video):
 
-    detected= False
-    baseline_image_1 = None
-    baseline_image_2 = None
-    baseline_image_3 = None
     baseline_frame = None
+    avg_frame = None
 # loop video
     while True:
 
         # Read in frame from webcam
         check, frame = video.read()
         kernelsize = 21
-
-
-        # Initializing motion
-        motion = 0
-
-        #gray-scale image
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        gray = cv2.GaussianBlur(gray, (kernelsize, kernelsize), 0)
-
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 6)
-
-
-        cv2.imshow("d",frame)
-        height, width = gray.shape
-        frame_partONE=gray[0:height, 0:width-1050]
-        cv2.imshow("frame_part_one", frame_partONE)
-
-        frame_partTWO = gray[height-100:height, 0:width]  ## bottem
-        cv2.imshow('frame_part_two', frame_partTWO)
-
-        frame_partTHREE= gray[0:height,950:width]
-        cv2.imshow('frame_part_three', frame_partTHREE)
-
-
-    # filter image gaussian blur. removes noise of moving objects.
-
-
-
-    # set first frame as baseline
-        if baseline_image_1 is None:
-            baseline_image_1 = frame_partONE
+        frame_cut =video_cut(frame)
+        frame2 = frame
+        timestamp = datetime.datetime.now()
+        text = "Unoccupied"
+        frame2 = imutils.resize(frame2, width=700)
+        gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
+        if avg_frame is None:
+            print("[INFO] starting background model...")
+            avg_frame = gray2.copy().astype("float")
             continue
-
-        if baseline_image_2 is None:
-            baseline_image_2 = frame_partTWO
-            continue
-
-        if baseline_image_3 is None:
-            baseline_image_3 = frame_partTHREE
-            continue
-
-        if detected is True :
-            baseline_frame = frame
-            continue
-
-
-
-
-
-        #Difference between baseline and current frame
-        diff_frame_1 = cv2.absdiff(baseline_image_1, frame_partONE)
-        diff_frame_2 = cv2.absdiff(baseline_image_2, frame_partTWO)
-        diff_frame_3 = cv2.absdiff(baseline_image_3, frame_partTHREE)
-        if detected is True :
-         diff_frame_complete = cv2.absdiff(baseline_frame, frame)
-         thresh_frame_complete = cv2.adaptiveThreshold(diff_frame_complete, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                       cv2.THRESH_BINARY_INV,
-                                                       21,
-                                                       5)
-         cnts_complete, _ = cv2.findContours(thresh_frame_complete.copy(),
-                                             cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-         for contour_comp in cnts_complete:
-             # if cv2.contourArea(contour) > 50000 and cv2.contourArea(contour) <1000000000000000000000 :  # detection threshold contour area
-             if cv2.contourArea(contour_comp) < (1000 / 2):
-
-                 continue
-
-             else:
-                 detected = False
-             (x, y, w, h) = cv2.boundingRect(contour_comp)
-             detected = True
-
-        '''
-        if differance in current image and the baseline is bigger then intensity threshold set pixel value white (255)
-        intensity difference we will have to calibrate accoriding to the webcam 
-    
-        '''
-        intensity_threshold = 100
-        #thresh_frame = cv2.threshold(diff_frame, intensity_threshold, 255, cv2.THRESH_BINARY)[1]
-        thresh_frame_1=cv2.adaptiveThreshold(diff_frame_1, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21, 5)
-        thresh_frame_2 = cv2.adaptiveThreshold(diff_frame_2, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21,
-                                           5)
-        thresh_frame_3 = cv2.adaptiveThreshold(diff_frame_3, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21,
-                                           5)
-
-
-        #dilate for better coheracne
-        #thresh_frame = cv2.dilate(thresh_frame, None, iterations=1)
-
-        # Finding contour of moving object
-        cnts_1, _ = cv2.findContours(thresh_frame_1.copy(),
-                               cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts_2, _ = cv2.findContours(thresh_frame_2.copy(),
-                                 cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts_3, _ = cv2.findContours(thresh_frame_3.copy(),
-                                 cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-
-
-        for contour_comp in cnts_1:
-             #if cv2.contourArea(contour) > 50000 and cv2.contourArea(contour) <1000000000000000000000 :  # detection threshold contour area
-            if cv2.contourArea(contour_comp) <(1000/2) :
-
+        cv2.accumulateWeighted(gray2, avg_frame, 0.03)
+        frameDelta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
+        threshdelta = cv2.adaptiveThreshold(frameDelta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,6)
+        threshdelta = cv2.dilate(threshdelta, None, iterations=2)
+        cntsdelta= cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL,
+                                cv2.CHAIN_APPROX_SIMPLE)
+        cntsdelta = imutils.grab_contours(cntsdelta)
+        # loop over the contours
+        for c in cntsdelta:
+            # if the contour is too small, ignore it
+            if cv2.contourArea(c) < 100:
                 continue
-
-            else :
-                detected= False
-            (x, y, w, h) = cv2.boundingRect(contour_comp)
-            detected= True
-
-            #cv2.rectangle(thresh_frame_1, (x, y), (x + w, y + h), (0, 255, 0), 3)
-            #cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-            #return detected
+            # compute the bounding box for the contour, draw it on the frame,
+            # and update the text
+            (x, y, w, h) = cv2.boundingRect(c)
+            cv2.rectangle(frame2, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            text = "Occupied"
 
 
 
-        for contour_2 in cnts_2:
-        # if cv2.contourArea(contour) > 50000 and cv2.contourArea(contour) <1000000000000000000000 :  # detection threshold contour area
-            if cv2.contourArea(contour_2) < (1000 / 10):  # smaller area
-                continue
-            else :
-                detected= False
-            (x, y, w, h) = cv2.boundingRect(contour_2)
-            detected =True
-            #cv2.rectangle(thresh_frame_1, (x, y), (x + w, y + h), (0, 255, 0), 3)
-            #cv2.rectangle(frame, (x, y+620), (x + w, y+620 + h), (0, 0, 255), 3) #red
-            #return detected
-        for contour_3 in cnts_3:
-                # if cv2.contourArea(contour) > 50000 and cv2.contourArea(contour) <1000000000000000000000 :  # detection threshold contour area
-            if cv2.contourArea(contour_3) < (1000 / 3):
-                continue
-            else:
-                detected = False
 
-            (x, y, w, h) = cv2.boundingRect(contour_3)
-            detected = True
-            #cv2.rectangle(thresh_frame_1, (x, y), (x + w, y + h), (0, 255, 0), 3)
-            #cv2.rectangle(frame, (x+950, y), (950+x + w, y + h), ( 255, 0,0), 3)
-            #return detected
+        # draw the text and timestamp on the frame
+        ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
+        cv2.putText(frame2, "board Status: {}".format(text), (10, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        cv2.putText(frame2, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.35, (0, 0, 255), 1)
 
 
 
 
 
-        motion = 1
-        winner = detected
-        height = frame.shape[0]
-        text = 'Collistion detections is {}!!'.format(str(winner))
-        cv2.putText(frame, text, (250, height - 550),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 3)
-        detected = False
-        # draw green rectangle
-
-        #cv2.imshow("Gray Frame", gray)
-        #cv2.imshow("Difference Frame", diff_frame_1)
-        #cv2.imshow("Threshold Frame", thresh_frame_1)
-        cv2.imshow("Color Frame", frame)
-
+        cv2.imshow("new motion", baseline_frame)
+        cv2.imshow('newmoetions', frame2)
         key = cv2.waitKey(1)
 
-        if key == ord('q'):        # kill switch is q
-
-            break
-        #return detected
+        time.sleep(0.015)
+        if key == ord('q'):  # kill switch is q
+              break
 
 
 
