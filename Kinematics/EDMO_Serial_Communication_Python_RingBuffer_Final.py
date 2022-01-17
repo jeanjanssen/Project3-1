@@ -34,14 +34,14 @@ def sendData():
 
     # Move the arm to the 0 position
     ser.write(commandString6.encode())
-    y = 30
-    if y >= 25:
-        theta_3 = 95
-    elif y < 25:
-        theta_3 = 50
+
     ##### TESTING INVERSE KINEMATICS #####
-    # Formatting is IK.getcoords(x, y, z)
-    # theta1, theta2, theta3, theta4 = IK.getcoords(15, 20, 1)
+    # # Formatting is IK.getcoords(x, y, z, theta_3)
+    # x = 15
+    # y = 20
+    # z = 1
+    # theta_3 = 95 if y < 25 else 50
+    # theta1, theta2, theta3, theta4 = IK.getcoords(x, y, z, theta_3)
     # print("Calculating position given the angles of the inverse kinematics...")
     # print(FK.calc_position(theta1, theta2, theta3, theta4))
     #
@@ -50,7 +50,12 @@ def sendData():
     #
     # Getting the commandStrings
     # output = IK.make_list(theta1, theta2, theta3, theta4)
-    output = IK.drawLine(2.5, 22.5, 1, 2.5, 27.5, 1, theta_3)
+
+    ##### TESTING WITH DRAWING
+    y_start = 22.5
+    theta_3 = 95 if y_start < 25 else 50
+    output = IK.drawLine(2.5, y_start, 1, 2.5, 27.5, 1, theta_3)
+
     # output = IK.drawLine(0, 25, 1, 5, 25, 1)
     # output.extend(IK.drawLine(0, 25, 1, 5, 25, 1))
 

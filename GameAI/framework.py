@@ -104,10 +104,10 @@ def state_start(state, frame, gameboard):
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
         coords = calculate_coordinates(computer_move)
         # Create commands to move to the desired point
-        if coords.get(1) >= 25:
-            theta_3 = 95
-        elif coords.get(1) < 25:
-            theta_3 = 50
+        if coords.get(1) < 25:
+            theta_3 = 95  # degrees for drawing on the first half of the table
+        elif coords.get(1) >= 25:
+            theta_3 = 50  # degrees for drawing on the second half of the table
         global output_list
         theta_1, theta_2, theta_3, theta_4 = IK.getcoords(coords.get(0), coords.get(1), 1, theta_3)
         # Apply the offset of the motors

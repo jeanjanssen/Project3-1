@@ -16,13 +16,26 @@ prevTheta3 = -45.0  # PEN2
 prevTheta4 = -20.0  # PEN1, top motor
 
 # CommandString to return the robotic arm to an up straight position
-RETURN_COMMANDSTRING = "A,0,-20,1000,1,-45,0,2,-25,0,3,0,0\n"
+RETURN_COMMANDSTRING = "A,0,-20,2000,1,-45,0,2,-25,0,3,0,0\n"
 MAX_LENGTH = 100  # Maximum length of commandString (100 is consistent with arduino code! Don't enter higher values!)
 
 
 def getAngles():
     """ Returns prevTheta1 (angle PEN4), prevTheta2 (angle PEN3), prevTheta3 (angle PEN2), prevTheta4 (angle PEN1) """
     return prevTheta1, prevTheta2, prevTheta3, prevTheta4
+
+
+def useReturnCommandString():
+    """
+    Updates the prevThetas to the angles used in RETURN_COMMANDSTRING
+    Returns RETURN_COMMANDSTRING
+    """
+    global prevTheta1, prevTheta2, prevTheta3, prevTheta4
+    prevTheta1 = 0
+    prevTheta2 = -25
+    prevTheta3 = -45
+    prevTheta4 = -20
+    return RETURN_COMMANDSTRING
 
 
 def getcoords(px, py, pz, theta_3):
@@ -41,7 +54,6 @@ def getcoords(px, py, pz, theta_3):
 
     Returns theta_1, theta_2, theta_3, theta_4, i.e., the calculated angles for the motors
     """
-    # px and py are the desired points of the end-effector
 
     # theta_3 should be (see e.g. in framework.py):
     #   * 95 (degrees) if the start coordinate py of a line or position is < 25
@@ -201,21 +213,16 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
 def drawLine(x1, y1, z1, x2, y2, z2, theta_3, returnCommandString=True):
     # Test to show the distance between the coordinates
-    length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
-    print("Length between points =", length)
+    length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+    # print("Length between points =", length)
 
-    steps = 1
+    # steps = 1
 
     # Get the angles of the motors at the begin and end location
-    th11, th21, th31, th41 = getcoords(x1, y1, z1, theta_3)
-    th12, th22, th32, th42 = getcoords(x2, y2, z2, theta_3)
+    th1s, th2s, th3s, th4s = getcoords(x1, y1, z1, theta_3)
+    th1e, th2e, th3e, th4e = getcoords(x2, y2, z2, theta_3)
 
     # # TODO smoothing the movement using steps?
-    # print(abs(th11 - th12))
-    # print(abs(th21 - th22))
-    # print(abs(th31 - th32))
-    # print(abs(th41 - th42))
-    #
     # Get number of steps
     # steps = 0
     # new_step = int(ceil(abs(th11 - th12) / 10))
@@ -228,54 +235,47 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3, returnCommandString=True):
     # steps = max(steps, new_step)
     # print("steps =", steps)
 
-    print("Thetas start position:\nTheta1 =", th11, "\nTheta2 =", th21, "\nTheta3 =", th31, "\nTheta4 =", th41, "\n")
-    print("Thetas end position:\nTheta1 =", th12, "\nTheta2 =", th22, "\nTheta3 =", th32, "\nTheta4 =", th42, "\n")
-
-    print(FK.calc_position(th11, th21, th31, th41))
-    # print(FK.calc_position((th11+th12)/2, (th21+th22)/2, (th31+th32)/2, (th41+th42)/2))
-    print(FK.calc_position(th12, th22, th32, th42))
-    print()
+    # print("Thetas start position:\nTheta1 =", th11, "\nTheta2 =", th21, "\nTheta3 =", th31, "\nTheta4 =", th41, "\n")
+    # print("Thetas end position:\nTheta1 =", th12, "\nTheta2 =", th22, "\nTheta3 =", th32, "\nTheta4 =", th42, "\n")
+    # print(FK.calc_position(th11, th21, th31, th41))
+    # print(FK.calc_position(th12, th22, th32, th42))
 
     # Applying offsets
-    th21, th31 = applyOffset(th21, th31)
-    th22, th32 = applyOffset(th22, th32)
+    th2s, th3s = applyOffset(th2s, th3s)
+    th2e, th3e = applyOffset(th2e, th3e)
 
-    # Initialise output list
-    output_list = []
+    # Initialise output list with commandString(s) to move to the start of the line
+    output_list = make_list(th1s, th2s, th3s, th4s)
 
-    # commandString to move to begin of line
-    commandString = make_list(th11, th21, th31, th41)
-    output_list.extend(commandString)
-
-    # Add intermediate steps
-    for i in range(1, steps):
-        th1Temp, th2Temp, th3Temp, th4Temp = getcoords(x1 + (x2 - x1) * i / steps, y1 + (y2 - y1) * i / steps, z1)
-        th2Temp, th3Temp = applyOffset(th2Temp, th3Temp)
-
-        commandString = "A"
-        flag = False
-        if th11 != th1Temp:  # Bottom motor (PEN4)
-            commandString += ",3,{:.2f},1000".format(th1Temp)
-            flag = True
-        if th41 != th4Temp:  # Top motor (PEN1)
-            if flag:
-                commandString += ",0,{:.2f},0".format(th4Temp)
-            else:
-                commandString += ",0,{:.2f},1000".format(th4Temp)
-                flag = True
-        if th31 != th3Temp:  # Third motor (PEN2)
-            if flag:
-                commandString += ",1,{:.2f},0".format(th3Temp)
-            else:
-                commandString += ",1,{:.2f},1000".format(th3Temp)
-                flag = True
-        if th21 != th2Temp:  # Second motor (PEN3)
-            if flag:
-                commandString += ",2,{:.2f},0".format(th2Temp)
-            else:
-                commandString += ",2,{:.2f},1000".format(th2Temp)
-        commandString += "\n"
-        output_list.extend(constrainCommandStringLength(commandString))
+    # # Add intermediate steps
+    # for i in range(1, steps):
+    #     th1Temp, th2Temp, th3Temp, th4Temp = getcoords(x1 + (x2 - x1) * i / steps, y1 + (y2 - y1) * i / steps, z1)
+    #     th2Temp, th3Temp = applyOffset(th2Temp, th3Temp)
+    #
+    #     commandString = "A"
+    #     flag = False
+    #     if th11 != th1Temp:  # Bottom motor (PEN4)
+    #         commandString += ",3,{:.2f},1000".format(th1Temp)
+    #         flag = True
+    #     if th41 != th4Temp:  # Top motor (PEN1)
+    #         if flag:
+    #             commandString += ",0,{:.2f},0".format(th4Temp)
+    #         else:
+    #             commandString += ",0,{:.2f},1000".format(th4Temp)
+    #             flag = True
+    #     if th31 != th3Temp:  # Third motor (PEN2)
+    #         if flag:
+    #             commandString += ",1,{:.2f},0".format(th3Temp)
+    #         else:
+    #             commandString += ",1,{:.2f},1000".format(th3Temp)
+    #             flag = True
+    #     if th21 != th2Temp:  # Second motor (PEN3)
+    #         if flag:
+    #             commandString += ",2,{:.2f},0".format(th2Temp)
+    #         else:
+    #             commandString += ",2,{:.2f},1000".format(th2Temp)
+    #     commandString += "\n"
+    #     output_list.extend(constrainCommandStringLength(commandString))
 
     # TODO check if steps is correctly implemented here
     # add commandString for middle coordinate
@@ -311,37 +311,54 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3, returnCommandString=True):
     # add commandString for end position
     commandString = "A"
     flag = False  # to determine when to add a bigger delay
-    if th11 != th12:  # Bottom motor (PEN4)
-        commandString += ",3,{:.2f},1000".format(th12)
+    if th1s != th1e:  # Bottom motor (PEN4)
+        commandString += ",3,{:.2f},1000".format(th1e)
         flag = True
-    if th41 != th42:  # Top motor (PEN1)
+    if th4s != th4e:  # Top motor (PEN1)
         if flag:
-            commandString += ",0,{:.2f},0".format(th42)
+            commandString += ",0,{:.2f},0".format(th4e)
         else:
-            commandString += ",0,{:.2f},1000".format(th42)
+            commandString += ",0,{:.2f},1000".format(th4e)
             flag = True
-    if th31 != th32:  # Third motor (PEN2)
+    if th3s != th3e:  # Third motor (PEN2)
         if flag:
-            commandString += ",1,{:.2f},0".format(th32)
+            commandString += ",1,{:.2f},0".format(th3e)
         else:
-            commandString += ",1,{:.2f},1000".format(th32)
+            commandString += ",1,{:.2f},1000".format(th3e)
             flag = True
-    if th21 != th22:  # Second motor (PEN3)
+    if th2s != th2e:  # Second motor (PEN3)
         if flag:
-            commandString += ",2,{:.2f},0".format(th22)
+            commandString += ",2,{:.2f},0".format(th2e)
         else:
-            commandString += ",2,{:.2f},1000".format(th22)
+            commandString += ",2,{:.2f},1000".format(th2e)
     commandString += "\n"
+
+    # Update prevThetas
+    global prevTheta1, prevTheta2, prevTheta3, prevTheta4
+    prevTheta1 = th1e
+    prevTheta2 = th2e
+    prevTheta3 = th3e
+    prevTheta4 = th4e
+
+    # # Default is to add commandString to move it back to its starting position
+    # if returnCommandString:
+    #     commandString += useReturnCommandString()[1:]
+    # else:
+    #     commandString += "\n"
 
     # Cut commandStrings into pieces of with a maximum of 100 characters
     output_list.extend(constrainCommandStringLength(commandString))
 
+    # TODO replace this with the commented code a couple of lines above
     # Add commandString to move it back to its starting position
     if returnCommandString:
-        output_list.append(RETURN_COMMANDSTRING)
+        output_list.append(useReturnCommandString())
 
-    for o in output_list:
-        print(o, end="")
+    # TODO remove later
+    printOutput = True
+    if printOutput:
+        for output in output_list:
+            print(output, end="")
 
     return output_list
 
@@ -352,23 +369,27 @@ def drawPlus(x1, y1, z1, x2, y2, z2, theta_3):
 
     # Determine whether the second line has to be horizontal or vertical and create these commandStrings.
     if x1 == x2:  # Vertical case
+        # print("x1 =", x1, "; y1 =", y1, "; y2 =", y2)
         length = abs(y2 - y1)
         y = (y1 + y2) / 2
         x_left = x1 - length / 2
         x_right = x1 + length / 2
+        # print("y =", y, "; x_l =", x_left, "; x_r =", x_right)
         # Make commandString(s) for horizontal line
         list1.extend(drawLine(x_left, y, z1, x_right, y, z2, theta_3))
 
     elif y1 == y2:  # Horizontal case
+        # print("y1 =", y1, "; x1 =", x1, "; x2 =", x2)
         length = abs(x2 - x1)
         x = (x1 + x2) / 2
         y_bot = y1 - length / 2
         y_top = y1 + length / 2
+        # print("x =", x, "; y_t =", y_top, "; y_b =", y_bot)
         # Make commandString(s) for vertical line
         list1.extend(drawLine(x, y_top, z1, x, y_bot, z2, theta_3))
 
     # Add commandString to return the robot arm to a vertical position
-    list1.extend(RETURN_COMMANDSTRING)
+    # list1.extend(useReturnCommandString())  # TODO is commented because drawLine already uses this
 
     return list1
 
@@ -385,15 +406,24 @@ def drawBox(x1, y1, z1, x2, y2, z2, theta3):
     th2s, th3s = applyOffset(th2s, th3s)  # Apply offset
     output_list = make_list(th1s, th2s, th3s, th4s)
 
-    prints = True
-    if prints:
+    # TODO remove later
+    printOutput = True
+    if printOutput:
         for output in output_list:
-            print(output)
+            print(output, end="")
+        print()
 
     # Initialize variables for loop
-    xs = x1, ys = y1, zs = z1  # Start coordinates of line
-    xe = x2, ye = y2, ze = z2  # End coordinates of line
-    length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)  # Length of line
+    # Start coordinates of line
+    xs = x1
+    ys = y1
+    zs = z1
+    # End coordinates of line
+    xe = x2
+    ye = y2
+    ze = z2
+    # Length of line
+    length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
 
     # Create commandStrings to draw boxes
     commandString = "A"
@@ -430,7 +460,10 @@ def drawBox(x1, y1, z1, x2, y2, z2, theta3):
                 commandString += ",2,{:.2f},2000".format(th2e)
 
         # Endpoint becomes startpoint of next line
-        xs = xe, ys = ye, zs = ze
+        xs = xe
+        ys = ye
+        zs = ze
+
         # Update new endpoints
         if i == 0:
             # New end is (x2, y2-len, z2)
@@ -452,7 +485,14 @@ def drawBox(x1, y1, z1, x2, y2, z2, theta3):
     output_list.extend(constrainCommandStringLength(commandString + "\n"))
 
     # Add return commandString
-    output_list.append(RETURN_COMMANDSTRING)
+    output_list.append(useReturnCommandString())
+
+    # TODO remove later
+    printOutput = True
+    if printOutput:
+        for output in output_list:
+            print(output, end="")
+        print()
 
     return output_list
 
@@ -567,16 +607,30 @@ def move_kinematics(player):
 
 
 if __name__ == '__main__':
-    drawLine(2.5, 22.5, 1, 2.5, 27.5, 1)
-    # # Formatting is getcoords(x, y, z)
-    # theta1, theta2, theta3, theta4 = getcoords(-10, 20, 1)
+    ##### ONLY FOR TESTING #####
+    y_start = 22.5
+    theta3 = 95 if y_start < 25 else 50
+    # drawLine(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
+    # drawPlus(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
+    drawBox(0, y_start, 1, 5, y_start, 1, theta3)
+
+    # # Formatting is getcoords(x, y, z, theta_3)
+    # x = -10
+    # y = 30
+    # z = 1
+    # theta3 = 95 if y < 25 else 50
+    # theta1, theta2, theta3, theta4 = getcoords(x, y, z, theta3)
+    #
     # print("Calculating position given the angles of the inverse kinematics...")
     # print(FK.calc_position(theta1, theta2, theta3, theta4))
+    #
     # # Apply offset
     # theta2 -= 25
     # theta3 -= 50
+    #
     # # Make list of commandStrings
-    # output = make_list(theta1, theta2, theta3, theta4)
-    # # print(output)
-    # for x in output:
-    #    print("sending", x, end="")
+    # output_list = make_list(theta1, theta2, theta3, theta4)
+    #
+    # # Print for testing purposes
+    # for output in output_list:
+    #     print(output, end="")
