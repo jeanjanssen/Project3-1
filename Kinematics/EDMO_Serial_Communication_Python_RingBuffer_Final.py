@@ -88,7 +88,6 @@ def sendData():
             ser.write(x.encode())
 
 
-
 ############################# RECEIVE DATA ##################################
 # Function checking if data has been received and if yes reading it
 def recData():

@@ -2,6 +2,8 @@ import math
 from numpy import deg2rad
 
 # Lengths between joints. l1 is not needed
+from Kinematics import IK
+
 l2 = 13.4
 l3 = 12.1
 l4 = 12.5    # or 12.8?
