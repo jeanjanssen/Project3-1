@@ -15,7 +15,7 @@ from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
 n_folds =5
-ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images' # root directory path
+ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images copy' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test
 
@@ -72,7 +72,22 @@ def pixels_scaler(train, test):
     return train_normilize, test_normmilize
 
 
+# define cnn model
+def define_model():
+	model = Sequential()
+	model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
+	model.add(MaxPooling2D((2, 2)))
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
+	model.add(Dense(3, activation='softmax'))
+	# compile model
+	opt = SGD(learning_rate=0.01, momentum=0.9)
+	model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+	return model
+
+
 """Define model"""
+
 def model_builder():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
@@ -97,10 +112,11 @@ def evaluate_model(data_x, data_y, n_folds=n_folds):
     for train_ix, test_ix in kfold.split(data_x):
         # define model
         model = model_builder()
+        #model = define_model()
         # select rows for train and test
         train_x, train_y, test_x, test_y = data_x[train_ix], data_y[train_ix], data_x[test_ix], data_y[test_ix]
         # fit model
-        hist = model.fit(train_x, train_y, epochs=10, batch_size=32, validation_data=(test_x, test_y), verbose=0)
+        hist = model.fit(train_x, train_y, epochs=20, batch_size=32, validation_data=(test_x, test_y), verbose=0)
         # evaluate model
         _, acc = model.evaluate(test_x, test_y, verbose=0)
         print('> %.3f' % (acc * 100.0))
@@ -139,8 +155,9 @@ def run_test():
     diagnostics(histories)
     performance(scores)
     model = model_builder()
-    model.fit(train_x, train_y, epochs=10, batch_size=32, verbose=0)
-    model.save('test_deeper_model_old2.h5')
+    #model = define_model()
+    model.fit(train_x, train_y, epochs=20, batch_size=32, verbose=0)
+    model.save('model_DEEP_100_old.h5')
     with open('deepermodelsummary.txt', 'w') as f:
       with  redirect_stdout(f):
         model.summary()
