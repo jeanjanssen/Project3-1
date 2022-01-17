@@ -425,7 +425,7 @@ def play(vcap, difficulty):
 
         # Show images
         cv2.imshow('original', frame)
-        # cv2.imshow('blurry_thresh_gray_frame', paper_thresh)
+        cv2.imshow('blurry_thresh_gray_frame', paper_thresh)
         cv2.imshow('bird view', paper_cut)
         message = True
 
@@ -464,11 +464,11 @@ def main():
     global grid
     os.path
     # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/data/test_deeper_model.h5')
+    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/data/model.h5')
     # model = keras.models.load_model('data/model.h5')
 
     # Initialize webcam feed
-    vcap = cv2.VideoCapture(0)
+    vcap = cv2.VideoCapture(1)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam #{}'.format())
 
