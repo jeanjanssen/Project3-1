@@ -242,11 +242,12 @@ def start_TTT_game():
     # model = load_model('computervision/data/model2.h5')
 
     # initialize camera streaming
-    vcap = cv2.VideoCapture(1)
+    vcap = cv2.VideoCapture(0)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam'.format())
     # Stream the camera while playing the game
     lastframe = vcap.read()[1]
+    print("loop started")
     while state != "end":
         ret, frame = vcap.read()
         key = cv2.waitKey(1) & 0xFF
@@ -265,7 +266,7 @@ def start_TTT_game():
         if motion_detection.motiondection(vcap):
             while motion_detection.motiondection(vcap):
                 pass
-        lastframe = frame
+        # lastframe = frame
 
         # Run the methods according to a state machine
         state = state_start("begin", frame, gameboard)
@@ -318,15 +319,7 @@ PTTT_Image = ImageTk.PhotoImage(RPTTT_Image)
 
 P_TTT_button = tk.Button(start_screen, command=start_TTT_game, image=PTTT_Image, width=200, height=100, bd=0,
                           highlightbackground='#a6c3e5')
-P_TTT_button.place(x=155, y=265)
-
-ORG_PDB_Image = Image.open("Play_D&B_Button.gif")
-RPDB_Image = ORG_PDB_Image.resize((190, 100), Image.ANTIALIAS)
-PDB_Image = ImageTk.PhotoImage(RPDB_Image)
-P_DG_button = tk.Button(start_screen, command=start_dots_and_boxes, image=PDB_Image, width=200, height=100, bd=0,
-                        highlightbackground='#a6c3e5')
-P_DG_button.place(x=395, y=265)
-
+P_TTT_button.pack(pady=10)
 
 # Difficulty Slider
 Text2 = tk.Text(start_screen, height=1, width=100, font=("Arial", 24), bg='#a6c3e5',
