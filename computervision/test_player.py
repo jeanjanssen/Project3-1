@@ -269,7 +269,7 @@ def preprocesses(frame):
 
     # Thresholding to find grid
     paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
-    paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 6)
+    paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199, 6)
     paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
     output.append(paper_thresh_cut)
     # cv2.imshow("threshold", paper_thresh_cut)
