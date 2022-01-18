@@ -259,7 +259,7 @@ def preprocesses(frame):
     # Preprocesses for finding board
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                     cv2.THRESH_BINARY_INV, 11, 7)
+                                                     cv2.THRESH_BINARY_INV, 199, 7)
     # cv2.imshow("preprosses input", blurry_thresh_gray_frame)
     blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
     paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
@@ -313,16 +313,7 @@ def play(vcap, difficulty):
         paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
         paper_cut = matrix_transformations.smart_cut(paper)
 
-        """
-       four red dots  need to appear other which empty array will make the code bug
-        """
-        # TODO need to find a way to only anisihate when corners is not empty (I think)
-        try:
-            for c in corners:
-                cv2.circle(frame, centre_coordinates=tuple(c), radius=2, color=(0, 0, 255), thickness=2)
-        except:
-            #     print("sum tyn wun ")
-            pass
+
 
         # use paper to find grid
         # Thresholding to find grid
@@ -467,7 +458,7 @@ def main():
     global grid
     os.path
     # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('../data/model.h5')
+    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/test_deeper_model_old2.h5')
     # model = keras.models.load_model('data/model.h5')
 
     # Initialize webcam feed
