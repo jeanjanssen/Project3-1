@@ -159,48 +159,43 @@ def state_start(state, frame, gameboard):
         # command_string = output_list[list_index]
         command_string = "A,0,20,1000,1,20,0,2,10,0\n"
         command_arr = command_string[:-1].split(",")
-        for i in range(3, len(command_arr), 3):
-            interval = int(command_arr[i])
-            if current_time - previous_time <= interval:
-                break
-            else:
-                print(command_string)
-                # If the output_list still has unread values, send the next one to the arduino
-                # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
-                list_index += 1
+        interval = int(command_arr[3])
+        if current_time - previous_time >= interval:
+            print(command_string)
+            # If the output_list still has unread values, send the next one to the arduino
+            # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+            list_index += 1
+            previous_time = current_time
         return "moving"
     elif state == "wait_move":
         paper_cut, paper_thresh_cut, grid = preprocesses(frame)
 
         available_moves = np.delete(np.arange(9), list(gamehistory.keys()))
-        try:
-            for i, (x, y, w, h) in enumerate(grid):
-                # gameboard.show()
-                if i not in available_moves:
-                    continue
-                print("available moves array", available_moves)
-                print("grid length", len(grid))
-                print("available move ", i)
-                # Find what is inside each free cell
-                cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
-                print("cell computed")
-                # if player == None:
+        for i, (x, y, w, h) in enumerate(grid):
+            # gameboard.show()
+            if i not in available_moves:
+                continue
+            print("available moves array", available_moves)
+            print("grid length", len(grid))
+            print("available move ", i)
+            # Find what is inside each free cell
+            cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
+            print("cell computed")
+            if detect_SYMBOL(cell, player, model) is not None:
                 shape = detect_SYMBOL(cell, player, model)
 
-                # shape = detect_SYMBOL(cell, player)
-                print("trying to detect shape")
-                # print(shape)
-                if shape is not None:
-                    print("detected_move")
-                    gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
-                    gameboard.make_move(i, shape)
-                    if first_move:
-                        player = gameboard.getenemy(shape)
-                    if gameboard.complete():
-                        return "end"
-                    return "make_move"
-        except:
-            pass
+            # shape = detect_SYMBOL(cell, player)
+            print("trying to detect shape")
+            # print(shape)
+            if shape is not None:
+                print("detected_move")
+                gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
+                gameboard.make_move(i, shape)
+                if first_move:
+                    player = gameboard.getenemy(shape)
+                if gameboard.complete():
+                    return "end"
+                return "make_move"
         return "wait_move"
 
 
