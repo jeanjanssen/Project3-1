@@ -39,7 +39,8 @@ def useReturnCommandString():
 
 
 def getcoords(px, py, pz, theta_3):
-    """ Calculates the angles for the motors given the desired end-effector location (px, py, pz)
+    """
+    Calculates the angles for the motors given the desired end-effector location (px, py, pz)
 
     Parameters
     ----------
@@ -48,7 +49,7 @@ def getcoords(px, py, pz, theta_3):
         py : float
             The desired y-coordinate location of the end-effector
         pz : float
-            The desired z-coordinate location of the end-effector.
+            The desired z-coordinate location of the end-effector
         theta_3 : float
             Angle of motor (PEN2) in degrees
 
@@ -115,7 +116,8 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
 
 
 def make_list(theta_1, theta_2, theta_3, theta_4):
-    """ Makes a list of commandStrings which are to be sent to the motors
+    """
+    Makes a list of commandStrings which are to be sent to the motors
 
     For every theta, getting the moves in a list with at most 5 degrees at a time,
     so that the first motor moves at most 5 degrees until it is at its desired position,
@@ -211,7 +213,31 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
         return []
 
 
-def drawLine(x1, y1, z1, x2, y2, z2, theta_3, returnCommandString=True):
+def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True):
+    """
+    Makes a list of commandString to draw a line from (x1,y1) to (x2,y2)
+
+    Parameters
+    ----------
+        x1 : float
+            x-coordinate 1
+        y1 : float
+            y-coordinate 1
+        x2 : float
+            x-coordinate 2
+        y2 : float
+            y-coordinate 2
+        theta_3 : float
+            Angle of theta_3 in degrees
+        returnCommandString : boolean
+            Default is True. If True, then it includes a commandString (RETURN_COMMANDSTRING) such that the robot arm
+            returns to a vertical position. Otherwise, it does not include this commandString
+    """
+    # TODO check z, either adjust the pen or the z-values
+    # z-coordinates should always be 1
+    z1 = 1
+    z2 = 1
+
     # Get the angles of the motors at the begin and end location
     th1s, th2s, th3s, th4s = getcoords(x1, y1, z1, theta_3)
     th1e, th2e, th3e, th4e = getcoords(x2, y2, z2, theta_3)
@@ -264,11 +290,30 @@ def drawLine(x1, y1, z1, x2, y2, z2, theta_3, returnCommandString=True):
     return output_list
 
 
-def drawPlus(x1, y1, z1, x2, y2, z2, theta_3):
-    # List with commandString(s) to draw the first line
-    list1 = drawLine(x1, y1, z1, x2, y2, z2, theta_3)
+def drawPlus(x1, y1, x2, y2, theta_3):
+    """
+    Method that creates the commandStrings to draw a plus
 
-    # TODO maybe update to move up arm first en then move it to the
+    Parameters
+    ----------
+        x1 : float
+            Left x-coordinate OR top x-coordinate
+        y1 : float
+            Left y-coordinate OR top y-coordinate
+        x2 : float
+            Right x-coordinate OR bottom x-coordinate
+        y2 : float
+            Right y-coordinate OR bottom y-coordinate
+        theta_3 : float
+            Angle of theta_3 in degrees
+
+    Returns a list with commandStrings to draw a plus
+    """
+    # List with commandString(s) to draw the first line
+    output_list = drawLine(x1, y1, x2, y2, theta_3)
+
+    # TODO maybe update to move up arm first en then move it to the starting point of the other line
+    #  drawLine now uses make_list to move to the initial position and in the end adds RETURN_COMMANDSTRING
 
     # Determine whether the second line has to be horizontal or vertical and create these commandStrings.
     if x1 == x2:  # Vertical case
@@ -276,22 +321,41 @@ def drawPlus(x1, y1, z1, x2, y2, z2, theta_3):
         y = (y1 + y2) / 2
         x_left = x1 - length / 2
         x_right = x1 + length / 2
-        list1.extend(drawLine(x_left, y, z1, x_right, y, z2, theta_3))  # Make commandString(s) for horizontal line
+        output_list.extend(drawLine(x_left, y, x_right, y, theta_3))  # Make commandString(s) for horizontal line
     elif y1 == y2:  # Horizontal case
         length = abs(x2 - x1)
         x = (x1 + x2) / 2
         y_bot = y1 - length / 2
         y_top = y1 + length / 2
-        list1.extend(drawLine(x, y_top, z1, x, y_bot, z2, theta_3))  # Make commandString(s) for vertical line
+        output_list.extend(drawLine(x, y_top, x, y_bot, theta_3))  # Make commandString(s) for vertical line
 
-    # Add commandString to return the robot arm to a vertical position
-    # list1.extend(useReturnCommandString())  # TODO is commented because drawLine already uses this
-
-    return list1
+    return output_list
 
 
-def drawBox(x1, y1, z1, x2, y2, z2, theta3):
-    # Give coordinates for the top line of the box from left to right!!!
+def drawBox(x1, y1, x2, y2, theta3):
+    """
+    Method that creates the commandStrings to draw a box.
+    NEEDS upper left coordinate (x1,y1), upper right coordinate (x2,y2) and theta3.
+
+    Returns a list with commandStrings to draw a box
+
+    Parameters
+    ----------
+        x1 : float
+            upper left x-coordinate
+        y1 : float
+            upper left y-coordinate
+        x2 : float
+            upper right x-coordinate
+        y2 : float
+            upper right y-coordinate
+        theta3 : float
+            angle of theta3 in degrees
+    """
+    # TODO check z, either adjust the pen or the z-values
+    # z-coordinates should always be 1
+    z1 = 1
+    z2 = 1
 
     # Make sure the line is horizontal
     if y2 != y1:
@@ -498,7 +562,8 @@ def updatePrevTheta(theta, ID):
 
 
 def constrainCommandStringLength(commandString):
-    """ If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
+    """
+    If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
 
     Parameters
     ----------
@@ -543,21 +608,18 @@ if __name__ == '__main__':
     theta3 = 95 if y_start < 25 else 50
     # drawLine(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
     # drawPlus(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
-    drawBox(0, y_start, 1, 5, y_start, 1, theta3)
+    drawBox(0, y_start, 5, y_start, theta3)
 
     # # Formatting is getcoords(x, y, z, theta_3)
-    # x = -10
     # y = 30
-    # z = 1
     # theta3 = 95 if y < 25 else 50
-    # theta1, theta2, theta3, theta4 = getcoords(x, y, z, theta3)
+    # theta1, theta2, theta3, theta4 = getcoords(-10, y, 1, theta3)
     #
     # print("Calculating position given the angles of the inverse kinematics...")
     # print(FK.calc_position(theta1, theta2, theta3, theta4))
     #
     # # Apply offset
-    # theta2 -= 25
-    # theta3 -= 50
+    # theta2, theta3 = applyOffset(theta2, theta3)
     #
     # # Make list of commandStrings
     # output_list = make_list(theta1, theta2, theta3, theta4)

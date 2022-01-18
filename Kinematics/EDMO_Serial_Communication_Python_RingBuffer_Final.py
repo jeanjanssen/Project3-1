@@ -54,35 +54,32 @@ def sendData():
     ##### TESTING WITH DRAWING
     y_start = 22.5
     theta_3 = 95 if y_start < 25 else 50
-    output = IK.drawLine(2.5, y_start, 1, 2.5, 27.5, 1, theta_3)
+    output = IK.drawLine(2.5, y_start, 2.5, 27.5, theta_3)
 
-    # output = IK.drawLine(0, 25, 1, 5, 25, 1)
-    # output.extend(IK.drawLine(0, 25, 1, 5, 25, 1))
+    # output = IK.drawLine(0, 25, 5, 25, theta_3)
+    # output.extend(IK.drawLine(0, 25, 5, 25, theta_3))
 
-    # output = IK.drawLine(-2.5, 17.5, 1, -2.5, 32.5, 1)
-    # output.extend(IK.drawLine(2.5, 17.5, 1, 2.5, 32.5, 1))
-    # output.extend(IK.drawLine(-7.5, 22.5, 1, 7.5, 22.5, 1))
-    # output.extend(IK.drawLine(-7.5, 27.5, 1, 7.5, 27.5, 1))
+    # output = IK.drawLine(-2.5, 17.5, -2.5, 32.5, theta_3)
+    # output.extend(IK.drawLine(2.5, 17.5, 2.5, 32.5, theta_3))
+    # output.extend(IK.drawLine(-7.5, 22.5, 7.5, 22.5, theta_3))
+    # output.extend(IK.drawLine(-7.5, 27.5, 7.5, 27.5, theta_3))
 
     # Sending the commandStrings
-    count = 0
     for x in output:
-        count += 1
-        # if (count - 1) % 25 == 0:
-        #     sleep(10)
         print("sending", x, end="")
         ser.write(x.encode())
 
     # Second run to see if it moves to the next position correctly as well
     second_run = False
     if second_run:
-        theta1, theta2, theta3, theta4 = IK.getcoords(-10, 30, 1)
+        y_start = 30
+        theta_3 = 95 if y_start < 25 else 50
+        theta1, theta2, theta3, theta4 = IK.getcoords(-10, y_start, 1, theta_3)
         print("Calculating position given the angles of the inverse kinematics...")
         print(FK.calc_position(theta1, theta2, theta3, theta4))
 
         # Applying offset for the motors
-        theta2 -= 25
-        theta3 -= 50
+        theta2, theta3 = IK.applyOffset(theta2, theta3)
 
         # Getting the commandStrings
         output = IK.make_list(theta1, theta2, theta3, theta4)
