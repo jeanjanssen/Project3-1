@@ -258,7 +258,7 @@ def preprocesses(frame):
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                      cv2.THRESH_BINARY_INV, 11, 7)
-    cv2.imshow("preprosses input", blurry_thresh_gray_frame)
+    # cv2.imshow("preprosses input", blurry_thresh_gray_frame)
     blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
     paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
     paper_cut = matrix_transformations.smart_cut(paper)
@@ -268,7 +268,8 @@ def preprocesses(frame):
     paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
     paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 6)
     paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
-    cv2.imshow("threshold", paper_thresh_cut)
+    output.append(paper_thresh_cut)
+    # cv2.imshow("threshold", paper_thresh_cut)
     grid = get_3X3_GRID(paper_thresh_cut)
     output.append(grid)
     return output
@@ -305,7 +306,7 @@ def play(vcap, difficulty):
         # _, blurry_thresh_gray_frame = cv2.threshold(gray_frame, 170, 255, cv2.THRESH_BINARY)
         blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                          cv2.THRESH_BINARY_INV, 199, 20)
-        cv2.imshow("preprosses input", blurry_thresh_gray_frame)
+        # cv2.imshow("preprosses input", blurry_thresh_gray_frame)
         blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
         paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
         paper_cut = matrix_transformations.smart_cut(paper)
@@ -328,7 +329,7 @@ def play(vcap, difficulty):
         paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,
                                              9)
         paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
-        cv2.imshow("threshold", paper_thresh_cut)
+        #cv2.imshow("threshold", paper_thresh_cut)
         grid = get_3X3_GRID(paper_thresh_cut)
 
         try:
@@ -414,7 +415,7 @@ def play(vcap, difficulty):
             paper_cut = draw_SYMBOL(paper_cut, 'O', grid[computer_move])
 
             print("-----------------------Computer move-----------------------------------------------")
-            gameboard.show()
+            # gameboard.show()
             # print(it)
         except:
             pass
@@ -464,11 +465,11 @@ def main():
     global grid
     os.path
     # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/data/model.h5')
+    model = load_model('../data/model.h5')
     # model = keras.models.load_model('data/model.h5')
 
     # Initialize webcam feed
-    vcap = cv2.VideoCapture(1)
+    vcap = cv2.VideoCapture(0)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam #{}'.format())
 
