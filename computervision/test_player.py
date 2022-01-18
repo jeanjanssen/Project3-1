@@ -39,18 +39,19 @@ def detect_SYMBOL(box, player, model_par):
     """detects the symbol in one box of the grid """
 
 
-    mapper = {0: None, 1: 'X', 2: 'O'}
-    box = PreProccesing.Frame_PRE_proccsing(box)
-
-    idx = np.argmax(model_par.predict(box))
-    """
-    if player == "X":
-        if idx == 2:
-            idx = 0
-    else:
-        if idx == 1:
-            idx = 0
-    """
+    mapper = {0: '0', 1: 'X', 2: 'O'}
+    idx = 0
+    try:
+        box = PreProccesing.Frame_PRE_proccsing(box)
+        idx = np.argmax(model_par.predict(box))
+        if player == "X":
+            if idx == 2:
+                idx = 0
+        else:
+            if idx == 1:
+                idx = 0
+    except:
+        pass
     print("mapper found", idx, "which is symbol :", mapper[idx])
     return mapper[idx]
 
@@ -262,7 +263,7 @@ def preprocesses(frame):
                                                      cv2.THRESH_BINARY_INV, 199, 7)
     # cv2.imshow("preprosses input", blurry_thresh_gray_frame)
     blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
-    paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
+    paper = detect_Corners_paper(frame, blurry_thresh_gray_frame)[0]
     paper_cut = matrix_transformations.smart_cut(paper)
     output.append(paper_cut)
 

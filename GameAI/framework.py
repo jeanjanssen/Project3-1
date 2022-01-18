@@ -66,11 +66,12 @@ def getCoordsToSketchCross(middleCoord):
     return coords
 
 
-def calculate_coordinates(computer_move):
+def calculate_coordinates(computer_move, grid):
+    # any grid coordinate: [x, y, width, height]
     ik_coords = []
-    cv_coords = gamehistory[computer_move]['bbox']
-    ik_coords.append((-cv_coords.get(0) * (42.5 / 733) - 42.5 / 2))
-    ik_coords.append((cv_coords.get(1) * (30.5 / 540) + 10))
+    cv_coords = grid[computer_move]
+    ik_coords.append(-(cv_coords[0] * (42.5 / 733) - 42.5/2 - cv_coords[2]/2))
+    ik_coords.append((cv_coords[1] * (30.5 / 540) + 10 + cv_coords[3]/2))
     return ik_coords
 
 
@@ -109,8 +110,12 @@ def state_start(state, frame, gameboard):
         global computer_move
         computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
-        # coords = calculate_coordinates(computer_move)
-        coords = [10, 30]
+        try:
+            grid = preprocesses(frame)[2]
+            coords = calculate_coordinates(computer_move, grid)
+        except:
+            return "make_move"
+        # coords = [10, 30]
         # Create commands to move to the desired point
         if coords[1] < 25:
             theta_3 = 95  # degrees for drawing on the first half of the table
@@ -125,20 +130,16 @@ def state_start(state, frame, gameboard):
         output_list.append(IK.move_kinematics(player))
         # Create commands to move back to the idle position
         output_list.extend(IK.make_list(0, -25, -45, -20))
-        print("output_list_made")
-        print(output_list[0])
-        print(output_list)
         return "moving"
     elif state == "moving":
         # Check whether the output_list has been iterated over
         global list_index
-        print("list_index: ", list_index, "list_length", len(output_list))
         if list_index >= len(output_list):
             paper_cut, paper_fresh_cut, grid = preprocesses(frame)
             try:
                 gameboard.make_move(computer_move, player)
                 global gamehistory
-                gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
+                gamehistory[computer_move] = {'shape': player, 'bbox': grid[computer_move]}
             except:
                 pass
             if gameboard.complete():
@@ -147,27 +148,20 @@ def state_start(state, frame, gameboard):
             output_list = []
             return "wait_move"
         """
-        while (currentTime - previousTime >= interval):
-            ser.write(commandString)
-            commandString[:-1].split(",")
-            3, 6, 9, etc.
-            delay = getDelay(commandString)
-            interval = parseToInt(delay)
-            previousTime = currentTime
-        """
         current_time = time.time()
-        # command_string = output_list[list_index]
-        command_string = "A,0,20,1000,1,20,0,2,10,0\n"
+        command_string = output_list[list_index]
         command_arr = command_string[:-1].split(",")
         interval = int(command_arr[3])
-        if current_time - previous_time >= interval:
-            print(command_string)
-            # If the output_list still has unread values, send the next one to the arduino
-            # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
-            list_index += 1
-            previous_time = current_time
+        global next_time
+        if next_time < current_time:
+        """
+        # If the output_list still has unread values, send the next one to the arduino
+        # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+        list_index += 1
+        # next_time = current_time + interval/1000
         return "moving"
     elif state == "wait_move":
+
         paper_cut, paper_thresh_cut, grid = preprocesses(frame)
 
         available_moves = np.delete(np.arange(9), list(gamehistory.keys()))
@@ -175,27 +169,24 @@ def state_start(state, frame, gameboard):
             # gameboard.show()
             if i not in available_moves:
                 continue
-            print("available moves array", available_moves)
-            print("grid length", len(grid))
-            print("available move ", i)
             # Find what is inside each free cell
             cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
-            print("cell computed")
-            if detect_SYMBOL(cell, player, model) is not None:
-                shape = detect_SYMBOL(cell, player, model)
+            # if detect_SYMBOL(cell, player, model) is not None:
+            shape = detect_SYMBOL(cell, player, model)
 
             # shape = detect_SYMBOL(cell, player)
-            print("trying to detect shape")
             # print(shape)
-            if shape is not None:
-                print("detected_move")
+            if shape != '0':
+                print("detected_move", shape, "in grid", i)
                 gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
                 gameboard.make_move(i, shape)
+                gameboard.show()
                 if first_move:
                     player = gameboard.getenemy(shape)
                 if gameboard.complete():
                     return "end"
                 return "make_move"
+
         return "wait_move"
 
 
@@ -228,13 +219,15 @@ def start_TTT_game():
     gamehistory = {}
     global state
     state = "begin"
-    global previous_time
-    previous_time = 0
+    global next_time
+    next_time = 0
     global list_index
     list_index = 0
+    global first_move
+    first_move = False
     global model
     os.path
-    model = load_model('../data/model2.h5')
+    model = load_model('../data/model_daniel.h5')
 
     # initialize camera streaming
     vcap = cv2.VideoCapture(0)
@@ -255,11 +248,12 @@ def start_TTT_game():
             break
 
         # Run Preprocesses on the computervision
-
-        if preprocesses(frame)[2] is None:
+        try:
+            if preprocesses(frame)[2] is None:
+                pass
+            paper_cut, paper_thresh_cut, grid = preprocesses(frame)
+        except:
             pass
-        paper_cut, paper_fresh_cut, grid = preprocesses(frame)
-
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
         """
@@ -273,7 +267,6 @@ def start_TTT_game():
             for i, (x, y, w, h) in enumerate(grid):
                 cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
                 if gamehistory.get(i) is not None:
-                    print("detected_symbol")
                     shape = gamehistory[i]['shape']
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
         except:
@@ -284,8 +277,13 @@ def start_TTT_game():
         state = state_start(state, frame, gameboard)
 
         if not key == 32:
-            cv2.imshow('Tic Tac Toe game feed', paper_cut)
+            try:
+                cv2.imshow('Tic Tac Toe game feed', paper_cut)
+            except:
+                cv2.imshow('Tic Tac Toe game feed', frame)
             continue
+
+    gameboard.show()
 
 
 # Open up starting window
