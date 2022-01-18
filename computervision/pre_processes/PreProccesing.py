@@ -46,9 +46,13 @@ def return_contourdbox(frame):
 
 
 def Frame_PRE_proccsing(frame):
-    """Preprocess image to match model's input shape for shape detection"""
-    frame = cv2.resize(frame, (28, 28))
-    # Expand both channel_last and batch size
-    frame = np.expand_dims(frame, axis=-1)
-    frame = np.expand_dims(frame, axis=0)
+
+    try :
+        """Preprocess image to match model's input shape for shape detection"""
+        frame = cv2.resize(frame, (28, 28))
+        # Expand both channel_last and batch size
+        frame = np.expand_dims(frame, axis=-1)
+        frame = np.expand_dims(frame, axis=0)
+    except:
+        pass
     return frame.astype(np.float32) / 255

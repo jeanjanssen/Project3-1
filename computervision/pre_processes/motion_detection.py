@@ -38,7 +38,7 @@ def motiondection(video):
             print("[INFO] starting background model...")
             avg_frame = gray2.copy().astype("float")
             continue
-        cv2.accumulateWeighted(gray2, avg_frame, 0.03)
+        cv2.accumulateWeighted(gray2, avg_frame, 0.1)
         frameDelta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
         threshdelta = cv2.adaptiveThreshold(frameDelta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,6)
         threshdelta = cv2.dilate(threshdelta, None, iterations=2)
@@ -48,7 +48,7 @@ def motiondection(video):
         # loop over the contours
         for c in cntsdelta:
             # if the contour is too small, ignore it
-            if cv2.contourArea(c) < 100:
+            if cv2.contourArea(c) < 1000:
                 continue
             # compute the bounding box for the contour, draw it on the frame,
             # and update the text
@@ -66,11 +66,6 @@ def motiondection(video):
         cv2.putText(frame2, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                     0.35, (0, 0, 255), 1)
 
-
-
-
-
-        cv2.imshow("new motion", baseline_frame)
         cv2.imshow('newmoetions', frame2)
         key = cv2.waitKey(1)
 
