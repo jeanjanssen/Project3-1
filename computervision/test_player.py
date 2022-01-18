@@ -35,20 +35,22 @@ def detect_Corners_paper(frame, thresh, add_margin=True):
     return paper, corners
 
 
-def detect_SYMBOL(box, player):
+def detect_SYMBOL(box, player, model_par):
     """detects the symbol in one box of the grid """
+
 
     mapper = {0: None, 1: 'X', 2: 'O'}
     box = PreProccesing.Frame_PRE_proccsing(box)
 
-
-    idx = np.argmax(model.predict(box))
-    if player == "X" :
+    idx = np.argmax(model_par.predict(box))
+    """
+    if player == "X":
         if idx == 2:
             idx = 0
-    else :
+    else:
         if idx == 1:
             idx = 0
+    """
     print("mapper found", idx, "which is symbol :", mapper[idx])
     return mapper[idx]
 
@@ -366,7 +368,7 @@ def play(vcap, difficulty):
                 if i not in available_moves:
                     continue
                 # Find what is inside each free cell
-
+                print("available moves", i)
                 cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
                 shape = detect_SYMBOL(cell,player)
 

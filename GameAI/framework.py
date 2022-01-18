@@ -3,6 +3,7 @@ import tkinter
 import tkinter as tk
 from tkinter import HORIZONTAL
 import numpy as np
+import time
 
 from Kinematics import IK
 # from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
@@ -12,17 +13,15 @@ import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
 from computervision.gameboard import Tic
-# from computervision.pre_processes import motion_detection
 
-global list_index
-list_index = 0
+# from computervision.pre_processes import motion_detection
 global output_list
 output_list = []
 global gamehistory
-gamehistory = {}
 global player
 player = 'X'
 global first_move
+
 
 
 def update_ui_turn(turn):
@@ -99,6 +98,7 @@ def state_start(state, frame, gameboard):
             print("player begins")
             global first_move
             first_move = True
+            player = 'X'
             return "wait_move"
         else:
             print("error with v" + v.get())
@@ -109,8 +109,8 @@ def state_start(state, frame, gameboard):
         global computer_move
         computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
-        coords = calculate_coordinates(computer_move)
-        # coords = [10, 30]
+        # coords = calculate_coordinates(computer_move)
+        coords = [10, 30]
         # Create commands to move to the desired point
         if coords[1] < 25:
             theta_3 = 95  # degrees for drawing on the first half of the table
@@ -134,12 +134,11 @@ def state_start(state, frame, gameboard):
         global list_index
         print("list_index: ", list_index, "list_length", len(output_list))
         if list_index >= len(output_list):
-            print("list_index is bigger")
             paper_cut, paper_fresh_cut, grid = preprocesses(frame)
             try:
                 gameboard.make_move(computer_move, player)
+                global gamehistory
                 gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
-                paper_cut = draw_SYMBOL(paper_cut, 'O', grid[computer_move])
             except:
                 pass
             if gameboard.complete():
@@ -147,10 +146,28 @@ def state_start(state, frame, gameboard):
             list_index = 0
             output_list = []
             return "wait_move"
-        # If the output_list still has unread values, send the next one to the arduino
-        command_string = output_list[list_index]
-        # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
-        list_index += 1
+        """
+        while (currentTime - previousTime >= interval):
+            ser.write(commandString)
+            commandString[:-1].split(",")
+            3, 6, 9, etc.
+            delay = getDelay(commandString)
+            interval = parseToInt(delay)
+            previousTime = currentTime
+        """
+        current_time = time.time()
+        # command_string = output_list[list_index]
+        command_string = "A,0,20,1000,1,20,0,2,10,0\n"
+        command_arr = command_string[:-1].split(",")
+        for i in range(3, len(command_arr), 3):
+            interval = int(command_arr[i])
+            if current_time - previous_time <= interval:
+                break
+            else:
+                print(command_string)
+                # If the output_list still has unread values, send the next one to the arduino
+                # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+                list_index += 1
         return "moving"
     elif state == "wait_move":
         paper_cut, paper_thresh_cut, grid = preprocesses(frame)
@@ -161,13 +178,17 @@ def state_start(state, frame, gameboard):
                 # gameboard.show()
                 if i not in available_moves:
                     continue
-                print(available_moves)
-                print(len(grid))
+                print("available moves array", available_moves)
+                print("grid length", len(grid))
                 print("available move ", i)
                 # Find what is inside each free cell
                 cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
-                shape = detect_SYMBOL(cell, player)
+                print("cell computed")
+                # if player == None:
+                shape = detect_SYMBOL(cell, player, model)
 
+                # shape = detect_SYMBOL(cell, player)
+                print("trying to detect shape")
                 # print(shape)
                 if shape is not None:
                     print("detected_move")
@@ -187,6 +208,8 @@ def state_start(state, frame, gameboard):
 Initialize the second UI screen, showing the board.
 Then start up and maintain the camera streaming, call the collision detection and the state machine
 """
+
+
 def start_TTT_game():
     # Create Second screen with grid
     start_screen.destroy()
@@ -206,12 +229,17 @@ def start_TTT_game():
 
     # Initialize important variables
     gameboard = Tic()
+    global gamehistory
     gamehistory = {}
+    global state
     state = "begin"
+    global previous_time
+    previous_time = 0
+    global list_index
     list_index = 0
     global model
     os.path
-    model = load_model('/Users/danieltossaint/Documents/GitHub/Project3-1/data/model2.h5')
+    model = load_model('../data/model2.h5')
 
     # initialize camera streaming
     vcap = cv2.VideoCapture(0)
@@ -232,6 +260,9 @@ def start_TTT_game():
             break
 
         # Run Preprocesses on the computervision
+
+        if preprocesses(frame)[2] is None:
+            pass
         paper_cut, paper_fresh_cut, grid = preprocesses(frame)
 
         # Run motion detection every instance of the loop
@@ -241,10 +272,6 @@ def start_TTT_game():
             while motion_detection.motiondection(vcap):
                 pass
         """
-
-        # Run the methods according to a state machine
-        print(state)
-        state = state_start(state, frame, gameboard)
 
         try:
             # Draw grid wait on user
@@ -257,8 +284,12 @@ def start_TTT_game():
         except:
             pass
 
+        # Run the methods according to a state machine
+        print("state: ", state)
+        state = state_start(state, frame, gameboard)
+
         if not key == 32:
-            cv2.imshow('Tic Tac Toe game feed', frame)
+            cv2.imshow('Tic Tac Toe game feed', paper_cut)
             continue
 
 
@@ -270,7 +301,7 @@ start_screen.geometry("750x500")
 
 # Window title
 Title = tk.Text(start_screen, height=1, width=450, font=("Arial", 40), bg='#a6c3e5', pady=30,
-                highlightbackground="#a6c3e5")
+                highlightbackground="#a6c3e5", fg='#000000')
 Title.tag_configure("center", justify="center")
 Title.insert(1.0, "Tic Tac Toe vs a robot arm")
 Title.configure(state='disabled')
@@ -279,7 +310,7 @@ Title.pack()
 
 # Radio buttons for deciding who moves first
 Text1 = tk.Text(start_screen, height=1, width=100, font=("Arial", 24), bg='#a6c3e5', pady=10,
-                highlightbackground='#a6c3e5')
+                highlightbackground='#a6c3e5', fg='#000000')
 Text1.tag_configure("center", justify="center")
 Text1.insert(1.0, "First move for:")
 Text1.configure(state='disabled')
@@ -287,8 +318,8 @@ Text1.tag_add("center", "1.0", "end")
 Text1.pack()
 # Actual Radio buttons
 v = tkinter.StringVar()
-tk.Radiobutton(start_screen, text="Robot", fg="black", justify="center", variable=v, value=1, pady=5, bg='#a6c3e5',
-               font=("Arial", 24,), foreground='#a6c3e5').pack()
+tk.Radiobutton(start_screen, text="Robot", justify="center", variable=v, value=1, pady=5, bg='#a6c3e5',
+               font=("Arial", 24,), fg='#000000').pack()
 
 tk.Radiobutton(start_screen, text="Human", justify="center", variable=v, value=2, pady=5, bg='#a6c3e5',
                font=("Arial", 24), fg="#000000").pack()
@@ -300,18 +331,18 @@ RPTTT_Image = ORG_PTTT_Image.resize((190, 100), Image.ANTIALIAS)
 PTTT_Image = ImageTk.PhotoImage(RPTTT_Image)
 
 P_TTT_button = tk.Button(start_screen, command=start_TTT_game, image=PTTT_Image, width=200, height=100, bd=0,
-                         highlightbackground='#a6c3e5')
+                         highlightbackground='#a6c3e5', bg='#a6c3e5')
 P_TTT_button.pack(pady=10)
 
 # Difficulty Slider
 Text2 = tk.Text(start_screen, height=1, width=100, font=("Arial", 24), bg='#a6c3e5',
-                pady=15, highlightbackground='#a6c3e5')
+                pady=15, highlightbackground='#a6c3e5', fg='#000000')
 Text2.tag_configure("center", justify="center")
 Text2.insert(1.0, "Difficulty level:")
 Text2.configure(state='disabled')
 Text2.tag_add("center", "1.0", "end")
-Text2.place(x=-285, y=375)
-slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5')
+Text2.pack()
+slider = tk.Scale(start_screen, from_=0, to=100, orient=HORIZONTAL, length=400, bg='#a6c3e5', fg='#000000')
 slider.place(x=175, y=425)
 slider.set(100)
 difficulty = slider.get()
