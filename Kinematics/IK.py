@@ -233,9 +233,9 @@ def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True, shortStrings=Fal
             returns to a vertical position. Otherwise, it does not include this commandString
     """
     # TODO check z, either adjust the pen or the z-values
-    # z-coordinates should always be 1
-    z1 = 1
-    z2 = 1
+    # z-coordinates should always be -1
+    z1 = -1
+    z2 = -1
 
     # Get the angles of the motors at the begin and end location
     th1s, th2s, th3s, th4s = getcoords(x1, y1, z1, theta_3)
@@ -353,9 +353,9 @@ def drawBox(x1, y1, x2, y2, theta3, shortStrings=False):
             angle of theta3 in degrees
     """
     # TODO check z, either adjust the pen or the z-values
-    # z-coordinates should always be 1
-    z1 = 1
-    z2 = 1
+    # z-coordinates should always be -1
+    z1 = -1
+    z2 = -1
 
     # Make sure the line is horizontal
     if y2 != y1:
