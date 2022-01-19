@@ -5,6 +5,7 @@ from tkinter import HORIZONTAL
 import numpy as np
 import time
 
+
 from Kinematics import IK
 from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
 from GameAI import TTT_Minimax
@@ -17,16 +18,20 @@ from computervision.gameboard import Tic, get_enemy
 import datetime
 import imutils
 # from computervision.pre_processes import motion_detection
+
+
 global output_list
 output_list = []
 global gamehistory
 global player
 player = 'X'
 global first_move
-def video_cut(frame):
-    cropped_image = frame[100:600, 200:900]
-    return cropped_image
 
+def video_cut(frame):
+    cropped_image = frame[0:480, 0:540]
+    print(frame.shape)
+    return cropped_image
+"""
 def motion_detection(vcap):
 
     baseline_frame = None
@@ -66,14 +71,16 @@ def motion_detection(vcap):
 
 
 
-        """   # draw the text and timestamp on the frame
+           # draw the text and timestamp on the frame
         cv2.putText(frame, "board Status: {}".format(text), (10, 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         cv2.putText(frame, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                     0.35, (0, 0, 255), 1)
-        """
+
         time.sleep(0.015)
         return text
+"""
+
 
 def calculate_coordinates(cv_coords):
     """
@@ -126,7 +133,7 @@ def state_start(state, frame, gameboard):
         # Check who starts the game
         if v.get() == "1":
             global player
-            player = 'O'
+            player = 'X'
             print("robot begins")
             return "make_move"
         elif v.get() == "2":
@@ -171,8 +178,8 @@ def state_start(state, frame, gameboard):
     elif state == "moving":
         # Check whether the output_list has been iterated over
         global list_index
-        print("index", list_index, "out of", len(output_list))
         if list_index >= len(output_list):
+            return "end"
             paper_cut, paper_fresh_cut, grid = preprocesses(frame)
             try:
                 gameboard.make_move(computer_move, player)
@@ -188,9 +195,10 @@ def state_start(state, frame, gameboard):
         current_time = time.time()
         command_string = output_list[list_index]
         command_arr = command_string[:-1].split(",")
-        interval = int(command_arr[3])
+        interval = int(command_arr[3]) + 4000
         global next_time
         if next_time < current_time:
+            print("index", list_index, "out of", len(output_list))
             # If the output_list still has unread values, send the next one to the arduino
             EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
             list_index += 1
@@ -236,6 +244,7 @@ Initialize the second UI screen, showing the board.
 Then start up and maintain the camera streaming, call the collision detection and the state machine
 """
 
+print("before start_game")
 
 def start_TTT_game():
     # Create Second screen with grid
@@ -279,6 +288,7 @@ def start_TTT_game():
     avg_frame = None
     while state != "end":
         ret, frame = vcap.read()
+        frame=video_cut(frame)
         key = cv2.waitKey(1) & 0xFF
         if not ret:
             print('[INFO] finished video processing')
@@ -328,23 +338,27 @@ def start_TTT_game():
             (x, y, w, h) = cv2.boundingRect(c)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             text = "Occupied"
-        try:
-            # Draw grid wait on user
-            for i, (x, y, w, h) in enumerate(grid):
-                cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
-                if gamehistory.get(i) is not None:
-                    shape = gamehistory[i]['shape']
-                    paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
-        except:
-            pass
-        print("status:",text)
-        if text == "Unoccupied":
+
+        if state != "moving":
+            try:
+                # Draw grid wait on user
+                for i, (x, y, w, h) in enumerate(grid):
+                    cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
+                    if gamehistory.get(i) is not None:
+                        shape = gamehistory[i]['shape']
+                        paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+            except:
+                pass
+        # print("status:",text)
+        # if text == "Unoccupied":
             # Run the methods according to a state machine
-            print("state: ", state)
-            state = state_start(state, frame, gameboard)
+            # print("state: ", state)
+        state = state_start(state, frame, gameboard)
 
         cv2.putText(paper_cut, "board Status: {}".format(text), (10, 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+
         if not key == 32:
             try:
                 cv2.imshow('Tic Tac Toe game feed', paper_cut)
@@ -354,6 +368,7 @@ def start_TTT_game():
 
     gameboard.show()
 
+print("after methods")
 
 # Open up starting window
 start_screen = tk.Tk()

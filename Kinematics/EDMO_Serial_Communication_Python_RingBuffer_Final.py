@@ -13,7 +13,7 @@ ser_input = []  # emtpy the serial input array
 current_time = 0
 prev_time = 0
 interval = 0.5  # serial read update time
-
+print("initializing done")
 # Example commands to drive the motors
 # commandString = '0,0,25,0,0,45,1000,0,0,5000\n'     # data string to send to arduino
 # commandString1 = '1,2,5,0,2,10,1000,2,30,2000\n'    # data string to send to arduino
@@ -112,9 +112,9 @@ def recData():
 sendData(commandString6)  # send drive commands once
 
 # continuously check and read serial input
-while True:
-    current_time = timer()  # update current time
-    # if interval is reached, check if there is a new serial input
-    if current_time - prev_time >= interval:
-        prev_time = current_time
-        # recData()
+# while True:
+#     current_time = timer()  # update current time
+#     # if interval is reached, check if there is a new serial input
+#     if current_time - prev_time >= interval:
+#         prev_time = current_time
+#         # recData()
