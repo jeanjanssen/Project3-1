@@ -601,6 +601,7 @@ def constrainCommandStringLength(commandString, shortStrings=False):
 
         # Append last commandString
         commandStringList.append(commandString)
+        print("last:", commandString, end="")
         print("----------------------------------------------\n")
 
     else:
