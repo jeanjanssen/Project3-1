@@ -631,9 +631,12 @@ if __name__ == '__main__':
     ##### ONLY FOR TESTING #####
     y_start = 22.5
     theta3 = 95 if y_start < 25 else 50
-    # drawLine(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
-    # drawPlus(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
-    drawBox(0, y_start, 5, y_start, theta3, shortStrings=True)
+    # drawLine(2.5, y_start, 2.5, 27.5, theta3)
+    # output_list = drawPlus(2.5, y_start, 2.5, 27.5, theta3, shortStrings=True)
+    output_list = drawBox(0, y_start, 5, y_start, theta3, shortStrings=True)
+
+    # for output in output_list:
+    #     print(output, end="")
 
     # # Formatting is getcoords(x, y, z, theta_3)
     # y = 30
