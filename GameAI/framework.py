@@ -165,6 +165,7 @@ def state_start(state, frame, gameboard):
             theta_3 = 50  # degrees for drawing on the second half of the table
         global output_list
         small_side = min(coords[2], coords[3])
+        # TODO change shortStrings to True
         if player == 'X':
             output_list = IK.drawPlus(coords[0] - 0.4 * small_side, coords[1],
                                       coords[0] + 0.4 * small_side, coords[1],

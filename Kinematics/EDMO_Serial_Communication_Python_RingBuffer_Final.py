@@ -24,7 +24,7 @@ print("initializing done")
 # Stop command since ID = S
 commandString5 = 'S,0,0,0,1,0,0,2,0,0,3,0,2000\n'  # S,motor,angle,delay,motor,angle,delay
 # CommandString to move the arm up straight
-commandString6 = 'A,0,0,100,1,-50,100,2,-25,100,3,0,2000\n'
+commandString6 = 'A,0,0,100,1,-45,100,2,-25,100,3,0,2000\n'
 
 
 ############################# SEND DATA ##################################
