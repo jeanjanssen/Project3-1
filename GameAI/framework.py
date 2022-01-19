@@ -23,51 +23,29 @@ player = 'X'
 global first_move
 
 
-def move_coordinates(player, middleCoord):
-    if player == 'X':
-        getCoordsToSketchCross(middleCoord)
-    if player == 'O':
-        pass
-
-
-def getCoordsToSketchCross(middleCoord):
-    print(middleCoord)
-    height_dist = 2  # TODO test which value is best
-    width_dist = 2  # TODO test which value is best
-
-    x = middleCoord[0]
-    y = middleCoord[1]
-    z = middleCoord[2]
-    power = middleCoord[3]
-
-    coords = []
-    coord0 = (x - width_dist, y + height_dist, z, power)  # top left coord of cross
-    coord1 = middleCoord
-    coord2 = (x + width_dist, y - height_dist, z, power)  # bottom right coord of cross
-    coord3 = (x + width_dist, y - height_dist, z + 3, power)  # position in the air before sketching second line
-    coord4 = (x + width_dist, y + height_dist, z, power)  # top right coord of cross
-    coord5 = middleCoord
-    coord6 = (x - width_dist, y - height_dist, z, power)  # bottom left coord of cross
-
-    coords.append(coord0)
-    coords.append(coord1)
-    coords.append(coord2)
-    coords.append(coord3)
-    coords.append(coord4)
-    coords.append(coord5)
-    coords.append(coord6)
-
-    print(coords)
-    return coords
-
-
 def calculate_coordinates(cv_coords):
-    # any grid coordinate: [x, y, width, height]
-    ik_coords = []
-    ik_coords.append(-((cv_coords[0] - cv_coords[2] / 2) * (42.5 / 733) - 42.5 / 2))
-    ik_coords.append((cv_coords[1] + cv_coords[3] / 2) * (30.5 / 540) + 10)
-    ik_coords.append(cv_coords[2] * (42.5 / 733))
-    ik_coords.append(cv_coords[3] * (30.5 / 540))
+    """
+    Given any box of the grid, converts the middle coordinate in the x,y plane, gotten from the computer vision,
+    to coordinates the kinematics can use.
+    In computer vision the (0, 0) point is the top left of the screen.
+    For computer vision the (0, 0) point is the base of the robot which is at the top of the screen.
+
+    Parameters
+    ----------------
+    cv_coords: array with length 4
+    cv_coords[0]: x coordinate of the top right of the box
+    cv_coords[1]: y coordinate of the top right of the box
+    cv_coords[2]: width of the box
+    cv_coords[3]: height of the box
+
+    Returns a list with the middle coordinate of the given box in the the kinematics system.
+    """
+    # conversion calculations
+    ik_coords = [-((cv_coords[0] - cv_coords[2] / 2) * (42.5 / 733) - 42.5 / 2),
+                 (cv_coords[1] + cv_coords[3] / 2) * (30.5 / 540) + 10,
+                 cv_coords[2] * (42.5 / 733),
+                 cv_coords[3] * (30.5 / 540)]
+    # checking whether the coordinates end up on the board
     if not -21.25 < ik_coords[0] < 21.25:
         print("x-coordinate computed incorrectly: out of reach: ", ik_coords[0])
     if not 10 < ik_coords[1] < 40.5:
@@ -75,17 +53,23 @@ def calculate_coordinates(cv_coords):
     return ik_coords
 
 
-"""
-State machine for waiting for and making moves
-begin: Start the state machine
-make_move: Calculate correct move, calculate the kinematics and compute an output list
-moving: Sending the next value of the output list to the arduino
-wait_move: Wait for the player to make a move, checking the board the entire time
-end: End the state machine, making clear that the game has finished
-"""
-
-
 def state_start(state, frame, gameboard):
+    """
+    Running the game according to a state machine.
+
+    Parameters
+    -----------------------
+    state: state the game is currently in
+        States
+        -------------------
+        "begin": Start the state machine, check who has the first move
+        "make_move": Calculate the move according to Game AI, calculate the neccesary movements with kinematics.
+        "moving": Each iteration, send the next value to the arduino
+        "wait_move": Each iteration, check if the player has made a move by checking empty spaces in the board.
+        "end": End the state machine by breaking the game loop
+    frame: Current frame gotten from the video streaming.
+    gameboard: Current state of the board
+    """
     if state == "begin":
         # Check who starts the game
         if v.get() == "1":
