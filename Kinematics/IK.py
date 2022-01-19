@@ -3,20 +3,18 @@ from numpy import *
 from re import finditer
 from Kinematics import FK
 
-
 l1 = 20.1
 l2 = 13.4
 l3 = 12.1
 l4 = 14  # length to the pen
 
 # Previous thetas such that the arm is (almost) up straight at the start
-prevTheta1 = 0.0    # PEN4, bottom motor
+prevTheta1 = 0.0  # PEN4, bottom motor
 prevTheta2 = -25.0  # PEN3
 prevTheta3 = -45.0  # PEN2
 prevTheta4 = -20.0  # PEN1, top motor
 
 # CommandString to return the robotic arm to an up straight position
-RETURN_COMMANDSTRING = "A,0,-20,2000,1,-45,0,2,-25,0,3,0,0\n"
 MAX_LENGTH = 100  # Maximum length of commandString (100 is consistent with arduino code! Don't enter higher values!)
 
 
@@ -30,6 +28,7 @@ def useReturnCommandString():
     Updates the prevThetas to the angles used in RETURN_COMMANDSTRING
     Returns RETURN_COMMANDSTRING
     """
+    RETURN_COMMANDSTRING = "A,0,-20,2000,1,-45,0,2,-25,0,3,0,0\n"  # (35 characters)
     global prevTheta1, prevTheta2, prevTheta3, prevTheta4
     prevTheta1 = 0
     prevTheta2 = -25
@@ -115,7 +114,7 @@ def getLengthTheta2Theta4(theta3, l2, l3):  # l2 and l3 can be taken from the cl
     return length_t2_t4
 
 
-def make_list(theta_1, theta_2, theta_3, theta_4):
+def make_list(theta_1, theta_2, theta_3, theta_4, shortStrings=False):
     """
     Makes a list of commandStrings which are to be sent to the motors
 
@@ -208,12 +207,12 @@ def make_list(theta_1, theta_2, theta_3, theta_4):
 
     # Return list with commandStrings if one of the thetas changed, else return an empty list
     if angleDiff4 != 0 or angleDiff3 != 0 or angleDiff1 != 0 or angleDiff2 != 0:
-        return constrainCommandStringLength(commandString + "\n")
+        return constrainCommandStringLength(commandString + "\n", shortStrings=shortStrings)
     else:
         return []
 
 
-def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True):
+def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True, shortStrings=False):
     """
     Makes a list of commandString to draw a line from (x1,y1) to (x2,y2)
 
@@ -247,7 +246,7 @@ def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True):
     th2e, th3e = applyOffset(th2e, th3e)
 
     # Initialise output list with commandString(s) to move to the start of the line
-    output_list = make_list(th1s, th2s, th3s, th4s)
+    output_list = make_list(th1s, th2s, th3s, th4s, shortStrings=shortStrings)
 
     # add commandString for end position
     commandString = "A"
@@ -272,9 +271,8 @@ def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True):
             commandString += ",2,{:.2f},0".format(th2e)
         else:
             commandString += ",2,{:.2f},1000".format(th2e)
-
-    # Cut commandStrings into pieces of with a maximum of 100 characters
-    output_list.extend(constrainCommandStringLength(commandString + "\n"))
+    # Add commandString (max 45 characters) to output_list
+    output_list.append(commandString + "\n")
 
     if returnCommandString:
         # Add commandString to move it back to its starting position
@@ -290,7 +288,7 @@ def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True):
     return output_list
 
 
-def drawPlus(x1, y1, x2, y2, theta_3):
+def drawPlus(x1, y1, x2, y2, theta_3, shortStrings=False):
     """
     Method that creates the commandStrings to draw a plus
 
@@ -310,7 +308,7 @@ def drawPlus(x1, y1, x2, y2, theta_3):
     Returns a list with commandStrings to draw a plus
     """
     # List with commandString(s) to draw the first line
-    output_list = drawLine(x1, y1, x2, y2, theta_3)
+    output_list = drawLine(x1, y1, x2, y2, theta_3, shortStrings=shortStrings)
 
     # TODO maybe update to move up arm first en then move it to the starting point of the other line
     #  drawLine now uses make_list to move to the initial position and in the end adds RETURN_COMMANDSTRING
@@ -321,18 +319,20 @@ def drawPlus(x1, y1, x2, y2, theta_3):
         y = (y1 + y2) / 2
         x_left = x1 - length / 2
         x_right = x1 + length / 2
-        output_list.extend(drawLine(x_left, y, x_right, y, theta_3))  # Make commandString(s) for horizontal line
+        # Make commandString(s) for horizontal line
+        output_list.extend(drawLine(x_left, y, x_right, y, theta_3, shortStrings=shortStrings))
     elif y1 == y2:  # Horizontal case
         length = abs(x2 - x1)
         x = (x1 + x2) / 2
         y_bot = y1 - length / 2
         y_top = y1 + length / 2
-        output_list.extend(drawLine(x, y_top, x, y_bot, theta_3))  # Make commandString(s) for vertical line
+        # Make commandString(s) for vertical line
+        output_list.extend(drawLine(x, y_top, x, y_bot, theta_3, shortStrings=shortStrings))
 
     return output_list
 
 
-def drawBox(x1, y1, x2, y2, theta3):
+def drawBox(x1, y1, x2, y2, theta3, shortStrings=False):
     """
     Method that creates the commandStrings to draw a box.
     NEEDS upper left coordinate (x1,y1), upper right coordinate (x2,y2) and theta3.
@@ -364,7 +364,8 @@ def drawBox(x1, y1, x2, y2, theta3):
     # Initialize output_list with commandString(s) to move to the first coordinate
     th1s, th2s, th3s, th4s = getcoords(x1, y1, z1, theta3)
     th2s, th3s = applyOffset(th2s, th3s)  # Apply offset
-    output_list = make_list(th1s, th2s, th3s, th4s)
+    # TODO make sure that make_list has single movements
+    output_list = make_list(th1s, th2s, th3s, th4s, shortStrings=shortStrings)
 
     # Start coordinates of line
     xs = x1
@@ -379,9 +380,6 @@ def drawBox(x1, y1, x2, y2, theta3):
 
     # Create commandStrings to draw a box
     for i in range(4):
-        # Initialize commandString
-        commandString = "A"
-
         # Get thetas of line
         th1s, th2s, th3s, th4s = getcoords(xs, ys, zs, theta3)
         th1e, th2e, th3e, th4e = getcoords(xe, ye, ze, theta3)
@@ -402,22 +400,24 @@ def drawBox(x1, y1, x2, y2, theta3):
 
             # Move up every motor with 20 degrees
             th2up = th2e - 20
-            th3up = th3e - 20
+            # th3up = th3e - 20  # TODO check if needed
             th4up = th4e - 20
 
             # Make single commandString to move motors up in order: theta2 -> (theta3 ->) theta4
             move_up = singleMotorCommandString(th2up, 2, 1000)  # Second motor (PEN3)
             # TODO check whether we can remove commandString for third motor (PEN2), i.e., theta3, below
-            move_up = move_up[:-1] + singleMotorCommandString(th3up, 1, 0)[1:]  # Third motor (PEN2)
+            # move_up = move_up[:-1] + singleMotorCommandString(th3up, 1, 0)[1:]  # Third motor (PEN2)
             move_up = move_up[:-1] + singleMotorCommandString(th4up, 0, 0)[1:]  # Top motor (PEN1)
-            output_list.extend(constrainCommandStringLength(move_up))
+            output_list.append(move_up)  # move_up has max 25 or 35 characters
             # print("self made commandString", move_up)
             # print("Thetas for moving up\nTheta1 =", th1e, "\nTheta2 =", th2e, "\nTheta3 =", th3e, "\nTheta4 =", th4e)
 
             # Make robot arm move to top left coordinate
-            output_list.extend(make_list(th1s, th2s, th3s, th4s))
+            # TODO make sure that make_list has single movement
+            output_list.extend(make_list(th1s, th2s, th3s, th4s, shortStrings=shortStrings))
 
         # Create commandString to draw line with a 2-second delay (2000 milliseconds!)
+        commandString = "A"
         flag = False
         if th1s != th1e:  # Bottom motor (PEN4)
             commandString += ",3,{:.2f},2000".format(th1e)
@@ -440,8 +440,8 @@ def drawBox(x1, y1, x2, y2, theta3):
             else:
                 commandString += ",2,{:.2f},2000".format(th2e)
         # print(commandString)
-        # Add commandString to output_list
-        output_list.extend(constrainCommandStringLength(commandString + "\n"))
+        # Add commandString (max 45 characters) to output_list
+        output_list.append(commandString + "\n")
 
         # Endpoint becomes startpoint of next line
         xs = xe
@@ -482,7 +482,6 @@ def drawBox(x1, y1, x2, y2, theta3):
 
 
 def applyOffset(theta2, theta3):
-    # TODO or -55 for theta3?
     return theta2 - 25, theta3 - 50
 
 
@@ -497,7 +496,7 @@ def singleMotorCommandString(theta, motorID, delay, singleMovement=True):
         motorID : int
             ID is an integer with value 0, 1, 2 or 3, where 0 belongs to theta4, 1 to theta3, 2 to theta2, 3 to theta1
         delay : int
-            delay of motor movement in milliseconds
+            Delay of motor movement in milliseconds. (Maximum delay is 5000, i.e., 5 seconds)
         singleMovement : boolean
             Default value is True; Boolean value which determines whether the movement for the particular motor is done
             in one time or in steps of 10 degrees
@@ -510,7 +509,9 @@ def singleMotorCommandString(theta, motorID, delay, singleMovement=True):
     # Make commandString for the motor
     if singleMovement:
         updatePrevTheta(theta, motorID)
-        return "A,{},{:.2f},{}\n".format(motorID, theta, delay)
+        if delay > 5000:  # Allow maximum delay of 5 seconds
+            delay = 5000
+        return "A,{},{:.2f},{}\n".format(motorID, theta, delay)  # (max 15 characters)
     else:
         angleDiff = theta - prevTheta
         if angleDiff != 0:
@@ -561,7 +562,7 @@ def updatePrevTheta(theta, ID):
         prevTheta1 = theta
 
 
-def constrainCommandStringLength(commandString):
+def constrainCommandStringLength(commandString, shortStrings=False):
     """
     If the commandString is longer than 100 characters, cut them up into commandStrings with a max length of 100
 
@@ -573,33 +574,56 @@ def constrainCommandStringLength(commandString):
     Returns a list of commandStrings of which each commandString has a maximum length of 100 characters
     """
     commandStringList = []
-    while len(commandString) > MAX_LENGTH:
+    if shortStrings:
+        print("Print in constrainCommandStringLength() method")
+        print("----------------------------------------------")
+        print("complete:", commandString, end="")
         # Get the indices of where the commas are
-        commaIndices = finditer(',', commandString[0:MAX_LENGTH])
+        commaIndices = finditer(',', commandString)
         commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+        # print(len(commaIndices))
+        numberOfIndices = commandString.count(",")
+        # print(numberOfIndices)
 
-        # Get cutoffPoint
-        maxCommaIndex = len(commaIndices) - 1
-        if maxCommaIndex % 3 == 0:
-            cutoffPoint = commaIndices[maxCommaIndex]
-        else:
-            cutoffPoint = commaIndices[maxCommaIndex - (maxCommaIndex % 3)]
+        for i in range(3, numberOfIndices, 3):
+            # Update commaIndices
+            commaIndices = finditer(',', commandString)
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
 
-        # Split commandStrings
-        commandStringList.append(commandString[0:cutoffPoint] + "\n")
-        commandString = "A" + commandString[cutoffPoint:]
+            # Get cutoffPoint
+            cutoffPoint = commaIndices[3]
 
-    # Append last commandString
-    commandStringList.append(commandString)
+            # Split commandStrings
+            commandStringList.append(commandString[0:cutoffPoint] + "\n")
+            print("cut:", commandString[0:cutoffPoint] + "\n", end="")
+            commandString = "A" + commandString[cutoffPoint:]
+            # print("remaining:", commandString, end="")
+
+        # Append last commandString
+        commandStringList.append(commandString)
+        print("----------------------------------------------\n")
+
+    else:
+        while len(commandString) > MAX_LENGTH:
+            # Get the indices of where the commas are
+            commaIndices = finditer(',', commandString[0:MAX_LENGTH])
+            commaIndices = [commaIndex.start() for commaIndex in commaIndices]
+
+            # Get cutoffPoint
+            maxCommaIndex = len(commaIndices) - 1
+            if maxCommaIndex % 3 == 0:
+                cutoffPoint = commaIndices[maxCommaIndex]
+            else:
+                cutoffPoint = commaIndices[maxCommaIndex - (maxCommaIndex % 3)]
+
+            # Split commandStrings
+            commandStringList.append(commandString[0:cutoffPoint] + "\n")
+            commandString = "A" + commandString[cutoffPoint:]
+
+        # Append last commandString
+        commandStringList.append(commandString)
 
     return commandStringList
-
-
-def move_kinematics(player):
-    if player == 'X':
-        pass
-    elif player == 'O':
-        pass
 
 
 if __name__ == '__main__':
@@ -608,7 +632,7 @@ if __name__ == '__main__':
     theta3 = 95 if y_start < 25 else 50
     # drawLine(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
     # drawPlus(2.5, y_start, 1, 2.5, 27.5, 1, theta3)
-    drawBox(0, y_start, 5, y_start, theta3)
+    drawBox(0, y_start, 5, y_start, theta3, shortStrings=True)
 
     # # Formatting is getcoords(x, y, z, theta_3)
     # y = 30
