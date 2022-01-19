@@ -12,7 +12,7 @@ from computervision.test_player import preprocesses, draw_SYMBOL, detect_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
-from computervision.gameboard import Tic
+from computervision.gameboard import Tic, get_enemy
 
 # from computervision.pre_processes import motion_detection
 global output_list
@@ -21,11 +21,6 @@ global gamehistory
 global player
 player = 'X'
 global first_move
-
-
-
-def update_ui_turn(turn):
-    pass
 
 
 def move_coordinates(player, middleCoord):
@@ -66,12 +61,17 @@ def getCoordsToSketchCross(middleCoord):
     return coords
 
 
-def calculate_coordinates(computer_move, grid):
+def calculate_coordinates(cv_coords):
     # any grid coordinate: [x, y, width, height]
     ik_coords = []
-    cv_coords = grid[computer_move]
-    ik_coords.append(-(cv_coords[0] * (42.5 / 733) - 42.5/2 - cv_coords[2]/2))
-    ik_coords.append((cv_coords[1] * (30.5 / 540) + 10 + cv_coords[3]/2))
+    ik_coords.append(-((cv_coords[0] - cv_coords[2] / 2) * (42.5 / 733) - 42.5 / 2))
+    ik_coords.append((cv_coords[1] + cv_coords[3] / 2) * (30.5 / 540) + 10)
+    ik_coords.append(cv_coords[2] * (42.5 / 733))
+    ik_coords.append(cv_coords[3] * (30.5 / 540))
+    if not -21.25 < ik_coords[0] < 21.25:
+        print("x-coordinate computed incorrectly: out of reach: ", ik_coords[0])
+    if not 10 < ik_coords[1] < 40.5:
+        print("y-coordinate computed incorrectly: out of reach: ", ik_coords[1])
     return ik_coords
 
 
@@ -89,17 +89,14 @@ def state_start(state, frame, gameboard):
     if state == "begin":
         # Check who starts the game
         if v.get() == "1":
-            update_ui_turn("robot")
             global player
             player = 'X'
             print("robot begins")
             return "make_move"
         elif v.get() == "2":
-            update_ui_turn("player")
             print("player begins")
             global first_move
             first_move = True
-            player = 'X'
             return "wait_move"
         else:
             print("error with v" + v.get())
@@ -112,9 +109,11 @@ def state_start(state, frame, gameboard):
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
         try:
             grid = preprocesses(frame)[2]
-            coords = calculate_coordinates(computer_move, grid)
+            cv_coords = grid[computer_move]
+            coords = calculate_coordinates(cv_coords)
         except:
-            return "make_move"
+            pass
+        print(coords)
         # coords = [10, 30]
         # Create commands to move to the desired point
         if coords[1] < 25:
@@ -122,18 +121,19 @@ def state_start(state, frame, gameboard):
         elif coords[1] >= 25:
             theta_3 = 50  # degrees for drawing on the second half of the table
         global output_list
-        theta_1, theta_2, theta_3, theta_4 = IK.getcoords(coords[0], coords[1], 1, theta_3)
-        # Apply the offset of the motors
-        theta_2, theta_3 = IK.applyOffset(theta_2, theta_3)
-        output_list.extend(IK.make_list(theta_1, theta_2, theta_3, theta_4))
-        # Create commands to draw the X or O
-        output_list.append(IK.move_kinematics(player))
-        # Create commands to move back to the idle position
-        output_list.extend(IK.make_list(0, -25, -45, -20))
+        small_side = min(coords[2], coords[3])
+        if player == 'X':
+            output_list = IK.drawPlus(coords[0] - 0.4 * small_side, coords[1], coords[0] + 0.4 * small_side
+                                      , coords[1], theta_3)
+        elif player == 'O':
+            output_list = IK.drawBox(coords[0] - 0.4 * small_side, coords[1] + 0.4 * small_side,
+                                     coords[0] + 0.4 * small_side, coords[1] + 0.4 * small_side, theta_3)
+        print(output_list)
         return "moving"
     elif state == "moving":
         # Check whether the output_list has been iterated over
         global list_index
+        print("index", list_index, "out of", len(output_list))
         if list_index >= len(output_list):
             paper_cut, paper_fresh_cut, grid = preprocesses(frame)
             try:
@@ -147,18 +147,16 @@ def state_start(state, frame, gameboard):
             list_index = 0
             output_list = []
             return "wait_move"
-        """
         current_time = time.time()
         command_string = output_list[list_index]
         command_arr = command_string[:-1].split(",")
         interval = int(command_arr[3])
         global next_time
         if next_time < current_time:
-        """
-        # If the output_list still has unread values, send the next one to the arduino
-        # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
-        list_index += 1
-        # next_time = current_time + interval/1000
+            # If the output_list still has unread values, send the next one to the arduino
+            # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+            list_index += 1
+            next_time = current_time + interval / 1000
         return "moving"
     elif state == "wait_move":
 
@@ -172,7 +170,12 @@ def state_start(state, frame, gameboard):
             # Find what is inside each free cell
             cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
             # if detect_SYMBOL(cell, player, model) is not None:
-            shape = detect_SYMBOL(cell, player, model)
+            if not first_move:
+                shape = detect_SYMBOL(cell, get_enemy(player), model)
+            elif first_move:
+                shape = detect_SYMBOL(cell, 'O', model)
+                if shape == '0':
+                    shape = detect_SYMBOL(cell, 'X', model)
 
             # shape = detect_SYMBOL(cell, player)
             # print(shape)
@@ -182,7 +185,7 @@ def state_start(state, frame, gameboard):
                 gameboard.make_move(i, shape)
                 gameboard.show()
                 if first_move:
-                    player = gameboard.getenemy(shape)
+                    player = get_enemy(shape)
                 if gameboard.complete():
                     return "end"
                 return "make_move"

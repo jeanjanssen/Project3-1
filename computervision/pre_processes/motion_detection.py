@@ -48,7 +48,7 @@ def motiondection(video):
         # loop over the contours
         for c in cntsdelta:
             # if the contour is too small, ignore it
-            if cv2.contourArea(c) < 1000:
+            if cv2.contourArea(c) < 10000:
                 continue
             # compute the bounding box for the contour, draw it on the frame,
             # and update the text
