@@ -10,7 +10,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense , Dropout
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
@@ -73,7 +73,7 @@ def pixels_scaler(train, test):
 
 
 # define cnn model
-def define_model():
+def build_base_model():
 	model = Sequential()
 	model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
 	model.add(MaxPooling2D((2, 2)))
@@ -88,7 +88,7 @@ def define_model():
 
 """Define model"""
 
-def model_builder():
+def build_deeper_model():
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
     model.add(MaxPooling2D((2, 2)))
@@ -102,6 +102,26 @@ def model_builder():
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
+def build_deepest_model():
+    model = Sequential()
+    model.add(Conv2D(64, (3, 3),activation="relu", input_shape=(28, 28, 1), padding='same'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model.add(Conv2D(32, (3, 3),activation="relu", padding='same'))
+
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Flatten())
+
+    model.add(Dense(64,activation="relu"))
+    model.add(Dropout(0.4))
+
+
+    Dense_TWO = False
+
+    model.add(Dense(3, activation='softmax'))
+    opt = SGD(learning_rate=0.01, momentum=0.9)
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
 
 # evaluate a model using k-fold cross-validation
 def evaluate_model(data_x, data_y, n_folds=n_folds):
@@ -111,12 +131,12 @@ def evaluate_model(data_x, data_y, n_folds=n_folds):
     # enumerate splits
     for train_ix, test_ix in kfold.split(data_x):
         # define model
-        #model = model_builder()
-        model = define_model()
+        model = build_deepest_model()
+        #model = build_bas_model()
         # select rows for train and test
         train_x, train_y, test_x, test_y = data_x[train_ix], data_y[train_ix], data_x[test_ix], data_y[test_ix]
         # fit model
-        hist = model.fit(train_x, train_y, epochs=20, batch_size=32, validation_data=(test_x, test_y), verbose=0)
+        hist = model.fit(train_x, train_y, epochs=50, batch_size=32, validation_data=(test_x, test_y), verbose=0)
         # evaluate model
         _, acc = model.evaluate(test_x, test_y, verbose=0)
         print('> %.3f' % (acc * 100.0))
@@ -154,10 +174,10 @@ def run_test():
     scores, histories = evaluate_model(train_x, train_y)
     diagnostics(histories)
     performance(scores)
-    model = model_builder()
-    #model = define_model()
-    model.fit(train_x, train_y, epochs=20, batch_size=32, verbose=0)
-    model.save('model_stino_newdata.h5')
+    model = build_deepest_model()
+    #model = build_base_model()
+    model.fit(train_x, train_y, epochs=50, batch_size=32, verbose=0)
+    model.save('model_oldddata_deepest.h5')
     with open('deepermodelsummary.txt', 'w') as f:
       with  redirect_stdout(f):
         model.summary()

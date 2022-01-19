@@ -9,11 +9,11 @@ import datetime
 # set is first iterartion by intilization set to None
 
 def video_cut(frame):
-    cropped_image = frame[100:600, 200:900]
+    cropped_image = frame[150:650, 300:950]
     return cropped_image
 
 
-video = cv2.VideoCapture(0)
+video = cv2.VideoCapture(1)
 print("[INFO] warming up...")
 lastUploaded = datetime.datetime.now()
 motionCounter = 0
@@ -28,7 +28,7 @@ def motiondection(video):
         check, frame = video.read()
         kernelsize = 21
         frame_cut =video_cut(frame)
-        frame2 = frame
+        frame2 = video_cut(frame)
         timestamp = datetime.datetime.now()
         text = "Unoccupied"
         frame2 = imutils.resize(frame2, width=700)

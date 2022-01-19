@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from tensorflow.keras.models import load_model
-from tensorflow import keras
+
 
 from GameAI import TTT_Minimax
 from computervision.pre_processes import matrix_transformations
@@ -251,7 +251,6 @@ def preprocesses(frame):
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                      cv2.THRESH_BINARY_INV, 199, 7)
-    # cv2.imshow("preprosses input", blurry_thresh_gray_frame)
     blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
     paper = detect_Corners_paper(frame, blurry_thresh_gray_frame)[0]
     paper_cut = matrix_transformations.smart_cut(paper)
@@ -262,7 +261,6 @@ def preprocesses(frame):
     paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199, 6)
     paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
     output.append(paper_thresh_cut)
-    # cv2.imshow("threshold", paper_thresh_cut)
     grid = get_3X3_GRID(paper_thresh_cut)
     output.append(grid)
     return output
@@ -273,7 +271,7 @@ def play(vcap, difficulty):
 
     global grid
 
-    # Initialize opponent (computer)
+    # Initialize opponent
     gameboard = Tic()
     gamehistory = {}
     message = True
@@ -312,7 +310,6 @@ def play(vcap, difficulty):
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
 
         except:
-            # print("something wrong in corners list")
             pass
 
         # Make move
@@ -339,14 +336,14 @@ def play(vcap, difficulty):
                 cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
                 shape = detect_SYMBOL(cell,player)
 
-                # print(shape)
+
                 if shape is not None:
                     gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
                     gameboard.make_move(i, shape)
 
 
                 paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
-                # it = it +1
+
                 print(it)
 
         except:
@@ -360,8 +357,6 @@ def play(vcap, difficulty):
 
         # Computer's time to play
 
-        # it = it +1
-
         player = get_enemy(player)
         computer_move = TTT_Minimax.determine(gameboard.squares, player,
                                               difficulty)  # computer move is a number between 1 and 9
@@ -373,21 +368,16 @@ def play(vcap, difficulty):
         print('Cross coordinates:', crossCoords)
         print('circle coordinates:', circleCoords)
 
-        # computer_move = CompTurn(gameboard.squares)
-        # print(gameboard.squares)
-        # print(computer_move, "CompTurn")
         try:
             gameboard.make_move(computer_move, player)
             gamehistory[computer_move] = {'shape': 'O', 'bbox': grid[computer_move]}
-            # paper = draw_SYMBOL(paper, 'O', grid[computer_move])
             paper_cut = draw_SYMBOL(paper_cut, 'O', grid[computer_move])
 
             print("-----------------------Computer move-----------------------------------------------")
-            # gameboard.show()
-            # print(it)
+
         except:
             pass
-        # Check whether game has finished
+
         if gameboard.complete():
             print("-------------------------game-finished --------------------------")
             break
@@ -414,30 +404,19 @@ def play(vcap, difficulty):
 
 
 def main():
-    # TEST:
-    # TODO z should be 21.1, below is for testing purposes
+
     phi = 69
-    # g = [(-21.2, 40.50, 21.1, phi), (0, 40.50, 21.1, phi), (21.2, 40.50, 21.1, phi),
-    #     (-21.2, 25.25, 21.1, phi), (0, 25.25, 21.1, phi), (21.2, 25.25, 21.1, phi),
-    #     (-21.2, 10.00, 21.1, phi), (0, 10.00, 21.1, phi), (21.2, 10.00, 21.1, phi)]
-    # middleCoord = getMiddleCoord(2)
-    # crossCoords = getCoordsToSketchCross(middleCoord)
-    # # circleCoords = getCoordsToSketchCircle(middleCoord)
-    # print('Cross coordinates:', crossCoords)
-    # # print('circle coordinates:', circleCoords)
-    # sketch cross using the robotic arm
 
     """Check if everything's okay and start game"""
     # Load model
     global model
     global grid
     os.path
-    # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/test_deeper_model_old.h5')
-    # model = keras.models.load_model('data/model.h5')
+
+    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/model_stino_newdata.h5')
 
     # Initialize webcam feed
-    vcap = cv2.VideoCapture(0)
+    vcap = cv2.VideoCapture(1)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam #{}'.format())
 

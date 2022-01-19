@@ -3,7 +3,7 @@ from Kinematics import IK
 
 
 # Initialize serial communication variables
-ser = serial.Serial('COM10', 57600)  # select com-port and the serial com baud rate
+ser = serial.Serial('/dev/tty.usbmodem112301', 57600)  # select com-port and the serial com baud rate
 ser.flushInput()  # empty the serial buffer
 ser_input = []  # emtpy the serial input array
 current_time = 0
