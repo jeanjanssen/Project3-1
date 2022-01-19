@@ -8,12 +8,14 @@ import time
 from Kinematics import IK
 # from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
 from GameAI import TTT_Minimax
+from computervision.pre_processes.motion_detection import video_cut
 from computervision.test_player import preprocesses, draw_SYMBOL, detect_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
 from computervision.gameboard import Tic, get_enemy
-
+import datetime
+import imutils
 # from computervision.pre_processes import motion_detection
 global output_list
 output_list = []
@@ -22,6 +24,48 @@ global player
 player = 'X'
 global first_move
 
+
+def motion_detection(frame):
+
+    baseline_frame = None
+    avg_frame = None
+    # loop video
+    while True:
+        # Read in frame from webcam
+        text = "Unoccupied"
+        frame = imutils.resize(frame, width=700)
+        gray2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
+        if avg_frame is None:
+            print("[INFO] starting background model...")
+            avg_frame = gray2.copy().astype("float")
+            continue
+        cv2.accumulateWeighted(gray2, avg_frame, 0.05)
+        frame_delta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
+        threshdelta = cv2.adaptiveThreshold(frame_delta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,6)
+        threshdelta = cv2.dilate(threshdelta, None, iterations=2)
+        cntsdelta = cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL,
+                                cv2.CHAIN_APPROX_SIMPLE)
+        cntsdelta = imutils.grab_contours(cntsdelta)
+        # loop over the contours
+        for c in cntsdelta:
+            # if the contour is too small, ignore it
+            if cv2.contourArea(c) < 10000:
+                continue
+            # compute the bounding box for the contour, draw it on the frame,
+            # and update the text
+            (x, y, w, h) = cv2.boundingRect(c)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            text = "Occupied"
+
+            # draw the text and timestamp on the frame
+        cv2.putText(frame, "board Status: {}".format(text), (10, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        cv2.putText(frame, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.35, (0, 0, 255), 1)
+
+        time.sleep(0.015)
+        return text
 
 def calculate_coordinates(cv_coords):
     """
@@ -243,11 +287,7 @@ def start_TTT_game():
             pass
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
-        """
-        if motion_detection.motiondection(vcap):
-            while motion_detection.motiondection(vcap):
-                pass
-        """
+        bool_md = motion_detection(frame)
 
         try:
             # Draw grid wait on user
@@ -259,9 +299,11 @@ def start_TTT_game():
         except:
             pass
 
-        # Run the methods according to a state machine
-        print("state: ", state)
-        state = state_start(state, frame, gameboard)
+        if bool_md == "Unoccupied":
+            # Run the methods according to a state machine
+            print("state: ", state)
+            state = state_start(state, frame, gameboard)
+
 
         if not key == 32:
             try:
