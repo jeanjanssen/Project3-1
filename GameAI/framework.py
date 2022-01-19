@@ -23,14 +23,18 @@ global gamehistory
 global player
 player = 'X'
 global first_move
+def video_cut(frame):
+    cropped_image = frame[100:600, 200:900]
+    return cropped_image
 
-
-def motion_detection(frame):
+def motion_detection(vcap):
 
     baseline_frame = None
     avg_frame = None
     # loop video
     while True:
+        check, frame = vcap.read()
+        frame=video_cut(frame)
         # Read in frame from webcam
         text = "Unoccupied"
         frame = imutils.resize(frame, width=700)
@@ -40,30 +44,34 @@ def motion_detection(frame):
             print("[INFO] starting background model...")
             avg_frame = gray2.copy().astype("float")
             continue
-        cv2.accumulateWeighted(gray2, avg_frame, 0.05)
+        cv2.accumulateWeighted(gray2, avg_frame, 0.5)
         frame_delta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
         threshdelta = cv2.adaptiveThreshold(frame_delta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,6)
         threshdelta = cv2.dilate(threshdelta, None, iterations=2)
-        cntsdelta = cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL,
-                                cv2.CHAIN_APPROX_SIMPLE)
+        cntsdelta = cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         cntsdelta = imutils.grab_contours(cntsdelta)
         # loop over the contours
         for c in cntsdelta:
             # if the contour is too small, ignore it
-            if cv2.contourArea(c) < 10000:
+            if cv2.contourArea(c) < 10:
                 continue
             # compute the bounding box for the contour, draw it on the frame,
             # and update the text
+
             (x, y, w, h) = cv2.boundingRect(c)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             text = "Occupied"
 
-            # draw the text and timestamp on the frame
+        cv2.imshow("debug",frame)
+
+
+
+        """   # draw the text and timestamp on the frame
         cv2.putText(frame, "board Status: {}".format(text), (10, 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         cv2.putText(frame, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                     0.35, (0, 0, 255), 1)
-
+        """
         time.sleep(0.015)
         return text
 
@@ -118,7 +126,7 @@ def state_start(state, frame, gameboard):
         # Check who starts the game
         if v.get() == "1":
             global player
-            player = 'X'
+            player = 'O'
             print("robot begins")
             return "make_move"
         elif v.get() == "2":
@@ -201,9 +209,9 @@ def state_start(state, frame, gameboard):
             if not first_move:
                 shape = detect_SYMBOL(cell, get_enemy(player), model)
             elif first_move:
-                shape = detect_SYMBOL(cell, 'O', model)
+                shape = detect_SYMBOL(cell, 'X', model)
                 if shape == '0':
-                    shape = detect_SYMBOL(cell, 'X', model)
+                    shape = detect_SYMBOL(cell, 'O', model)
 
             # shape = detect_SYMBOL(cell, player)
             # print(shape)
@@ -258,7 +266,7 @@ def start_TTT_game():
     first_move = False
     global model
     os.path
-    model = load_model('../data/model_daniel.h5')
+    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/model_stino_newdata.h5')
 
     # initialize camera streaming
     vcap = cv2.VideoCapture(0)
@@ -266,6 +274,7 @@ def start_TTT_game():
         raise IOError('could not get feed from cam'.format())
     # Stream the camera while playing the game
     print("loop started")
+    avg_frame = None
     while state != "end":
         ret, frame = vcap.read()
         key = cv2.waitKey(1) & 0xFF
@@ -287,8 +296,36 @@ def start_TTT_game():
             pass
         # Run motion detection every instance of the loop
         # If any other object is detected, run the collision prevention
-        bool_md = motion_detection(frame)
+        #bool_md = motion_detection(vcap)
 
+
+        # Read in frame from webcam
+        text = "Unoccupied"
+        frame = imutils.resize(paper_cut, width=700)
+        gray2 = cv2.cvtColor(paper_cut, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
+        if avg_frame is None:
+            print("[INFO] starting background model...")
+            avg_frame = gray2.copy().astype("float")
+            continue
+        cv2.accumulateWeighted(gray2, avg_frame, 0.5)
+        frame_delta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
+        threshdelta = cv2.adaptiveThreshold(frame_delta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
+                                            199, 6)
+        threshdelta = cv2.dilate(threshdelta, None, iterations=2)
+        cntsdelta = cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cntsdelta = imutils.grab_contours(cntsdelta)
+        # loop over the contours
+        for c in cntsdelta:
+            # if the contour is too small, ignore it
+            if cv2.contourArea(c) < 10:
+                continue
+            # compute the bounding box for the contour, draw it on the frame,
+            # and update the text
+
+            (x, y, w, h) = cv2.boundingRect(c)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            text = "Occupied"
         try:
             # Draw grid wait on user
             for i, (x, y, w, h) in enumerate(grid):
@@ -298,13 +335,14 @@ def start_TTT_game():
                     paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
         except:
             pass
-
-        if bool_md == "Unoccupied":
+        print("status:",text)
+        if text == "Unoccupied":
             # Run the methods according to a state machine
             print("state: ", state)
             state = state_start(state, frame, gameboard)
 
-
+        cv2.putText(paper_cut, "board Status: {}".format(text), (10, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         if not key == 32:
             try:
                 cv2.imshow('Tic Tac Toe game feed', paper_cut)

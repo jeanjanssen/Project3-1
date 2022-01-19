@@ -1,7 +1,7 @@
 from imageai.Detection import ObjectDetection
 #$ pip install imageAI
 detector = ObjectDetection()
-
+#https://stackabuse.com/object-detection-with-imageai-in-python/
 model_path = "./models/yolo-tiny.h5"
 input_path = "./input/test45.jpg"
 output_path = "./output/newimage.jpg"

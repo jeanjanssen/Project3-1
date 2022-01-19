@@ -26,9 +26,6 @@ def detect_Corners_paper(frame, thresh, add_margin=True):
     pre_Corners = PreProccesing.Detect_Corners(thresh)
 
     corners = pre_Corners[1:, :2]
-    # corners = matrix_transformations.FPT_HELPER_(corners)
-    # print(corners)
-    # paper = matrix_transformations.FPT_BIRDVIEW(frame, corners)
     paper = frame
     if add_margin:
         paper = paper[10:-10, 10:-10]
@@ -42,6 +39,8 @@ def detect_SYMBOL(box, player, model_par):
     mapper = {0: '0', 1: 'X', 2: 'O'}
     idx = 0
     try:
+        box = cv2.adaptiveThreshold(box, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                    cv2.THRESH_BINARY_INV, 11, 9)
         box = PreProccesing.Frame_PRE_proccsing(box)
         idx = np.argmax(model_par.predict(box))
         if player == "X":
@@ -88,13 +87,6 @@ def get_3X3_GRID(threshold_img):
     bottom_center = [center_x, bottom, width, height]
     bottom_right = [right, bottom, width, height]
 
-    # Grid's coordinates
-    # print(height,"height")
-    # print(width,"width")
-    # print(top_left,"TL")
-    # print((bottom_left,'BL'))
-    # width_rectangle = (top_right-top_left)
-    # height_rectangle =  (bottom_left-top_left)
 
     if (width * height > MIN_GRID_SIZE):
         grid = [top_left, top_center, top_right,
@@ -105,10 +97,6 @@ def get_3X3_GRID(threshold_img):
 
 def getMiddleCoord(cellNr):
     global grid
-    # grid = [top_left, top_center, top_right,
-    # middle_left, middle_center, middle_right,
-    # bottom_left, bottom_center, bottom_right]
-
     print('grid:', grid)
     grid = scaleGrid()
     print('scaled grid:', grid)
@@ -151,8 +139,8 @@ def getMiddleCoord(cellNr):
 
 def getCoordsToSketchCross(middleCoord):
     print(middleCoord)
-    height_dist = 2  # TODO test which value is best
-    width_dist = 2  # TODO test which value is best
+    height_dist = 2
+    width_dist = 2
 
     x = middleCoord[0]
     y = middleCoord[1]
@@ -241,7 +229,9 @@ def scaleGrid():
 
 def draw_SYMBOL(baseimage, symbol, placement):
     x, y, w, h = placement
+
     if symbol == 'O':
+        #Draws the "O" shape
         centroid = (x + int(w / 2), y + int(h / 2))
         cv2.circle(baseimage, centroid, 20, (0, 0, 0), 6)
     elif symbol == 'X':
@@ -301,36 +291,21 @@ def play(vcap, difficulty):
             print('[INFO] stopped video processing')
             break
 
-        # Preprocess input
-        # Preprocesses for finding board
-        # frame = PreProccesing.Frame_PRE_proccsing(frame,500)
-        # frame = matrix_transformations.smart_cut(frame)
+
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # _, blurry_thresh_gray_frame = cv2.threshold(gray_frame, 170, 255, cv2.THRESH_BINARY)
-        blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                         cv2.THRESH_BINARY_INV, 199, 20)
-        # cv2.imshow("preprosses input", blurry_thresh_gray_frame)
+        blurry_thresh_gray_frame = cv2.adaptiveThreshold(gray_frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,   cv2.THRESH_BINARY_INV, 199, 20)
         blurry_thresh_gray_frame = cv2.GaussianBlur(blurry_thresh_gray_frame, (7, 7), 0)
         paper, corners = detect_Corners_paper(frame, blurry_thresh_gray_frame)
         paper_cut = matrix_transformations.smart_cut(paper)
-
-
-
-        # use paper to find grid
-        # Thresholding to find grid
         paper_gray = cv2.cvtColor(paper, cv2.COLOR_BGR2GRAY)
-        # paper_thresh = cv2.threshold(  paper_gray, 170, 255, cv2.THRESH_BINARY_INV)
-        paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,
-                                             9)
+        paper_thresh = cv2.adaptiveThreshold(paper_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,9)
         paper_thresh_cut = matrix_transformations.smart_cut(paper_thresh)
-        #cv2.imshow("threshold", paper_thresh_cut)
         grid = get_3X3_GRID(paper_thresh_cut)
 
         try:
             # Draw grid wait on user
             for i, (x, y, w, h) in enumerate(grid):
 
-                # cv2.rectangle(paper, (x, y), (x + w, y + h), (0, 0, 0), 2)
                 cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 4)
                 if gamehistory.get(i) is not None:
                     shape = gamehistory[i]['shape']
@@ -348,7 +323,7 @@ def play(vcap, difficulty):
             cv2.imshow('original', frame)
             cv2.imshow('bird view', paper_cut)
             continue
-        #player = 'O'
+
         player = 'X'
 
         # iterate through cells to find player move
@@ -368,9 +343,8 @@ def play(vcap, difficulty):
                 if shape is not None:
                     gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
                     gameboard.make_move(i, shape)
-                    # gameboard.make_move(i, player) player overloads with false positives
 
-                    # paper = draw_SYMBOL(paper, shape, (x, y, w, h))
+
                 paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
                 # it = it +1
                 print(it)
@@ -459,7 +433,7 @@ def main():
     global grid
     os.path
     # assert os.path.exists(args.model), '{} does not exist'
-    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/test_deeper_model_old2.h5')
+    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/test_deeper_model_old.h5')
     # model = keras.models.load_model('data/model.h5')
 
     # Initialize webcam feed

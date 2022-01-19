@@ -15,7 +15,7 @@ from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
 n_folds =5
-ROOT_DIRECTORY = '/Users/danieltossaint/Documents/GitHub/Project3-1/data/images' # root directory path
+ROOT_DIRECTORY = '/Users/stijnoverwater/Documents/GitHub/Project3-1/data/images' # root directory path
 TRAIN_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'train') # path train directory
 TEST_DIRECTORY = os.path.join(ROOT_DIRECTORY, 'test') # path test
 
@@ -111,8 +111,8 @@ def evaluate_model(data_x, data_y, n_folds=n_folds):
     # enumerate splits
     for train_ix, test_ix in kfold.split(data_x):
         # define model
-        model = model_builder()
-        #model = define_model()
+        #model = model_builder()
+        model = define_model()
         # select rows for train and test
         train_x, train_y, test_x, test_y = data_x[train_ix], data_y[train_ix], data_x[test_ix], data_y[test_ix]
         # fit model
@@ -157,7 +157,7 @@ def run_test():
     model = model_builder()
     #model = define_model()
     model.fit(train_x, train_y, epochs=20, batch_size=32, verbose=0)
-    model.save('model_daniel.h5')
+    model.save('model_stino_newdata.h5')
     with open('deepermodelsummary.txt', 'w') as f:
       with  redirect_stdout(f):
         model.summary()
