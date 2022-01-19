@@ -196,13 +196,13 @@ def make_list(theta_1, theta_2, theta_3, theta_4, shortStrings=False):
     angleDiff2 = theta_2 - prevTheta2
     if angleDiff2 != 0:  # Then make commandString
         t2 = 0
-        for x in range(0, abs(math.floor(angleDiff2 / 10))):
+        for x in range(0, abs(math.floor(angleDiff2 / 5))):
             if angleDiff2 > 0:
-                commandString += ",2,{:.0f},1000".format(prevTheta2 + 10 * (t2 + 1))
+                commandString += ",2,{:.0f},1000".format(prevTheta2 + 5 * (t2 + 1))
             elif angleDiff2 < 0:
-                commandString += ",2,{:.0f},1000".format(prevTheta2 - 10 * t2)
+                commandString += ",2,{:.0f},1000".format(prevTheta2 - 5 * t2)
             t2 += 1
-        if angleDiff2 - 10 * t2 != 0:
+        if angleDiff2 - 5 * t2 != 0:
             commandString += ",2,{:.2f},1000".format(theta_2)
         prevTheta2 = theta_2  # Update prevTheta2
 

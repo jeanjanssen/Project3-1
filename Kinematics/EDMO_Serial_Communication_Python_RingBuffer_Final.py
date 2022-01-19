@@ -5,9 +5,9 @@ from time import sleep
 ######## INIT serial communication variables ################################
 from Kinematics import IK
 from Kinematics import FK
-import computervision.test_player as tp
 
-ser = serial.Serial('COM3', 57600)  # select com-port and the serial com baud rate
+print("initializing serial")
+ser = serial.Serial('COM10', 57600)  # select com-port and the serial com baud rate
 ser.flushInput()  # empty the serial buffer
 ser_input = []  # emtpy the serial input array
 current_time = 0
@@ -29,11 +29,13 @@ commandString6 = 'A,0,0,100,1,-50,100,2,-25,100,3,0,2000\n'
 
 ############################# SEND DATA ##################################
 # function sending data from the PC to the Arduino
-def sendData():
+def sendData(commandString):
     print("Sending command to arduino:")
+    print(commandString, end="")
+    ser.write(commandString.encode())
 
     # Move the arm to the 0 position
-    ser.write(commandString6.encode())
+    # ser.write(commandString6.encode())
 
     ##### TESTING INVERSE KINEMATICS #####
     # # Formatting is IK.getcoords(x, y, z, theta_3)
@@ -52,11 +54,14 @@ def sendData():
     # output = IK.make_list(theta1, theta2, theta3, theta4)
 
     ##### TESTING WITH DRAWING
-    y_start = 22.5
-    theta_3 = 95 if y_start < 25 else 50
-    output = IK.drawLine(2.5, y_start, 2.5, 27.5, theta_3)
+    # y_start = 22.5
+    # theta_3 = 95 if y_start < 25 else 50
+    # output = IK.drawLine(-15, 19, -15, 16, theta_3)
 
-    # output = IK.drawLine(0, 25, 5, 25, theta_3)
+    # y = 30
+    # theta_3 = 95 if y <= 25 else 50
+    # output = IK.drawPlus(8.5, y, 11.5, y, theta_3)
+    # output = IK.drawBox(8.5, y, 11.5, y, theta_3)
     # output.extend(IK.drawLine(0, 25, 5, 25, theta_3))
 
     # output = IK.drawLine(-2.5, 17.5, -2.5, 32.5, theta_3)
@@ -65,9 +70,9 @@ def sendData():
     # output.extend(IK.drawLine(-7.5, 27.5, 7.5, 27.5, theta_3))
 
     # Sending the commandStrings
-    for x in output:
-        print("sending", x, end="")
-        ser.write(x.encode())
+    # for x in output:
+    #     print("sending", x, end="")
+    #     ser.write(x.encode())
 
     # Second run to see if it moves to the next position correctly as well
     second_run = False
@@ -104,7 +109,7 @@ def recData():
 
 
 ############################# MAIN ##################################
-sendData()  # send drive commands once
+sendData(commandString6)  # send drive commands once
 
 # continuously check and read serial input
 while True:

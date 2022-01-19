@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 from Kinematics import IK
-# from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
+from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
 from GameAI import TTT_Minimax
 from computervision.pre_processes.motion_detection import video_cut
 from computervision.test_player import preprocesses, draw_SYMBOL, detect_SYMBOL
@@ -149,8 +149,8 @@ def state_start(state, frame, gameboard):
             coords = calculate_coordinates(cv_coords)
         except:
             pass
+        coords = [10, 30, 3, 3]
         print(coords)
-        # coords = [10, 30]
         # Create commands to move to the desired point
         if coords[1] < 25:
             theta_3 = 95  # degrees for drawing on the first half of the table
@@ -159,11 +159,13 @@ def state_start(state, frame, gameboard):
         global output_list
         small_side = min(coords[2], coords[3])
         if player == 'X':
-            output_list = IK.drawPlus(coords[0] - 0.4 * small_side, coords[1], coords[0] + 0.4 * small_side
-                                      , coords[1], theta_3)
+            output_list = IK.drawPlus(coords[0] - 0.4 * small_side, coords[1],
+                                      coords[0] + 0.4 * small_side, coords[1],
+                                      theta_3, shortStrings=True)
         elif player == 'O':
             output_list = IK.drawBox(coords[0] - 0.4 * small_side, coords[1] + 0.4 * small_side,
-                                     coords[0] + 0.4 * small_side, coords[1] + 0.4 * small_side, theta_3)
+                                     coords[0] + 0.4 * small_side, coords[1] + 0.4 * small_side,
+                                     theta_3, shortStrings=True)
         print(output_list)
         return "moving"
     elif state == "moving":
@@ -190,7 +192,7 @@ def state_start(state, frame, gameboard):
         global next_time
         if next_time < current_time:
             # If the output_list still has unread values, send the next one to the arduino
-            # EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
+            EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
             list_index += 1
             next_time = current_time + interval / 1000
         return "moving"
@@ -266,10 +268,10 @@ def start_TTT_game():
     first_move = False
     global model
     os.path
-    model = load_model('/Users/stijnoverwater/Documents/GitHub/Project3-1/computervision/pre_processes/model_stino_newdata.h5')
+    model = load_model('C:\\Users\\jeanj\\PycharmProjects\\Project3-1\\computervision\\pre_processes\\model_jean_newdata.h5')
 
     # initialize camera streaming
-    vcap = cv2.VideoCapture(0)
+    vcap = cv2.VideoCapture(1)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam'.format())
     # Stream the camera while playing the game
