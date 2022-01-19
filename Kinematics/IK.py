@@ -255,25 +255,25 @@ def drawLine(x1, y1, x2, y2, theta_3, returnCommandString=True, shortStrings=Fal
     commandString = "A"
     flag = False  # to determine when to add a bigger delay
     if th1s != th1e:  # Bottom motor (PEN4)
-        commandString += ",3,{:.2f},1000".format(th1e)
+        commandString += ",3,{:.2f},2000".format(th1e)
         flag = True
     if th4s != th4e:  # Top motor (PEN1)
         if flag:
             commandString += ",0,{:.2f},0".format(th4e)
         else:
-            commandString += ",0,{:.2f},1000".format(th4e)
+            commandString += ",0,{:.2f},2000".format(th4e)
             flag = True
     if th3s != th3e:  # Third motor (PEN2)
         if flag:
             commandString += ",1,{:.2f},0".format(th3e)
         else:
-            commandString += ",1,{:.2f},1000".format(th3e)
+            commandString += ",1,{:.2f},2000".format(th3e)
             flag = True
     if th2s != th2e:  # Second motor (PEN3)
         if flag:
             commandString += ",2,{:.2f},0".format(th2e)
         else:
-            commandString += ",2,{:.2f},1000".format(th2e)
+            commandString += ",2,{:.2f},2000".format(th2e)
     # Add commandString (max 45 characters) to output_list
     output_list.append(commandString + "\n")
 
