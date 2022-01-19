@@ -1,7 +1,6 @@
 import serial
-
 from Kinematics import IK
-from Kinematics import FK
+
 
 # Initialize serial communication variables
 ser = serial.Serial('COM10', 57600)  # select com-port and the serial com baud rate
@@ -26,7 +25,7 @@ def sendData(commandString):
     demonstrate = False
     if demonstrate:
         y = 22.5
-        theta3 = 95 if y < 25 else 50
+        theta3 = 95 if y <= 25 else 50
         # output_list = IK.drawLine(2.5, y, 2.5, 27.5, theta3, returnCommandString=True, shortStrings=False)
         output_list = IK.drawPlus(2.5, y, 2.5, y-5, theta3, shortStrings=False)
         # output_list = IK.drawBox(0, y, 5, y, theta3, shortStrings=False)
