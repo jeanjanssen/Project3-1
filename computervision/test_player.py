@@ -51,7 +51,7 @@ def detect_SYMBOL(box, player, model_par):
                 idx = 0
     except:
         pass
-    print("mapper found", idx, "which is symbol :", mapper[idx])
+    # print("mapper found", idx, "which is symbol :", mapper[idx])
     return mapper[idx]
 
 

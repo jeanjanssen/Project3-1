@@ -9,14 +9,12 @@ import time
 from Kinematics import IK
 from Kinematics import EDMO_Serial_Communication_Python_RingBuffer_Final
 from GameAI import TTT_Minimax
-from computervision.pre_processes.motion_detection import video_cut
 from computervision.test_player import preprocesses, draw_SYMBOL, detect_SYMBOL
 import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image, ImageTk
 from computervision.gameboard import Tic, get_enemy
 import datetime
-import imutils
 # from computervision.pre_processes import motion_detection
 
 
@@ -26,61 +24,6 @@ global gamehistory
 global player
 player = 'X'
 global first_move
-
-def video_cut(frame):
-    cropped_image = frame[0:480, 0:540]
-    print(frame.shape)
-    return cropped_image
-"""
-def motion_detection(vcap):
-
-    baseline_frame = None
-    avg_frame = None
-    # loop video
-    while True:
-        check, frame = vcap.read()
-        frame=video_cut(frame)
-        # Read in frame from webcam
-        text = "Unoccupied"
-        frame = imutils.resize(frame, width=700)
-        gray2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
-        if avg_frame is None:
-            print("[INFO] starting background model...")
-            avg_frame = gray2.copy().astype("float")
-            continue
-        cv2.accumulateWeighted(gray2, avg_frame, 0.5)
-        frame_delta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
-        threshdelta = cv2.adaptiveThreshold(frame_delta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 199,6)
-        threshdelta = cv2.dilate(threshdelta, None, iterations=2)
-        cntsdelta = cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        cntsdelta = imutils.grab_contours(cntsdelta)
-        # loop over the contours
-        for c in cntsdelta:
-            # if the contour is too small, ignore it
-            if cv2.contourArea(c) < 10:
-                continue
-            # compute the bounding box for the contour, draw it on the frame,
-            # and update the text
-
-            (x, y, w, h) = cv2.boundingRect(c)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            text = "Occupied"
-
-        cv2.imshow("debug",frame)
-
-
-
-           # draw the text and timestamp on the frame
-        cv2.putText(frame, "board Status: {}".format(text), (10, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        cv2.putText(frame, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.35, (0, 0, 255), 1)
-
-        time.sleep(0.015)
-        return text
-"""
-
 
 def calculate_coordinates(cv_coords):
     """
@@ -132,23 +75,28 @@ def state_start(state, frame, gameboard):
     if state == "begin":
         # Check who starts the game
         if v.get() == "1":
+            # Robot begins with the game
             global player
             player = 'X'
             print("robot begins")
             return "make_move"
         elif v.get() == "2":
+            # Player begins with the game
             print("player begins")
             global first_move
+            # First-move is true means that the player can determine with what symbol they play
             first_move = True
             return "wait_move"
         else:
             print("error with v" + v.get())
+
     elif state == "make_move":
         print("make_move")
         # computer move is a number between 1 and 9
         global difficulty
         global computer_move
         computer_move = TTT_Minimax.determine(gameboard.squares, player, difficulty)
+
         # Convert the Computer Vision coordinates to coordinates the Inverse Kinematics can use.
         try:
             grid = preprocesses(frame)[2]
@@ -156,43 +104,50 @@ def state_start(state, frame, gameboard):
             coords = calculate_coordinates(cv_coords)
         except:
             pass
-        coords = [10, 30, 3, 3]
-        print(coords)
-        # Create commands to move to the desired point
+        # Set dummy coords for home testing
+        coords = [10, 20, 3, 3]
+
+        # Set theta three to the desired angle
         if coords[1] < 25:
             theta_3 = 95  # degrees for drawing on the first half of the table
         elif coords[1] >= 25:
             theta_3 = 50  # degrees for drawing on the second half of the table
+
         global output_list
         small_side = min(coords[2], coords[3])
-        # TODO change shortStrings to True
+        # Use the kinematics to get the output list
         if player == 'X':
             output_list = IK.drawPlus(coords[0] - 0.4 * small_side, coords[1],
                                       coords[0] + 0.4 * small_side, coords[1],
-                                      theta_3, shortStrings=True)
+                                      theta_3, shortStrings=False)
         elif player == 'O':
             output_list = IK.drawBox(coords[0] - 0.4 * small_side, coords[1] + 0.4 * small_side,
                                      coords[0] + 0.4 * small_side, coords[1] + 0.4 * small_side,
-                                     theta_3, shortStrings=True)
+                                     theta_3, shortStrings=False)
         print(output_list)
         return "moving"
+
     elif state == "moving":
         # Check whether the output_list has been iterated over
         global list_index
         if list_index >= len(output_list):
-            return "end"
             paper_cut, paper_fresh_cut, grid = preprocesses(frame)
+            # Update the board
             try:
                 gameboard.make_move(computer_move, player)
                 global gamehistory
                 gamehistory[computer_move] = {'shape': player, 'bbox': grid[computer_move]}
             except:
                 pass
+
+            # Check if game has finished
             if gameboard.complete():
                 return "end"
             list_index = 0
             output_list = []
             return "wait_move"
+
+        # Timer, so the arduino gets the commands with the delay, to not overflow the buffer
         current_time = time.time()
         command_string = output_list[list_index]
         command_arr = command_string[:-1].split(",")
@@ -200,21 +155,24 @@ def state_start(state, frame, gameboard):
         global next_time
         if next_time < current_time:
             print("index", list_index, "out of", len(output_list))
+            print(command_string)
             # If the output_list still has unread values, send the next one to the arduino
             EDMO_Serial_Communication_Python_RingBuffer_Final.sendData(command_string)
             list_index += 1
             next_time = current_time + interval / 1000
         return "moving"
+
     elif state == "wait_move":
-
         paper_cut, paper_thresh_cut, grid = preprocesses(frame)
-
+        # Check what the empty cells are and iterate over them
         available_moves = np.delete(np.arange(9), list(gamehistory.keys()))
+        print("trying to detect symbol")
         for i, (x, y, w, h) in enumerate(grid):
             # gameboard.show()
             if i not in available_moves:
                 continue
-            # Find what is inside each free cell
+
+            # Find what is inside each empty cell
             cell = paper_thresh_cut[int(y): int(y + h), int(x): int(x + w)]
             # if detect_SYMBOL(cell, player, model) is not None:
             if not first_move:
@@ -224,8 +182,7 @@ def state_start(state, frame, gameboard):
                 if shape == '0':
                     shape = detect_SYMBOL(cell, 'O', model)
 
-            # shape = detect_SYMBOL(cell, player)
-            # print(shape)
+            # If any cell has a new symbol update the board
             if shape != '0':
                 print("detected_move", shape, "in grid", i)
                 gamehistory[i] = {'shape': shape, 'bbox': (x, y, w, h)}
@@ -240,14 +197,12 @@ def state_start(state, frame, gameboard):
         return "wait_move"
 
 
-"""
-Initialize the second UI screen, showing the board.
-Then start up and maintain the camera streaming, call the collision detection and the state machine
-"""
-
-print("before start_game")
-
 def start_TTT_game():
+    """
+    Start up the video streaming with a loop and maintain it
+    In this loop run grid detection
+    Finally, run the state machine and stream the video
+    """
     # Create Second screen with grid
     start_screen.destroy()
 
@@ -278,18 +233,18 @@ def start_TTT_game():
     first_move = False
     global model
     os.path
-    model = load_model('C:\\Users\\jeanj\\PycharmProjects\\Project3-1\\computervision\\pre_processes\\model_jean_newdata.h5')
+    model = load_model('../computervision/pre_processes/model_daniel_newdata.h5')
 
     # initialize camera streaming
-    vcap = cv2.VideoCapture(1)
+    vcap = cv2.VideoCapture(0)
     if not vcap.isOpened():
         raise IOError('could not get feed from cam'.format())
+
     # Stream the camera while playing the game
     print("loop started")
     avg_frame = None
     while state != "end":
         ret, frame = vcap.read()
-        frame=video_cut(frame)
         key = cv2.waitKey(1) & 0xFF
         if not ret:
             print('[INFO] finished video processing')
@@ -300,65 +255,37 @@ def start_TTT_game():
             print('[INFO] stopped video processing')
             break
 
-        # Run Preprocesses on the computervision
+        # Run Preprocesses on the video streaming
         try:
             if preprocesses(frame)[2] is None:
                 pass
             paper_cut, paper_thresh_cut, grid = preprocesses(frame)
         except:
             pass
-        # Run motion detection every instance of the loop
-        # If any other object is detected, run the collision prevention
-        #bool_md = motion_detection(vcap)
+
+        # Run grid detection
+        try:
+            # Draw grid wait on user
+            for i, (x, y, w, h) in enumerate(grid):
+                cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
+                if gamehistory.get(i) is not None:
+                    shape = gamehistory[i]['shape']
+                    paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+        except:
+            pass
 
 
-        # Read in frame from webcam
-        text = "Unoccupied"
-        frame = imutils.resize(paper_cut, width=700)
-        gray2 = cv2.cvtColor(paper_cut, cv2.COLOR_BGR2GRAY)
-        gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
-        if avg_frame is None:
-            print("[INFO] starting background model...")
-            avg_frame = gray2.copy().astype("float")
-            continue
-        cv2.accumulateWeighted(gray2, avg_frame, 0.5)
-        frame_delta = cv2.absdiff(gray2, cv2.convertScaleAbs(avg_frame))
-        threshdelta = cv2.adaptiveThreshold(frame_delta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
-                                            199, 6)
-        threshdelta = cv2.dilate(threshdelta, None, iterations=2)
-        cntsdelta = cv2.findContours(threshdelta.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cntsdelta = imutils.grab_contours(cntsdelta)
-        # loop over the contours
-        for c in cntsdelta:
-            # if the contour is too small, ignore it
-            if cv2.contourArea(c) < 10:
-                continue
-            # compute the bounding box for the contour, draw it on the frame,
-            # and update the text
-
-            (x, y, w, h) = cv2.boundingRect(c)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            text = "Occupied"
-
-        if state != "moving":
+        # Run the state machine
+        print("state: ", state)
+        if state == "wait_move" and not key == 32:
+            print("waiting for player move")
             try:
-                # Draw grid wait on user
-                for i, (x, y, w, h) in enumerate(grid):
-                    cv2.rectangle(paper_cut, (x, y), (x + w, y + h), (0, 0, 0), 2)
-                    if gamehistory.get(i) is not None:
-                        shape = gamehistory[i]['shape']
-                        paper_cut = draw_SYMBOL(paper_cut, shape, (x, y, w, h))
+                cv2.imshow('Tic Tac Toe game feed', paper_cut)
             except:
-                pass
-        # print("status:",text)
-        # if text == "Unoccupied":
-            # Run the methods according to a state machine
-            # print("state: ", state)
+                cv2.imshow('Tic Tac Toe game feed', frame)
+            continue
+
         state = state_start(state, frame, gameboard)
-
-        cv2.putText(paper_cut, "board Status: {}".format(text), (10, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
 
         if not key == 32:
             try:
@@ -366,10 +293,8 @@ def start_TTT_game():
             except:
                 cv2.imshow('Tic Tac Toe game feed', frame)
             continue
-
     gameboard.show()
 
-print("after methods")
 
 # Open up starting window
 start_screen = tk.Tk()

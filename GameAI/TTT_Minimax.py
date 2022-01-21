@@ -463,17 +463,21 @@ def determine(currentBoard, currentPlayer, level):
 
     random_or_not = random.randint(0, 100)
     if random_or_not <= level:
+        print("Computer playing minimax move")
         computer_move = convertPosition(x, y)
         # print('current computer move is ', computer_move)
+        print("move: ", computer_move)
         return computer_move
     else:
         # play random move, that is valid and not the best move
+        print("Computer playing random move")
         possible_coords = empty_cells(board)
         x_rand, y_rand = x, y
         while x_rand == x and y_rand == y and len(possible_coords) > 1:
             x_rand, y_rand = random.choice(possible_coords)[0], random.choice(possible_coords)[1]
         computer_move = convertPosition(x_rand, y_rand)
-        print('current computer move is ', computer_move)
+        # print('current computer move is ', computer_move)
+        print("move: ", computer_move)
         return computer_move
 
 
